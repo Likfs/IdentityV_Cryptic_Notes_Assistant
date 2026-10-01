@@ -1,0 +1,835 @@
+"""PyQt6 widgets for the route projection application."""
+
+from __future__ import annotations
+
+import ctypes
+import sys
+from ctypes import wintypes
+from pathlib import Path
+
+import cv2
+import numpy as np
+from PyQt6.QtCore import QEvent, QPoint, Qt, QTimer, QPropertyAnimation
+from PyQt6.QtGui import QColor, QGuiApplication, QImage, QPixmap
+from PyQt6.QtWidgets import (
+    QButtonGroup, QCheckBox, QComboBox, QDialog, QFormLayout, QFrame, QGridLayout,
+    QGraphicsDropShadowEffect, QHBoxLayout, QLabel, QLineEdit, QMessageBox,
+    QPushButton, QRadioButton, QScrollArea, QSizePolicy,
+    QSlider, QSpinBox, QVBoxLayout, QWidget,
+)
+
+from src.app_catalog import ACTION_KEYS, MAP_KEYS, key_to_vk, load_settings
+from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
+from src.capture.region import CaptureRegion
+
+
+BG = "#101a27"
+CARD = "#1b2b3b"
+CARD_2 = "#223347"
+INK = "#edf4ff"
+MUTED = "#adbed1"
+ACCENT = "#2789f5"
+GREEN = "#4be27b"
+AMBER = "#f5c879"
+BAD = "#f57d83"
+
+STYLE = f"""
+QWidget {{ background: transparent; color: {INK}; font-family: 'Microsoft YaHei UI'; font-size: 14px; }}
+QLabel {{ background: transparent; }}
+QFrame#titlebar {{ background: rgba(12, 23, 36, 172); border: 1px solid rgba(125, 159, 185, 90); border-radius: 8px; }}
+QFrame#card {{ background: rgba(24, 39, 55, 230); border: 1px solid #394f64; border-radius: 8px; }}
+QFrame#subcard {{ background: rgba(19, 32, 47, 238); border: 1px solid #344a60; border-radius: 7px; }}
+QLabel#section {{ font-size: 17px; font-weight: 700; background: transparent; }}
+QLabel#subheading {{ font-size: 14px; font-weight: 700; background: transparent; }}
+QLabel#muted {{ color: {MUTED}; background: transparent; }}
+QLabel#good {{ color: {GREEN}; background: transparent; }}
+QLabel#warning {{ color: {AMBER}; background: transparent; }}
+QComboBox, QLineEdit, QSpinBox {{ background: #1d2d3e; border: 1px solid #4a6178; border-radius: 5px; padding: 5px 9px; min-height: 23px; }}
+QComboBox::drop-down {{ border: none; width: 24px; }}
+QComboBox QAbstractItemView {{ background: #1d2d3e; color: {INK}; selection-background-color: {ACCENT}; }}
+QPushButton {{ background: #26394d; border: 1px solid #526980; border-radius: 5px; padding: 6px 12px; min-height: 23px; }}
+QPushButton:hover {{ background: #36536d; }}
+QPushButton:checked {{ background: {ACCENT}; border-color: #5ca9ff; font-weight: 700; }}
+QPushButton#primary {{ background: {ACCENT}; border-color: #4ea2ff; font-weight: 700; }}
+QPushButton#primary:hover {{ background: #4a9fff; }}
+QPushButton#windowControl {{ background: transparent; border: none; font-size: 19px; min-width: 28px; padding: 3px; }}
+QPushButton#windowControl:hover {{ background: rgba(114, 151, 181, 95); }}
+QPushButton#hotkeyCapture:focus {{ border: 2px solid {ACCENT}; background: #1b4266; }}
+QCheckBox, QRadioButton {{ background: transparent; spacing: 8px; }}
+QCheckBox::indicator {{ width: 20px; height: 20px; background: #0e1824; border: 2px solid #d0dfed; border-radius: 4px; }}
+QCheckBox::indicator:unchecked:hover {{ border-color: #79b8ff; background: #243d54; }}
+QCheckBox::indicator:checked {{ background: {ACCENT}; border-color: #79b8ff; image: url("{(Path(__file__).resolve().parents[1] / 'assets/app_ui/icons/check.svg').as_posix()}"); }}
+QCheckBox::indicator:disabled {{ border-color: #8293a5; background: #263342; }}
+QCheckBox:focus {{ color: #79b8ff; }}
+QSlider::groove:horizontal {{ height: 5px; background: #4b6278; border-radius: 2px; }}
+QSlider::handle:horizontal {{ width: 17px; background: {ACCENT}; border-radius: 8px; margin: -6px 0; }}
+QTableWidget {{ background: #172433; alternate-background-color: #203246; gridline-color: #31485d; border: 1px solid #40566c; }}
+QHeaderView::section {{ background: #273b50; color: {INK}; padding: 6px; border: none; }}
+QScrollArea {{ border: none; background: transparent; }}
+QScrollBar:vertical {{ background: #152332; width: 9px; }}
+QScrollBar::handle:vertical {{ background: #516b82; border-radius: 4px; }}
+"""
+
+
+class EntrancePreview(QLabel):
+    """Fit an entrance image to its card without cropping or stretching it."""
+
+    def __init__(self, path, parent=None):
+        super().__init__(parent)
+        self.setObjectName("entrance_preview")
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setWordWrap(True)
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.source = QPixmap(str(path)) if path is not None else QPixmap()
+        self.setStyleSheet(f"background: {BG}; color: {MUTED}; border: none; border-radius: 6px;")
+        if self.source.isNull():
+            self.setText("入口图片暂不可用\n可取消后重新识别")
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        if not self.source.isNull():
+            self.setPixmap(self.source.scaled(self.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                                              Qt.TransformationMode.SmoothTransformation))
+
+
+class ManualLayoutConfirmationDialog(QDialog):
+    """Confirm a user-selected layout against its entrance image."""
+
+    def __init__(self, title, text, entrance_path, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setWindowFlag(Qt.WindowType.WindowStaysOnTopHint, True)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self.setStyleSheet(STYLE + f"QDialog {{ background: {BG}; }}")
+        body = QVBoxLayout(self)
+        body.setContentsMargins(24, 20, 24, 20)
+        body.setSpacing(16)
+        heading = QLabel(title)
+        heading.setObjectName("section")
+        body.addWidget(heading)
+        description = QLabel(text)
+        description.setWordWrap(True)
+        body.addWidget(description)
+        preview = EntrancePreview(entrance_path, self)
+        preview.setMinimumHeight(180)
+        body.addWidget(preview, 1)
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        cancel = QPushButton("取消")
+        cancel.clicked.connect(self.reject)
+        buttons.addWidget(cancel)
+        confirm = QPushButton("确认使用")
+        confirm.setObjectName("primary")
+        confirm.clicked.connect(self.accept)
+        buttons.addWidget(confirm)
+        body.addLayout(buttons)
+        cancel.setFocus()
+        bounds = (self.screen() or QGuiApplication.primaryScreen()).availableGeometry()
+        self.resize(min(680, bounds.width() - 48), min(600, bounds.height() - 64))
+
+
+class LayoutConfirmationDialog(QDialog):
+    """Choose between the two leading recognition candidates before locking."""
+
+    def __init__(self, candidates, entrance_root, *, screen=None):
+        super().__init__(None)
+        self.setWindowTitle("确认锁定布局")
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint |
+                            Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowSystemMenuHint)
+        self.setWindowModality(Qt.WindowModality.ApplicationModal)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setStyleSheet(STYLE + f"""
+            QFrame#confirmationPanel {{ background: {BG}; border: 1px solid #40566c; border-radius: 14px; }}
+            QLabel#confirmationTitle {{ font-size: 25px; font-weight: 700; }}
+            QLabel#questionIcon {{ background: {ACCENT}; color: {INK}; border-radius: 28px; font-size: 38px; font-weight: 700; }}
+            QPushButton#layoutCandidate {{ background: {CARD}; border: 2px solid #344a60; border-radius: 10px; padding: 0; }}
+            QPushButton#layoutCandidate:hover {{ background: {CARD_2}; border-color: #6284a3; }}
+            QPushButton#layoutCandidate:checked {{ background: #1b3652; border-color: {ACCENT}; }}
+            QPushButton#layoutCandidate:focus {{ border-color: #83bdff; }}
+            QRadioButton {{ font-size: 22px; font-weight: 700; spacing: 12px; }}
+            QRadioButton::indicator {{ width: 22px; height: 22px; border: 2px solid #8197af; border-radius: 13px; background: {BG}; }}
+            QRadioButton::indicator:checked {{ border: 7px solid {ACCENT}; width: 12px; height: 12px; background: {INK}; }}
+            QPushButton#primary, QPushButton#cancelConfirmation {{ min-width: 108px; min-height: 32px; font-size: 18px; border-radius: 7px; }}
+        """)
+        bounds = (screen or QGuiApplication.primaryScreen()).availableGeometry()
+        width, height = min(960, bounds.width() - 40), min(590, bounds.height() - 40)
+        compact = width < 700
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        panel = QFrame()
+        panel.setObjectName("confirmationPanel")
+        outer.addWidget(panel)
+        body = QVBoxLayout(panel)
+        body.setContentsMargins(24, 24, 24, 24)
+        body.setSpacing(24)
+        header = QHBoxLayout()
+        header.setSpacing(20)
+        icon = QLabel("?")
+        icon.setObjectName("questionIcon")
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon.setFixedSize(56, 56)
+        header.addWidget(icon)
+        heading = QVBoxLayout()
+        heading.setSpacing(8)
+        title = QLabel("确认锁定布局")
+        title.setObjectName("confirmationTitle")
+        heading.addWidget(title)
+        description = QLabel("识别到多个可能的布局，请确认正确的布局后继续。" if len(candidates) > 1
+                             else "请核对入口图片，确认正确的布局后继续。")
+        description.setObjectName("muted")
+        description.setWordWrap(True)
+        heading.addWidget(description)
+        header.addLayout(heading, 1)
+        self.close_button = QPushButton("×")
+        self.close_button.setObjectName("windowControl")
+        self.close_button.setAccessibleName("关闭确认框")
+        self.close_button.setFixedSize(30, 30)
+        self.close_button.setAutoDefault(False)
+        self.close_button.clicked.connect(self.reject)
+        header.addWidget(self.close_button, 0, Qt.AlignmentFlag.AlignTop)
+        body.addLayout(header)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        content = QWidget()
+        cards_layout = QGridLayout(content)
+        cards_layout.setContentsMargins(0, 0, 0, 0)
+        cards_layout.setSpacing(18)
+        scroll.setWidget(content)
+        body.addWidget(scroll, 1)
+        self.group = QButtonGroup(self)
+        self.group.setExclusive(True)
+        self.cards = []
+        self.selected_layout = candidates[0]["layout"] if candidates else None
+        for index, item in enumerate(candidates):
+            layout = item["layout"]
+            card = QPushButton()
+            card.setObjectName("layoutCandidate")
+            card.setCheckable(True)
+            card.setAutoDefault(False)
+            card.setCursor(Qt.CursorShape.PointingHandCursor)
+            card.setMinimumSize(0, 240 if compact else 160)
+            card.setStyleSheet(f"QPushButton#layoutCandidate {{ min-height: {240 if compact else 160}px; }}")
+            card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+            card.setAccessibleName(f"布局 {layout.removeprefix('layout_')}，置信度 {item['confidence']:.1%}")
+            card_body = QVBoxLayout(card)
+            card_body.setContentsMargins(18, 16, 18, 16)
+            card_body.setSpacing(14)
+            row_widget = QWidget()
+            row_widget.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            row = QHBoxLayout(row_widget)
+            row.setContentsMargins(0, 0, 0, 0)
+            radio = QRadioButton(f"布局 {layout.removeprefix('layout_')}")
+            radio.setAutoExclusive(False)
+            radio.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+            row.addWidget(radio, 1)
+            score = QLabel(f"{item['confidence']:.1%}")
+            score.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            row.addWidget(score)
+            card_body.addWidget(row_widget)
+            preview = EntrancePreview(entrance_root / f"{layout}.png" if entrance_root else None)
+            preview.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+            card_body.addWidget(preview, 1)
+            def update(checked, *, choice=layout, indicator=radio, badge=score):
+                indicator.setChecked(checked)
+                badge.setStyleSheet(f"background: {'#254d78' if checked else CARD_2}; "
+                                    f"color: {'#79b8ff' if checked else INK}; border-radius: 6px; "
+                                    "padding: 5px 12px; font-size: 22px; font-weight: 700;")
+                if checked:
+                    self.selected_layout = choice
+            card.toggled.connect(update)
+            update(False)
+            self.group.addButton(card)
+            self.cards.append(card)
+            cards_layout.addWidget(card, index if compact else 0, 0 if compact else index)
+            card.setChecked(index == 0)
+
+        footer = QVBoxLayout() if width < 850 else QHBoxLayout()
+        footer.setSpacing(18)
+        self.skip_confirmation = QCheckBox("高置信度时不再提示")
+        self.skip_confirmation.setToolTip("置信度或前两名分差不足时仍会弹框，由你选择；可在设置中的“布局确认”重新开启全部提示")
+        footer.addWidget(self.skip_confirmation)
+        if width >= 850:
+            footer.addStretch(1)
+        actions = QHBoxLayout()
+        actions.setSpacing(14)
+        actions.addStretch(1)
+        self.confirm_button = QPushButton("确定")
+        self.confirm_button.setObjectName("primary")
+        self.confirm_button.setDefault(True)
+        self.confirm_button.setEnabled(bool(candidates))
+        self.confirm_button.clicked.connect(self.accept)
+        self.cancel_button = QPushButton("取消")
+        self.cancel_button.setObjectName("cancelConfirmation")
+        self.cancel_button.setAutoDefault(False)
+        self.cancel_button.clicked.connect(self.reject)
+        actions.addWidget(self.confirm_button)
+        actions.addWidget(self.cancel_button)
+        footer.addLayout(actions)
+        body.addLayout(footer)
+        self.resize(width, height)
+
+
+class Value:
+    def __init__(self, value=None, callback=None):
+        self.value = value
+        self.callback = callback
+
+    def get(self):
+        return self.value
+
+    def set(self, value):
+        self.value = value
+        if self.callback is not None:
+            self.callback(value)
+
+
+class HotkeyCaptureButton(QPushButton):
+    """Click, then press a supported key to replace one shortcut."""
+
+    SPECIAL_KEYS = {
+        Qt.Key.Key_Tab: "Tab", Qt.Key.Key_Space: "Space",
+        Qt.Key.Key_Shift: "Shift", Qt.Key.Key_Control: "Ctrl",
+        Qt.Key.Key_Alt: "Alt", Qt.Key.Key_CapsLock: "CapsLock",
+    }
+
+    def __init__(self, value: str, allowed: tuple[str, ...], on_capture, parent=None):
+        super().__init__(value, parent)
+        self.setObjectName("hotkeyCapture")
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        self.value = value
+        self.allowed = allowed
+        self.on_capture = on_capture
+        self.capturing = False
+        self.clicked.connect(self.begin_capture)
+
+    def begin_capture(self):
+        self.capturing = True
+        self.setText("请按下新按键 · Esc 取消")
+        self.setFocus(Qt.FocusReason.MouseFocusReason)
+
+    @staticmethod
+    def key_name(event):
+        key = event.key()
+        if Qt.Key.Key_F1 <= key <= Qt.Key.Key_F12:
+            return f"F{key - Qt.Key.Key_F1 + 1}"
+        if Qt.Key.Key_A <= key <= Qt.Key.Key_Z or Qt.Key.Key_0 <= key <= Qt.Key.Key_9:
+            return chr(key)
+        return HotkeyCaptureButton.SPECIAL_KEYS.get(key)
+
+    def event(self, event):
+        if self.capturing and event.type() == QEvent.Type.KeyPress:
+            key = event.key()
+            if key == Qt.Key.Key_Escape:
+                self.capturing = False
+                self.setText(self.value)
+                return True
+            name = self.key_name(event)
+            if name not in self.allowed:
+                self.setText("不支持此键，请重按 · Esc 取消")
+                return True
+            if self.on_capture(name) is False:
+                self.setText("按键冲突，请重按 · Esc 取消")
+                return True
+            self.value = name
+            self.capturing = False
+            self.setText(name)
+            self.clearFocus()
+            return True
+        return super().event(event)
+
+    def focusOutEvent(self, event):
+        if self.capturing:
+            self.capturing = False
+            self.setText(self.value)
+        super().focusOutEvent(event)
+
+
+class DraggableTitleBar(QFrame):
+    def __init__(self, window):
+        super().__init__(window)
+        self.window = window
+        self.setObjectName("titlebar")
+        self._drag_offset = None
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            handle = self.window.windowHandle()
+            if handle is not None and handle.startSystemMove():
+                self._drag_offset = None
+            else:
+                self._drag_offset = event.globalPosition().toPoint() - self.window.frameGeometry().topLeft()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag_offset is not None and event.buttons() & Qt.MouseButton.LeftButton:
+            self.window.move(event.globalPosition().toPoint() - self._drag_offset)
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_offset = None
+        super().mouseReleaseEvent(event)
+
+    def mouseDoubleClickEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.window.toggle_maximize()
+            event.accept()
+            return
+        super().mouseDoubleClickEvent(event)
+
+
+class CompatLabel(QLabel):
+    """A QLabel with the tiny configure API used by the processing controller."""
+
+    def configure(self, *, text=None, fg=None, **_kwargs):
+        if text is not None:
+            self.setText(str(text))
+        if fg is not None:
+            self.setStyleSheet(f"color: {fg}; background: transparent;")
+
+
+class ImagePanel(QFrame):
+    def __init__(self, title: str, placeholder: str, parent=None):
+        super().__init__(parent)
+        self.setObjectName("subcard")
+        self._pixmap = None
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(7, 6, 7, 7)
+        layout.setSpacing(3)
+        self.heading = QLabel(title)
+        self.heading.setObjectName("subheading")
+        layout.addWidget(self.heading)
+        self.image = QLabel(placeholder)
+        self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image.setStyleSheet("background: #101b28; color: #899eb2; border-radius: 4px;")
+        self.image.setMinimumHeight(80)
+        layout.addWidget(self.image, 1)
+        self.caption = QLabel("")
+        self.caption.setObjectName("muted")
+        self.caption.setMinimumHeight(17)
+        layout.addWidget(self.caption)
+
+    def set_image(self, bgr: np.ndarray | None, caption: str = ""):
+        if bgr is None:
+            self._pixmap = None
+            self.image.clear()
+            self.image.setText("暂无图像")
+        else:
+            rgba = cv2.cvtColor(bgr, cv2.COLOR_BGRA2RGBA if bgr.shape[2] == 4 else cv2.COLOR_BGR2RGB)
+            height, width = rgba.shape[:2]
+            fmt = QImage.Format.Format_RGBA8888 if rgba.shape[2] == 4 else QImage.Format.Format_RGB888
+            self._pixmap = QPixmap.fromImage(QImage(rgba.data, width, height, rgba.strides[0], fmt).copy())
+            self._redraw()
+        self.caption.setText(caption)
+
+    def _redraw(self):
+        if self._pixmap is not None:
+            self.image.setPixmap(self._pixmap.scaled(
+                self.image.size(), Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            ))
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._redraw()
+
+
+def exclude_window_from_capture(widget: QWidget) -> bool:
+    if sys.platform != "win32":
+        return False
+    set_affinity = ctypes.windll.user32.SetWindowDisplayAffinity
+    set_affinity.argtypes = (wintypes.HWND, wintypes.DWORD)
+    set_affinity.restype = wintypes.BOOL
+    return bool(set_affinity(int(widget.winId()), 0x00000011))
+
+
+def physical_to_qt_geometry(left: int, top: int, width: int, height: int):
+    """Translate MSS physical pixels to Qt logical coordinates on each monitor."""
+    if sys.platform != "win32":
+        return left, top, width, height, 1.0
+
+    class MonitorInfo(ctypes.Structure):
+        _fields_ = (("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT),
+                    ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD),
+                    ("szDevice", wintypes.WCHAR * 32))
+
+    user32 = ctypes.windll.user32
+    monitor_from_point = user32.MonitorFromPoint
+    monitor_from_point.argtypes = (wintypes.POINT, wintypes.DWORD)
+    monitor_from_point.restype = wintypes.HANDLE
+    get_monitor_info = user32.GetMonitorInfoW
+    get_monitor_info.argtypes = (wintypes.HANDLE, ctypes.POINTER(MonitorInfo))
+    get_monitor_info.restype = wintypes.BOOL
+    monitor = monitor_from_point(wintypes.POINT(left + width // 2, top + height // 2), 2)
+    info = MonitorInfo()
+    info.cbSize = ctypes.sizeof(MonitorInfo)
+    if not monitor or not get_monitor_info(monitor, ctypes.byref(info)):
+        raise ctypes.WinError()
+    name = info.szDevice.casefold().removeprefix("\\\\.\\")
+    screens = QGuiApplication.screens()
+    screen = next((item for item in screens if item.name().casefold().removeprefix("\\\\.\\") == name), None)
+    if screen is None:
+        screen = QGuiApplication.primaryScreen()
+    scale = screen.devicePixelRatio()
+    geometry = screen.geometry()
+    return (geometry.x() + round((left - info.rcMonitor.left) / scale),
+            geometry.y() + round((top - info.rcMonitor.top) / scale),
+            max(1, round(width / scale)), max(1, round(height / scale)), scale)
+
+
+class NotificationToast(QWidget):
+    """Transparent, non-interactive notification shown above the game window."""
+
+    HOLD_MS = 3200
+    FADE_MS = 600
+
+    def __init__(self):
+        super().__init__(None, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint |
+                         Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self.setFixedWidth(620)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(8, 8, 8, 8)
+        self.panel = QFrame(self)
+        self.panel.setStyleSheet("background: transparent; border: none;")
+        outer.addWidget(self.panel)
+        content = QVBoxLayout(self.panel)
+        content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(8)
+        self.title = QLabel(self.panel)
+        self.title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.title.setStyleSheet(f"font-size: 25px; font-weight: 700; color: {GREEN}; background: transparent;")
+        content.addWidget(self.title)
+        self.detail = QLabel(self.panel)
+        self.detail.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.detail.setWordWrap(True)
+        self.detail.setStyleSheet(f"font-size: 16px; color: {INK}; background: transparent;")
+        content.addWidget(self.detail)
+        for label in (self.title, self.detail):
+            shadow = QGraphicsDropShadowEffect(label)
+            shadow.setBlurRadius(12)
+            shadow.setOffset(0, 2)
+            shadow.setColor(QColor(0, 0, 0, 230))
+            label.setGraphicsEffect(shadow)
+        # A graphics effect on the top-level translucent window can remain
+        # unpainted until its opacity changes. Animate native window opacity.
+        self.fade = QPropertyAnimation(self, b"windowOpacity", self)
+        self.fade.finished.connect(self.hide)
+        self._sequence = 0
+
+    def show_message(self, title: str, detail: str, *, success: bool,
+                     roi: list[int] | None = None, hold_ms: int | None = None,
+                     fade_ms: int | None = None) -> None:
+        hold_ms = self.HOLD_MS if hold_ms is None else hold_ms
+        fade_ms = self.FADE_MS if fade_ms is None else fade_ms
+        self._sequence += 1
+        sequence = self._sequence
+        self.fade.stop()
+        self.title.setText(title)
+        self.detail.setText(detail)
+        self.title.setStyleSheet(
+            f"font-size: 25px; font-weight: 700; color: {GREEN if success else BAD}; "
+            "background: transparent;"
+        )
+        self.setWindowOpacity(1.0)
+        screen = QGuiApplication.primaryScreen()
+        if roi and len(roi) == 4:
+            try:
+                x, y, width, height, _scale = physical_to_qt_geometry(*map(int, roi))
+                screen = QGuiApplication.screenAt(QPoint(x + width // 2, y + height // 2)) or screen
+            except (OSError, ValueError):
+                pass
+        bounds = screen.geometry()
+        self.setFixedWidth(min(620, max(200, bounds.width() - 16)))
+        self.adjustSize()
+        x = bounds.left() + (bounds.width() - self.width()) // 2
+        y = bounds.top() + round(bounds.height() * 0.10)
+        self.move(x, y)
+        self.show()
+        self.raise_()
+        exclude_window_from_capture(self)
+
+        def start_fade() -> None:
+            if sequence != self._sequence or not self.isVisible():
+                return
+            self.fade.setDuration(fade_ms)
+            self.fade.setStartValue(1.0)
+            self.fade.setEndValue(0.0)
+            self.fade.start()
+
+        QTimer.singleShot(hold_ms, start_fade)
+
+
+class RouteOverlayWindow(QWidget):
+    """Transparent, mouse-through Qt window positioned over the game's map ROI."""
+
+    def __init__(self, parent=None):
+        super().__init__(parent, Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool |
+                         Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.label = QLabel(self)
+        self.label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.visible = False
+
+    def show(self, bgra: np.ndarray, left: int = 0, top: int = 0):
+        if bgra.ndim != 3 or bgra.shape[2] != 4:
+            raise ValueError("覆盖层必须为 BGRA 四通道图片")
+        rgba = cv2.cvtColor(bgra, cv2.COLOR_BGRA2RGBA)
+        height, width = rgba.shape[:2]
+        image = QImage(rgba.data, width, height, rgba.strides[0], QImage.Format.Format_RGBA8888).copy()
+        x, y, logical_width, logical_height, scale = physical_to_qt_geometry(int(left), int(top), width, height)
+        pixmap = QPixmap.fromImage(image)
+        pixmap.setDevicePixelRatio(scale)
+        self.label.setPixmap(pixmap)
+        self.label.setGeometry(0, 0, logical_width, logical_height)
+        self.setGeometry(x, y, logical_width, logical_height)
+        super().show()
+        if sys.platform == "win32":
+            hwnd = int(self.winId())
+            get_style = ctypes.windll.user32.GetWindowLongW
+            set_style = ctypes.windll.user32.SetWindowLongW
+            get_style.argtypes = (wintypes.HWND, ctypes.c_int)
+            get_style.restype = ctypes.c_long
+            set_style.argtypes = (wintypes.HWND, ctypes.c_int, ctypes.c_long)
+            set_style.restype = ctypes.c_long
+            style = get_style(hwnd, -20)
+            set_style(hwnd, -20, style | 0x20 | 0x80 | 0x08000000)
+            exclude_window_from_capture(self)
+        self.visible = True
+
+    def hide(self):
+        super().hide()
+        self.visible = False
+
+    def destroy(self):
+        self.close()
+        self.visible = False
+
+
+class ReferenceMapWindow(RouteOverlayWindow):
+    """Unregistered floor reference, separate from the positioned route overlay."""
+
+    def __init__(self):
+        super().__init__()
+        self.caption = QLabel(self)
+        self.caption.setStyleSheet("color: white; background: #172331; padding: 3px; font-size: 12px;")
+
+    def show_map(self, image: np.ndarray, roi: list[int], caption: str, opacity: float):
+        width = 460
+        scale = width / image.shape[1]
+        thumb = cv2.resize(image, (width, max(1, round(image.shape[0] * scale))),
+                           interpolation=cv2.INTER_AREA if scale <= 1 else cv2.INTER_LINEAR)
+        canvas = np.full((thumb.shape[0] + 30, thumb.shape[1], 4), 255, np.uint8)
+        canvas[:30, :, :3] = (49, 35, 23)
+        canvas[30:, :, :3] = thumb
+        self.setWindowOpacity(opacity)
+        super().show(canvas, 0, 0)
+        self.caption.setText(caption)
+        self.caption.setGeometry(0, 0, self.width(), max(20, round(30 / self.devicePixelRatioF())))
+        self.caption.raise_()
+
+
+class SettingsPage(QWidget):
+    def __init__(self, app):
+        super().__init__(app)
+        self.app = app
+        self.vars = {}
+        self._settings_dirty = False
+        self._settings_save_job = None
+        self.save_status = Value("所有修改都会自动保存并立即生效", lambda text: self.status.setText(text))
+        self.opacity_text = Value("", lambda text: self.opacity_label.setText(text))
+        self._build()
+
+    def _build(self):
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(22, 18, 22, 18)
+        title = QLabel("偏好设置")
+        title.setObjectName("section")
+        outer.addWidget(title)
+        hint = QLabel("点击快捷键按钮，再按键盘上的目标按键；修改会自动保存。")
+        hint.setObjectName("muted")
+        outer.addWidget(hint)
+        self.status = QLabel(self.save_status.get())
+        self.status.setObjectName("good")
+        outer.addWidget(self.status)
+
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        outer.addWidget(scroll, 1)
+        content = QWidget()
+        content.setMaximumWidth(1120)
+        scroll.setWidget(content)
+        body = QVBoxLayout(content)
+        form_box = QFrame()
+        form_box.setObjectName("card")
+        form = QFormLayout(form_box)
+        form.setContentsMargins(18, 14, 18, 14)
+        form.setSpacing(10)
+        body.addWidget(form_box)
+
+        settings = self.app.settings
+        def entry(name, value):
+            widget = QLineEdit(value)
+            self.vars[name] = Value(value)
+            widget.textChanged.connect(lambda text, key=name: (self.vars[key].set(text), self._schedule_settings_save()))
+            return widget
+
+        def check(name, text, value):
+            widget = QCheckBox(text)
+            widget.setChecked(value)
+            self.vars[name] = Value(value)
+            widget.toggled.connect(lambda checked, key=name: (self.vars[key].set(checked), self._schedule_settings_save()))
+            return widget
+
+        def capture(name, allowed, value):
+            self.vars[name] = Value(value)
+            button = HotkeyCaptureButton(value, allowed, lambda key: self._capture_key(name, key))
+            self.hotkey_buttons[name] = button
+            return button
+
+        self.hotkey_buttons = {}
+        form.addRow("游戏地图键", capture("map_key", MAP_KEYS, settings["map_key"]))
+        form.addRow("识别快捷键", capture("recognize_hotkey", ACTION_KEYS, settings["recognize_hotkey"]))
+        form.addRow("投影快捷键", capture("project_hotkey", ACTION_KEYS, settings["project_hotkey"]))
+        form.addRow("左上角路线图显隐", capture("reference_hotkey", ACTION_KEYS, settings["reference_hotkey"]))
+        form.addRow("自动投影", check("auto_project", "地图打开时自动配准并投影", settings["auto_project"]))
+        form.addRow("自动识别楼层", check("auto_floor", "多尺度结构配准使用楼层识别，定尺度模板匹配跳过", settings["auto_floor"]))
+        self.map_capture_delay_spin = QSpinBox()
+        self.map_capture_delay_spin.setRange(0, MAX_MAP_CAPTURE_DELAY_MS)
+        self.map_capture_delay_spin.setSuffix(" ms")
+        self.map_capture_delay_spin.setKeyboardTracking(False)
+        self.map_capture_delay_spin.setValue(map_capture_delay_ms(settings))
+        self.map_capture_delay_spin.setToolTip(f"默认 {DEFAULT_MAP_CAPTURE_DELAY_MS} ms。控制地图键开图后的首次截图等待，以及楼层未识别成功时的重试间隔；修改自动保存，下次开图生效。")
+        self.vars["map_capture_delay_ms"] = Value(self.map_capture_delay_spin.value())
+        self.map_capture_delay_spin.valueChanged.connect(lambda value: (
+            self.vars["map_capture_delay_ms"].set(value), self._schedule_settings_save()))
+        form.addRow("截图延迟", self.map_capture_delay_spin)
+        self.registration_backend_combo = QComboBox()
+        self.registration_backend_combo.addItem("多尺度结构配准（GPU）", "auto")
+        self.registration_backend_combo.addItem("多尺度结构配准（CPU）", "cpu")
+        self.registration_backend_combo.addItem("定尺度模板匹配", "template")
+        self.registration_backend_combo.setToolTip("GPU 不可用或运行异常时自动回退 CPU。定尺度模板匹配不识别楼层，固定显示三层完整原图；多尺度结构配准的显示版本在首页选择。")
+        self.registration_backend_combo.setCurrentIndex(
+            self.registration_backend_combo.findData(settings.get("registration_backend", "auto")))
+        self.vars["registration_backend"] = Value(settings.get("registration_backend", "auto"))
+        self.registration_backend_combo.currentIndexChanged.connect(lambda _index: (
+            self.vars["registration_backend"].set(self.registration_backend_combo.currentData()),
+            self._schedule_settings_save()))
+        form.addRow("配准计算", self.registration_backend_combo)
+        form.addRow("布局确认", check("skip_layout_confirmation", "高置信度时自动锁定，低置信度时仍由我选择",
+                                    settings["skip_layout_confirmation"]))
+        form.addRow("游戏窗口标题", entry("window_titles", ", ".join(settings["game_window_titles"])))
+        form.addRow("截图区域 左, 上, 宽, 高", entry("roi", ", ".join(map(str, settings["capture_roi"]))))
+        form.addRow("参考分辨率 宽, 高", entry("reference_size", ", ".join(map(str, settings["capture_reference_size"]))))
+        opacity_row = QWidget()
+        opacity_layout = QHBoxLayout(opacity_row)
+        opacity_layout.setContentsMargins(0, 0, 0, 0)
+        slider = QSlider(Qt.Orientation.Horizontal)
+        slider.setRange(0, 100)
+        slider.setValue(round(settings["opacity"] * 100))
+        self.vars["opacity"] = Value(slider.value())
+        slider.valueChanged.connect(lambda value: (self.vars["opacity"].set(value), self._update_opacity_text(), self._schedule_settings_save()))
+        self.opacity_label = QLabel()
+        self._update_opacity_text()
+        opacity_layout.addWidget(slider, 1)
+        opacity_layout.addWidget(self.opacity_label)
+        form.addRow("投影不透明度", opacity_row)
+
+        body.addStretch(1)
+        close_button = QPushButton("←  返回首页")
+        close_button.clicked.connect(self.close)
+        outer.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
+
+    def _capture_key(self, name: str, key: str) -> bool:
+        names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey")
+        if any(self.vars[other].get() == key for other in names if other != name):
+            self.save_status.set(f"{key} 已被其他快捷键使用，请选择其他按键")
+            return False
+        self.vars[name].set(key)
+        self._schedule_settings_save()
+        return True
+
+    def _update_opacity_text(self):
+        self.opacity_text.set(f"{self.vars['opacity'].get()}% 不透明")
+
+    def _schedule_settings_save(self):
+        self._settings_dirty = True
+        self.save_status.set("修改待保存…")
+        if self._settings_save_job is not None:
+            self._settings_save_job.stop()
+        self._settings_save_job = QTimer(self)
+        self._settings_save_job.setSingleShot(True)
+        self._settings_save_job.timeout.connect(self._persist_settings)
+        self._settings_save_job.start(600)
+
+    def _collect_settings(self):
+        keys = [self.vars[name].get() for name in ("map_key", "recognize_hotkey", "project_hotkey")]
+        if len(set(keys)) != 3:
+            raise ValueError("地图键、识别快捷键和投影快捷键不能重复")
+        reference_key = (self.vars["reference_hotkey"].get() if "reference_hotkey" in self.vars
+                         else self.app.settings["reference_hotkey"])
+        if reference_key in keys or reference_key not in ACTION_KEYS:
+            raise ValueError("左上角路线图显隐键不能与其他按键重复，默认使用 H")
+        key_to_vk(keys[0])
+        if any(key not in ACTION_KEYS for key in keys[1:]):
+            raise ValueError("识别和投影快捷键只支持单个字母、数字、功能键或常用键")
+        roi = [int(part.strip()) for part in self.vars["roi"].get().split(",")]
+        CaptureRegion.from_value(roi)
+        reference = [int(part.strip()) for part in self.vars["reference_size"].get().split(",")]
+        if len(reference) != 2 or any(number <= 0 for number in reference):
+            raise ValueError("游戏参考分辨率必须为：宽, 高")
+        from src.route_projection_app import game_capture_region, percent_to_opacity
+        game_capture_region(CaptureRegion(0, 0, *reference), roi, reference)
+        updated = dict(self.app.settings)
+        updated.update({name: value.get() for name, value in self.vars.items()
+                        if name not in ("roi", "reference_size", "window_titles", "opacity")})
+        updated["capture_roi"] = roi
+        updated["capture_reference_size"] = reference
+        updated["game_window_titles"] = [part.strip() for part in self.vars["window_titles"].get().split(",") if part.strip()]
+        if not updated["game_window_titles"]:
+            raise ValueError("请填写游戏窗口标题关键词，以便只截取游戏画面")
+        updated["opacity"] = percent_to_opacity(round(self.vars["opacity"].get()))
+        return updated
+
+    def _persist_settings(self, *, show_error=False):
+        if self._settings_save_job is not None:
+            self._settings_save_job.stop()
+            self._settings_save_job = None
+        try:
+            updated = self._collect_settings()
+            self.app.apply_settings(updated)
+            persisted = load_settings(self.app.catalog, self.app.settings_path)
+            fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "map_capture_delay_ms", "recognize_hotkey",
+                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation")
+            if any(persisted[name] != updated[name] for name in fields):
+                raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
+        except Exception as exc:
+            self.save_status.set(f"尚未保存：{exc}")
+            if show_error:
+                QMessageBox.critical(self, "设置无效", str(exc))
+            return False
+        self._settings_dirty = False
+        self.opacity_text.set(f"{round(updated['opacity'] * 100)}% 已保存")
+        self.save_status.set("已自动保存并立即生效")
+        return True
+
+    def closeEvent(self, event):
+        if (self._settings_dirty or self._settings_save_job is not None) and not self._persist_settings(show_error=True):
+            event.ignore()
+            return
+        self.app._leave_settings(self)
+        event.accept()
+
+
+# Keep the controller/test import stable while this widget is now an in-window page.
+SettingsDialog = SettingsPage

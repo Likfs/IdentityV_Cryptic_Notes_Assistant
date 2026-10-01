@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "maps": [
+    {
+      "id": "a_bringer_of_doom",
+      "name": "厄运之女",
+      "difficulties": [
+        {
+          "id": "nightmare",
+          "name": "噩梦",
+          "clean_root": "assets/maps/a_bringer_of_doom/nightmare/clean",
+          "calibration_root": "assets/maps/a_bringer_of_doom/nightmare/routes",
+          "entrance_root": "assets/maps/a_bringer_of_doom/nightmare/entrance",
+          "model": "models/releases/layout_classifier_pre_resized.pt",
+          "asset_versions": [
+            {
+              "id": "route_clean",
+              "name": "原版干净底图",
+              "kind": "clean",
+              "source_root": "assets/maps/a_bringer_of_doom/nightmare/clean"
+            },
+            {
+              "id": "route_lhp_solo",
+              "name": "凉哈皮路线图",
+              "kind": "route",
+              "source_root": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
+            },
+            {
+              "id": "route_zhanshi_fast",
+              "name": "展十速刷路线图",
+              "kind": "route",
+              "source_root": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

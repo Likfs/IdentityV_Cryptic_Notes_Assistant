@@ -1,0 +1,88 @@
+{
+  "layout": "layout_11",
+  "variant_id": "route_clean",
+  "display_name": "原版干净底图",
+  "asset_kind": "clean",
+  "route": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11",
+  "floors": {
+    "2nd": {
+      "status": "PASS",
+      "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png",
+      "asset": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png",
+      "asset_to_clean_homography": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "diagnostics": {
+        "method": "identity_reference",
+        "independent_route_evidence": false
+      }
+    },
+    "1st": {
+      "status": "PASS",
+      "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_1st.png",
+      "asset": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_1st.png",
+      "asset_to_clean_homography": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "diagnostics": {
+        "method": "identity_reference",
+        "independent_route_evidence": false
+      }
+    },
+    "b1": {
+      "status": "PASS",
+      "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_b1.png",
+      "asset": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_b1.png",
+      "asset_to_clean_homography": [
+        [
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          1
+        ]
+      ],
+      "diagnostics": {
+        "method": "identity_reference",
+        "independent_route_evidence": false
+      }
+    }
+  },
+  "source_collection": "assets/maps/a_bringer_of_doom/nightmare/clean"
+}

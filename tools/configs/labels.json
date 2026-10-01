@@ -1,0 +1,19 @@
+{
+  "schema_version": 2,
+  "maps": [
+    {
+      "id": "a_bringer_of_doom",
+      "name": "厄运之女"
+    }
+  ],
+  "difficulties": [
+    {
+      "id": "nightmare",
+      "name": "噩梦"
+    }
+  ],
+  "defaults": {
+    "map_id": "a_bringer_of_doom",
+    "difficulty_id": "nightmare"
+  }
+}

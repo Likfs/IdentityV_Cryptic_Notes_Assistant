@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "map_key": "G",
+  "game_window_titles": [
+    "第五人格",
+    "Identity V",
+    "IdentityV"
+  ],
+  "auto_project": true,
+  "auto_floor": true,
+  "map_capture_delay_ms": 100,
+  "registration_backend": "template",
+  "skip_layout_confirmation": false,
+  "recognize_hotkey": "F8",
+  "project_hotkey": "F10",
+  "reference_hotkey": "H",
+  "floor": "2nd",
+  "opacity": 0.34,
+  "reference_opacity": 0.47,
+  "capture_roi": [
+    901,
+    185,
+    1180,
+    1050
+  ],
+  "capture_reference_size": [
+    2560,
+    1440
+  ],
+  "route_versions": {}
+}

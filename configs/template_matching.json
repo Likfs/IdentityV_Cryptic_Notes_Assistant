@@ -1,0 +1,1778 @@
+{
+  "schema_version": 1,
+  "scale_source_sha256": "cda9d663eab7a1e9c67afefd02cd3508692765f9d4b0f7c21370d13ee0bef5f4",
+  "perf_mode": 2,
+  "capture": {
+    "left": 911,
+    "top": 266,
+    "right": 1995,
+    "bottom": 1233,
+    "screen_name": "\\\\.\\DISPLAY1"
+  },
+  "entries": {
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_2nd.png": {
+      "layout": "layout_01",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/1上右路   右┻┳2.jpg",
+      "source_sha256": "8cfc9b892f6cea74c31fbbc8fa1e7da8615d4b05316f9de39a93e7dae0f6336d",
+      "saved_scale": 1.7624,
+      "clean_sha256": "736dca50eb6feeb3ea61c65141f37788839a471280dd2e3e22547f9a9c77bd7a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/calibration.json",
+      "calibration_sha256": "24684cec3c37a38e854d58a698bc9d101f3aa071b551ad572c54ef6ea555b791",
+      "clean_to_original": [
+        [
+          1.7097771340727599,
+          0.01733742999556935,
+          231.49262014014948
+        ],
+        [
+          0.01870888715068693,
+          1.7309657596864518,
+          1983.6778104694356
+        ],
+        [
+          6.738933800588058e-06,
+          1.2698236035573112e-05,
+          1.000078970958528
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_1st.png": {
+      "layout": "layout_01",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/1上右路   右┻┳2.jpg",
+      "source_sha256": "8cfc9b892f6cea74c31fbbc8fa1e7da8615d4b05316f9de39a93e7dae0f6336d",
+      "saved_scale": 1.7624,
+      "clean_sha256": "1723f0d04b682f0e1fa41e2216616d3ab0f8b6cea9317a9d6cb7b8e33284bdc8",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/calibration.json",
+      "calibration_sha256": "24684cec3c37a38e854d58a698bc9d101f3aa071b551ad572c54ef6ea555b791",
+      "clean_to_original": [
+        [
+          1.7853179092683058,
+          -0.005541346065556082,
+          144.53728489821864
+        ],
+        [
+          -0.008394915375720482,
+          1.7866313619920726,
+          134.96968402331106
+        ],
+        [
+          -6.968242116265804e-06,
+          -5.009865140606095e-06,
+          0.9999980510865656
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_b1.png": {
+      "layout": "layout_01",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/1上右路   右┻┳2.jpg",
+      "source_sha256": "8cfc9b892f6cea74c31fbbc8fa1e7da8615d4b05316f9de39a93e7dae0f6336d",
+      "saved_scale": 1.7624,
+      "clean_sha256": "8fe440276e9e2a64fea5d6e3542ccacb981d3d2bfe8c09cb632e098d6562aa28",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/calibration.json",
+      "calibration_sha256": "24684cec3c37a38e854d58a698bc9d101f3aa071b551ad572c54ef6ea555b791",
+      "clean_to_original": [
+        [
+          1.1842219016042668,
+          -0.04495857964247243,
+          2342.517998391055
+        ],
+        [
+          -0.0017417486028248135,
+          1.1674681296898988,
+          124.0378918395079
+        ],
+        [
+          7.849424631993772e-07,
+          -1.4311698542669625e-05,
+          1.0001920578317545
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_2nd.png": {
+      "layout": "layout_02",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/2上右路   右┗┓.jpg",
+      "source_sha256": "05dc5b99d326fedf00e720b992371fcc1815e285dea86f77c3239128d7f0a803",
+      "saved_scale": 1.7228,
+      "clean_sha256": "2c6fac2f451cd302df9afc54f65acc5cb21ab83dd8d1ccc952d9261d7b36a96b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/calibration.json",
+      "calibration_sha256": "1c96f16c09b8965d9957d875ef204f126cf4d98a7e7cefcb874524f492351709",
+      "clean_to_original": [
+        [
+          1.723101376041539,
+          -0.0097662989213349,
+          89.4225159668531
+        ],
+        [
+          -0.0069855501377187965,
+          1.6811685705509944,
+          2037.265048838038
+        ],
+        [
+          -3.1780321252021608e-06,
+          -8.348073088587781e-06,
+          1.0000093999499742
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_1st.png": {
+      "layout": "layout_02",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/2上右路   右┗┓.jpg",
+      "source_sha256": "05dc5b99d326fedf00e720b992371fcc1815e285dea86f77c3239128d7f0a803",
+      "saved_scale": 1.7228,
+      "clean_sha256": "a17cf155cca8320e8886998763416aab7ac2fae0819982552a3f5000d40b4feb",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/calibration.json",
+      "calibration_sha256": "1c96f16c09b8965d9957d875ef204f126cf4d98a7e7cefcb874524f492351709",
+      "clean_to_original": [
+        [
+          1.816783691209607,
+          0.012279754408479329,
+          185.75182044379721
+        ],
+        [
+          0.0005816111295322967,
+          1.8021501467070193,
+          262.1378093148709
+        ],
+        [
+          -9.461052758443662e-08,
+          8.080275844889013e-06,
+          1.0000002071653629
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_b1.png": {
+      "layout": "layout_02",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/2上右路   右┗┓.jpg",
+      "source_sha256": "05dc5b99d326fedf00e720b992371fcc1815e285dea86f77c3239128d7f0a803",
+      "saved_scale": 1.7228,
+      "clean_sha256": "a5d7662142c8d827880018381deb536e805c853bc7d7afd19cb643d54d4d06d6",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/calibration.json",
+      "calibration_sha256": "1c96f16c09b8965d9957d875ef204f126cf4d98a7e7cefcb874524f492351709",
+      "clean_to_original": [
+        [
+          1.4648494531944418,
+          -0.0713981933383057,
+          2288.4165061527438
+        ],
+        [
+          -0.002372069882335603,
+          1.4600819686303264,
+          77.85896045209657
+        ],
+        [
+          -2.7425744105091303e-06,
+          -2.330461594775907e-05,
+          0.9999011327753017
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_2nd.png": {
+      "layout": "layout_03",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/3上左右路   右┛.jpg",
+      "source_sha256": "e1e6c57c0c867303054d443ce4de4846ec4903d9af52595e99fe02b17844ad44",
+      "saved_scale": 1.6139,
+      "clean_sha256": "2c48364c45ce1513d673a77bad6ac7b5c44370207f3b0f0a526ad45186f74b4c",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/calibration.json",
+      "calibration_sha256": "959523626a23268554c97c6b465e05c08d1cb9c72ad0e504b818e19f827e73e6",
+      "clean_to_original": [
+        [
+          1.8555251643808068,
+          -0.06461318645374804,
+          1744.430166292428
+        ],
+        [
+          0.0012339094671622096,
+          1.8238923867872106,
+          1216.5892701664495
+        ],
+        [
+          -4.5794495802235195e-07,
+          -2.2994683639582617e-05,
+          0.9998775415782543
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_1st.png": {
+      "layout": "layout_03",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/3上左右路   右┛.jpg",
+      "source_sha256": "e1e6c57c0c867303054d443ce4de4846ec4903d9af52595e99fe02b17844ad44",
+      "saved_scale": 1.6139,
+      "clean_sha256": "f57d5241ddb350df8915877358256c624aaa9b3aa8a4e14c0ee495c5721da663",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/calibration.json",
+      "calibration_sha256": "959523626a23268554c97c6b465e05c08d1cb9c72ad0e504b818e19f827e73e6",
+      "clean_to_original": [
+        [
+          1.667943029527509,
+          0.012886493027104578,
+          74.1453572604613
+        ],
+        [
+          0.029091967984888587,
+          1.703529728302997,
+          1425.1558028914674
+        ],
+        [
+          1.0415379439497473e-05,
+          9.451658406627729e-06,
+          0.9999627384252441
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_b1.png": {
+      "layout": "layout_03",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/3上左右路   右┛.jpg",
+      "source_sha256": "e1e6c57c0c867303054d443ce4de4846ec4903d9af52595e99fe02b17844ad44",
+      "saved_scale": 1.6139,
+      "clean_sha256": "e8f76afb3d578f7d70267130622f8b779efa3e51737da9a16cc165e76cbdab73",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/calibration.json",
+      "calibration_sha256": "959523626a23268554c97c6b465e05c08d1cb9c72ad0e504b818e19f827e73e6",
+      "clean_to_original": [
+        [
+          1.38062581310513,
+          0.0023943596097504996,
+          -73.208281135607
+        ],
+        [
+          -0.0005954648175414768,
+          1.3286587696728014,
+          351.03876841037476
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_2nd.png": {
+      "layout": "layout_04",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/4上左路   上红┫2.jpg",
+      "source_sha256": "3b5e2c8c8bcd0af49d529e8608e6793b7d773479c1c1142e56d86cec74aa5eb6",
+      "saved_scale": 2.0,
+      "clean_sha256": "15cf95bb96f2fa0da45b94b7b4e6afdfa41a1f0fc1a00a0210a6e1be46c6f9f7",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/calibration.json",
+      "calibration_sha256": "108896241e3a10b256cf01e0d27f3e34fcbe5fae9f1f5e1213e48d4c33ba1753",
+      "clean_to_original": [
+        [
+          2.174143306253885,
+          0.0024963318056448157,
+          1894.7554264641276
+        ],
+        [
+          -0.004300002680662843,
+          2.1743814005497755,
+          1572.612537731899
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_1st.png": {
+      "layout": "layout_04",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/4上左路   上红┫2.jpg",
+      "source_sha256": "3b5e2c8c8bcd0af49d529e8608e6793b7d773479c1c1142e56d86cec74aa5eb6",
+      "saved_scale": 2.0,
+      "clean_sha256": "6a52320affff27aca35940b50489faf90c3e2656c2bf580ab4ed5ad0dbd9b2c9",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/calibration.json",
+      "calibration_sha256": "108896241e3a10b256cf01e0d27f3e34fcbe5fae9f1f5e1213e48d4c33ba1753",
+      "clean_to_original": [
+        [
+          2.293295451450138,
+          0.0018092244182786623,
+          12.926123378688322
+        ],
+        [
+          -0.007446966338575549,
+          2.2960549045686904,
+          1513.4510455223342
+        ],
+        [
+          -4.479751174065089e-06,
+          3.370531892018985e-06,
+          0.9999999999999998
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_b1.png": {
+      "layout": "layout_04",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/4上左路   上红┫2.jpg",
+      "source_sha256": "3b5e2c8c8bcd0af49d529e8608e6793b7d773479c1c1142e56d86cec74aa5eb6",
+      "saved_scale": 2.0,
+      "clean_sha256": "46c25822d6a512a6ba92dc15ac820e21bc31e860b327e36fcd1440b3dbcd139b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/calibration.json",
+      "calibration_sha256": "108896241e3a10b256cf01e0d27f3e34fcbe5fae9f1f5e1213e48d4c33ba1753",
+      "clean_to_original": [
+        [
+          2.1735395773929036,
+          -0.0034726377864398397,
+          589.6592680246638
+        ],
+        [
+          0.003473203362626556,
+          2.173893574066746,
+          -293.01228854183125
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png": {
+      "layout": "layout_05",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路  右└┐.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/5上左右路  右└┐.jpg",
+      "source_sha256": "96022b5eb207e22b5b8dc962083bcb9d79ba39de7aa191ad76bf2a7b8d4623b7",
+      "saved_scale": 1.6584,
+      "clean_sha256": "14e9fe961e8e06a3d5de99ce8fd634b0fe42f30bcd38c3e8cae0787b1cb9680b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/calibration.json",
+      "calibration_sha256": "c43faf238882cead5c2b614e27b694fc0ad74f93b04deb180c823457609e68ac",
+      "clean_to_original": [
+        [
+          1.0478503826810979,
+          0.0014767974357221797,
+          2052.1325016168403
+        ],
+        [
+          0.013774818904312725,
+          1.0424068465794174,
+          1879.0830237510754
+        ],
+        [
+          4.552518317573021e-06,
+          4.4101819842387095e-07,
+          0.9999912233888403
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_1st.png": {
+      "layout": "layout_05",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路  右└┐.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/5上左右路  右└┐.jpg",
+      "source_sha256": "96022b5eb207e22b5b8dc962083bcb9d79ba39de7aa191ad76bf2a7b8d4623b7",
+      "saved_scale": 1.6584,
+      "clean_sha256": "c32af8384ffaa613b10b10be1d93db144c619146381aabad2eba6a2a90f29b96",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/calibration.json",
+      "calibration_sha256": "c43faf238882cead5c2b614e27b694fc0ad74f93b04deb180c823457609e68ac",
+      "clean_to_original": [
+        [
+          1.0869375826278689,
+          -0.0008540134331574283,
+          35.74650496917424
+        ],
+        [
+          0.0008802677091785504,
+          1.0859662889451533,
+          1767.5178452451366
+        ],
+        [
+          -8.279660238938626e-08,
+          -9.885008682409588e-07,
+          1.000001040208109
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_b1.png": {
+      "layout": "layout_05",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路  右└┐.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/5上左右路  右└┐.jpg",
+      "source_sha256": "96022b5eb207e22b5b8dc962083bcb9d79ba39de7aa191ad76bf2a7b8d4623b7",
+      "saved_scale": 1.6584,
+      "clean_sha256": "ea359b8b12cd0391fa239c483c1529b47b30bf6da0d04bfa532c684b01a6d1f5",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/calibration.json",
+      "calibration_sha256": "c43faf238882cead5c2b614e27b694fc0ad74f93b04deb180c823457609e68ac",
+      "clean_to_original": [
+        [
+          0.9220603969062362,
+          -0.006396911791484797,
+          316.877576173038
+        ],
+        [
+          0.00833597573105983,
+          0.9052163626041031,
+          398.43813654803563
+        ],
+        [
+          4.545665093354609e-06,
+          -7.425865533508971e-06,
+          0.9999515924521023
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_2nd.png": {
+      "layout": "layout_06",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/6上左路   上┗┓.jpg",
+      "source_sha256": "8cc995b2960619b2334fde65a29d881426c7f9d42deebb42c92ba6ce43c19b90",
+      "saved_scale": 1.7178,
+      "clean_sha256": "06140b1a497afa67fbf5048c56abb294dba1a83bc83808783b9dd098e1bdb45a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/calibration.json",
+      "calibration_sha256": "dc8a66b3bf9a3c25f381ab0b5110e57690728740c3318c84f2eebc77a2ffe6c1",
+      "clean_to_original": [
+        [
+          1.8634039425457434,
+          -0.003025836014530526,
+          34.26047752573814
+        ],
+        [
+          0.020616941291730032,
+          1.8609198724898106,
+          1938.1672731767485
+        ],
+        [
+          5.727403225567595e-06,
+          -3.524165584706444e-06,
+          1.0000000000000002
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_1st.png": {
+      "layout": "layout_06",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/6上左路   上┗┓.jpg",
+      "source_sha256": "8cc995b2960619b2334fde65a29d881426c7f9d42deebb42c92ba6ce43c19b90",
+      "saved_scale": 1.7178,
+      "clean_sha256": "a9241f4882e47c67f38931da833d8a6907d761baf991726bd4b78efb1eb4213a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/calibration.json",
+      "calibration_sha256": "dc8a66b3bf9a3c25f381ab0b5110e57690728740c3318c84f2eebc77a2ffe6c1",
+      "clean_to_original": [
+        [
+          1.7561577186514514,
+          0.024263491472026468,
+          132.03580368385477
+        ],
+        [
+          -0.02426294019497917,
+          1.812111294583854,
+          193.5540504524958
+        ],
+        [
+          -2.0503263306434084e-05,
+          2.0657928420717508e-05,
+          1.0000551527879369
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_b1.png": {
+      "layout": "layout_06",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┗┓.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/6上左路   上┗┓.jpg",
+      "source_sha256": "8cc995b2960619b2334fde65a29d881426c7f9d42deebb42c92ba6ce43c19b90",
+      "saved_scale": 1.7178,
+      "clean_sha256": "bfaba22fe9c42f745933705cfa0d5f1e182694d344e5e2b3a446ce6babd7746c",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/calibration.json",
+      "calibration_sha256": "dc8a66b3bf9a3c25f381ab0b5110e57690728740c3318c84f2eebc77a2ffe6c1",
+      "clean_to_original": [
+        [
+          1.3158510277659397,
+          -0.01456818673213434,
+          2436.2793050277883
+        ],
+        [
+          0.016140967494303746,
+          1.2957776036639341,
+          460.4440436381708
+        ],
+        [
+          1.2276061596274304e-05,
+          -5.416664323305738e-06,
+          1.0001228125213173
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_2nd.png": {
+      "layout": "layout_07",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/7上左右路   右▟▘.jpg",
+      "source_sha256": "1d39847d59e3c36f6aba5736b378981c22a86701c7bec77e1d9059979ff3d8e5",
+      "saved_scale": 1.6535,
+      "clean_sha256": "1bc1fc632b77a435a70ea61f76c1e6061febc6897269b5c5c5adf5cd8cecb16a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/calibration.json",
+      "calibration_sha256": "7f21544810397e9f556c1300331ca7e54b8b8e8995748d63f05b85230d36c62f",
+      "clean_to_original": [
+        [
+          1.8080741676190306,
+          0.01963390534899152,
+          2052.573002418078
+        ],
+        [
+          -0.021438040731835632,
+          1.8400402482614127,
+          1637.4410607627105
+        ],
+        [
+          -7.716197415803553e-06,
+          5.43006113268416e-06,
+          1.0000103418478512
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_1st.png": {
+      "layout": "layout_07",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/7上左右路   右▟▘.jpg",
+      "source_sha256": "1d39847d59e3c36f6aba5736b378981c22a86701c7bec77e1d9059979ff3d8e5",
+      "saved_scale": 1.6535,
+      "clean_sha256": "844221323a4f1aed22c5e51f54fd0452c2fa136911455c65487408e0dbdbc82a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/calibration.json",
+      "calibration_sha256": "7f21544810397e9f556c1300331ca7e54b8b8e8995748d63f05b85230d36c62f",
+      "clean_to_original": [
+        [
+          1.9915766095091203,
+          -0.004712715934154634,
+          65.09642916030428
+        ],
+        [
+          -0.01446959360870612,
+          1.9832976569454848,
+          1576.5603274675336
+        ],
+        [
+          -5.95981360887434e-06,
+          -4.142341957320715e-06,
+          1.0000075168484124
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_b1.png": {
+      "layout": "layout_07",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/7上左右路   右▟▘.jpg",
+      "source_sha256": "1d39847d59e3c36f6aba5736b378981c22a86701c7bec77e1d9059979ff3d8e5",
+      "saved_scale": 1.6535,
+      "clean_sha256": "d32a9a8a174da897b90e1c08130967d0f5f2d0fb6548371505dde441b2eb693b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/calibration.json",
+      "calibration_sha256": "7f21544810397e9f556c1300331ca7e54b8b8e8995748d63f05b85230d36c62f",
+      "clean_to_original": [
+        [
+          1.095819523076345,
+          -0.004453938326400587,
+          185.02580020501034
+        ],
+        [
+          0.0008537009645504173,
+          1.0902020536031531,
+          395.81374355405086
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_2nd.png": {
+      "layout": "layout_08",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┫3.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/8上左路   上┫3.jpg",
+      "source_sha256": "d96c7c2e6a067978d4f366ce1d82263e67317e184704068d16e3f4789808e950",
+      "saved_scale": 1.9653,
+      "clean_sha256": "8b2cd62aa3c2f1f7ffb15c2a5f06107b9dcd30a6f2b8b23c8cecd60a6c000593",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/calibration.json",
+      "calibration_sha256": "dd66fafc671832009a9589d33d22e41a7a5e76dcb297e95a828f063b3655ca4b",
+      "clean_to_original": [
+        [
+          1.799153887063751,
+          0.007340746459460485,
+          1848.3301707524324
+        ],
+        [
+          0.029206885970161033,
+          1.7786468921600467,
+          1611.463084550571
+        ],
+        [
+          9.6139387623171e-06,
+          1.693912256816547e-06,
+          1.0000307449691848
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_1st.png": {
+      "layout": "layout_08",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┫3.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/8上左路   上┫3.jpg",
+      "source_sha256": "d96c7c2e6a067978d4f366ce1d82263e67317e184704068d16e3f4789808e950",
+      "saved_scale": 1.9653,
+      "clean_sha256": "d89f00f1ad0b23440179bf0e434335d1e96d23e4a8cfbdb8362a66e93f3b1078",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/calibration.json",
+      "calibration_sha256": "dd66fafc671832009a9589d33d22e41a7a5e76dcb297e95a828f063b3655ca4b",
+      "clean_to_original": [
+        [
+          1.8673528131580759,
+          0.0025838907151056797,
+          -9.610384598298618
+        ],
+        [
+          0.0012785155058406693,
+          1.8866331597692279,
+          1631.0066220749718
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_b1.png": {
+      "layout": "layout_08",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上┫3.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/8上左路   上┫3.jpg",
+      "source_sha256": "d96c7c2e6a067978d4f366ce1d82263e67317e184704068d16e3f4789808e950",
+      "saved_scale": 1.9653,
+      "clean_sha256": "706deafa3431b428db9a574e789f2f793cc794d9c4363c7b7e9acb279b10e27c",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/calibration.json",
+      "calibration_sha256": "dd66fafc671832009a9589d33d22e41a7a5e76dcb297e95a828f063b3655ca4b",
+      "clean_to_original": [
+        [
+          1.285657493352172,
+          -0.000963252182552189,
+          326.2917178283706
+        ],
+        [
+          0.00041555266106477374,
+          1.1955246149967027,
+          125.29422650635054
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_2nd.png": {
+      "layout": "layout_09",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/9左右路   右┛.jpg",
+      "source_sha256": "07310bce8891699cce296ca526897c250861a545d209ae585a6bd07565c1bf45",
+      "saved_scale": 1.8168,
+      "clean_sha256": "2a939347fb9ecd68a60a2ce42ae6ce9b6d017cd28c09f5f5ad69fbe4755b9ee0",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/calibration.json",
+      "calibration_sha256": "0bb136b69f5f6776b91620dd3d8b70c772a74dba867c33258120215657df6944",
+      "clean_to_original": [
+        [
+          1.0525591487818937,
+          0.026610410321998807,
+          2181.3630135351805
+        ],
+        [
+          0.02770493289804223,
+          1.0378223856987039,
+          1553.5683170361629
+        ],
+        [
+          1.1153352832977932e-05,
+          8.365209169238596e-06,
+          0.9999714863496969
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_1st.png": {
+      "layout": "layout_09",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/9左右路   右┛.jpg",
+      "source_sha256": "07310bce8891699cce296ca526897c250861a545d209ae585a6bd07565c1bf45",
+      "saved_scale": 1.8168,
+      "clean_sha256": "ff24af02b33ee7c6eb775f6a65878927ee824c768b4b9b19f758e476b3b08f1a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/calibration.json",
+      "calibration_sha256": "0bb136b69f5f6776b91620dd3d8b70c772a74dba867c33258120215657df6944",
+      "clean_to_original": [
+        [
+          1.126211615456655,
+          -0.004009945399643039,
+          94.56717340383298
+        ],
+        [
+          -0.0016532365899272464,
+          1.1201471229322904,
+          1721.6966883492496
+        ],
+        [
+          -7.827199290179567e-07,
+          -4.510217245837138e-06,
+          1.0000084557934437
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_b1.png": {
+      "layout": "layout_09",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/9左右路   右┛.jpg",
+      "source_sha256": "07310bce8891699cce296ca526897c250861a545d209ae585a6bd07565c1bf45",
+      "saved_scale": 1.8168,
+      "clean_sha256": "8670539cf4cfcde32b26ebcbaef499b25573b14b83d3a01011a31102321118ab",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/calibration.json",
+      "calibration_sha256": "0bb136b69f5f6776b91620dd3d8b70c772a74dba867c33258120215657df6944",
+      "clean_to_original": [
+        [
+          1.0460279061667421,
+          0.008923255105882657,
+          159.40639058613874
+        ],
+        [
+          0.008654882885547695,
+          1.0336376669388736,
+          187.14620169719475
+        ],
+        [
+          6.509336187409108e-06,
+          9.265014713841231e-06,
+          0.9999745463126707
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_2nd.png": {
+      "layout": "layout_10",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/10左右路   右▟▘.jpg",
+      "source_sha256": "6b008c1bf327faefe7a6ac25f39ffc78cbb82bf0fcf819527b911e47fc852767",
+      "saved_scale": 1.7277,
+      "clean_sha256": "468305fce3d273ff6b531c4252ae1cc457cd708c6a4b7d1a464c6f024fc9905b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/calibration.json",
+      "calibration_sha256": "79e5b246bc6b848fa5aabaa33f70052e50881e77b23f2578bc6224cff5450a59",
+      "clean_to_original": [
+        [
+          2.7025582633157246,
+          0.044579794304381255,
+          114.065353860718
+        ],
+        [
+          -0.0020943847766406814,
+          2.710819466192252,
+          2127.750479352978
+        ],
+        [
+          -2.814374470265165e-07,
+          2.5747462999630652e-05,
+          1.0002252650977608
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_1st.png": {
+      "layout": "layout_10",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/10左右路   右▟▘.jpg",
+      "source_sha256": "6b008c1bf327faefe7a6ac25f39ffc78cbb82bf0fcf819527b911e47fc852767",
+      "saved_scale": 1.7277,
+      "clean_sha256": "77921152718161f67a813139ec757262d3c4cb132bd063bdcbf513ab660c7852",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/calibration.json",
+      "calibration_sha256": "79e5b246bc6b848fa5aabaa33f70052e50881e77b23f2578bc6224cff5450a59",
+      "clean_to_original": [
+        [
+          1.960901343998775,
+          -0.012849634766611127,
+          215.58779051563158
+        ],
+        [
+          -0.007548595289214649,
+          1.9500767643908494,
+          285.38846209405847
+        ],
+        [
+          -5.163272750320949e-06,
+          -1.1254474880966941e-05,
+          1.0000378769371274
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_b1.png": {
+      "layout": "layout_10",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/10左右路   右▟▘.jpg",
+      "source_sha256": "6b008c1bf327faefe7a6ac25f39ffc78cbb82bf0fcf819527b911e47fc852767",
+      "saved_scale": 1.7277,
+      "clean_sha256": "1f825ca18fe984aa292d7a522823e36c0d94c0a891f327c1e89716dc75f84b66",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/calibration.json",
+      "calibration_sha256": "79e5b246bc6b848fa5aabaa33f70052e50881e77b23f2578bc6224cff5450a59",
+      "clean_to_original": [
+        [
+          0.8657323919129526,
+          -0.0007561276912501296,
+          2319.9542550809956
+        ],
+        [
+          -0.0005203352737916838,
+          0.8681700253029007,
+          766.546647699262
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png": {
+      "layout": "layout_11",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/11上右路   右┻┳.jpg",
+      "source_sha256": "bda6781e96f3134d966d21166dacf81b29938a68b480f8beb6884c6420973188",
+      "saved_scale": 1.9059,
+      "clean_sha256": "cb5b621b2532da335674d2c3463ac07db38014cd182a4d8199f15200693bb400",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/calibration.json",
+      "calibration_sha256": "645dd0d7cbbb0b72fa615837d5ad051278d1f2c2106f573f7a1e6deb4bdccb95",
+      "clean_to_original": [
+        [
+          1.1988118196433923,
+          -0.0018310217359244238,
+          50.96683077060831
+        ],
+        [
+          0.005451715652258368,
+          1.1878818012406303,
+          1816.3718848471285
+        ],
+        [
+          1.5319288936049543e-06,
+          -1.8006969900816485e-06,
+          1.000004284329859
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_1st.png": {
+      "layout": "layout_11",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/11上右路   右┻┳.jpg",
+      "source_sha256": "bda6781e96f3134d966d21166dacf81b29938a68b480f8beb6884c6420973188",
+      "saved_scale": 1.9059,
+      "clean_sha256": "cfa76016b0b3d1cd221fe1d2d9fd0bb763a2d07bf0709206024d2de8c2f4d8d7",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/calibration.json",
+      "calibration_sha256": "645dd0d7cbbb0b72fa615837d5ad051278d1f2c2106f573f7a1e6deb4bdccb95",
+      "clean_to_original": [
+        [
+          1.278861627675569,
+          -0.0013867862875304741,
+          114.22260529124684
+        ],
+        [
+          0.010117315419224965,
+          1.2593927461387764,
+          122.97778826238041
+        ],
+        [
+          7.061180566804582e-06,
+          -2.0112831126643994e-06,
+          0.9999853525239117
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_b1.png": {
+      "layout": "layout_11",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/11上右路   右┻┳.jpg",
+      "source_sha256": "bda6781e96f3134d966d21166dacf81b29938a68b480f8beb6884c6420973188",
+      "saved_scale": 1.9059,
+      "clean_sha256": "baf2a3c7f7be61358aa167e88b45f95f0b11c82265f597c188697eb9503f5d30",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/calibration.json",
+      "calibration_sha256": "645dd0d7cbbb0b72fa615837d5ad051278d1f2c2106f573f7a1e6deb4bdccb95",
+      "clean_to_original": [
+        [
+          0.9724882495770526,
+          0.011254889715672836,
+          2321.540914419326
+        ],
+        [
+          0.003879109021863039,
+          0.970706809203178,
+          594.7439852477339
+        ],
+        [
+          1.7429468764348276e-06,
+          3.1330842276083354e-06,
+          0.9999752866196222
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_2nd.png": {
+      "layout": "layout_12",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▃▃.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/12上右路   右▃▃.jpg",
+      "source_sha256": "e71a4180afbafdca6786b6d268e016a29cfa14294fb1ebf4e5e93cb4adc6f59e",
+      "saved_scale": 1.6634,
+      "clean_sha256": "fe6fe487613bb8075299c4df9d7f7d7cf9aa77aca26af30903c22e468e144941",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/calibration.json",
+      "calibration_sha256": "6d58c3229daf21a7a09062fdad31f47809f7f992ede264a6310653da72985b48",
+      "clean_to_original": [
+        [
+          2.0319114622654277,
+          0.05771972612129815,
+          1867.6597230182597
+        ],
+        [
+          -0.021093849213368033,
+          2.1268895228362776,
+          1707.803376107358
+        ],
+        [
+          -7.041263812668444e-06,
+          2.488564388379119e-05,
+          0.9999215507624956
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_1st.png": {
+      "layout": "layout_12",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▃▃.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/12上右路   右▃▃.jpg",
+      "source_sha256": "e71a4180afbafdca6786b6d268e016a29cfa14294fb1ebf4e5e93cb4adc6f59e",
+      "saved_scale": 1.6634,
+      "clean_sha256": "e4015f14b70450bda6fdb33569291d2644330522c9e9dc0857f0a52264099676",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/calibration.json",
+      "calibration_sha256": "6d58c3229daf21a7a09062fdad31f47809f7f992ede264a6310653da72985b48",
+      "clean_to_original": [
+        [
+          2.060927892107558,
+          -0.007866281358315554,
+          -59.70827788545241
+        ],
+        [
+          0.001085789559093738,
+          2.052543386290025,
+          1510.2546078964947
+        ],
+        [
+          -1.7998727167965025e-07,
+          -4.256608938418403e-06,
+          1.0000045416651837
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_b1.png": {
+      "layout": "layout_12",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▃▃.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/12上右路   右▃▃.jpg",
+      "source_sha256": "e71a4180afbafdca6786b6d268e016a29cfa14294fb1ebf4e5e93cb4adc6f59e",
+      "saved_scale": 1.6634,
+      "clean_sha256": "4e7801c4d7ae965ce179ed1c3afddb090856e4aaa3bb9c42b21876118a3a26f5",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/calibration.json",
+      "calibration_sha256": "6d58c3229daf21a7a09062fdad31f47809f7f992ede264a6310653da72985b48",
+      "clean_to_original": [
+        [
+          0.8338774154504021,
+          0.00048260478598059455,
+          575.8385533214731
+        ],
+        [
+          -0.0011323304018914285,
+          0.8328065241254202,
+          110.5776360322947
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_2nd.png": {
+      "layout": "layout_13",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/13上左右路   右▟▘2.jpg",
+      "source_sha256": "eabe72ec1284005c120462ecfc2d9cb43dbb7156a125d43a8610c9a1001905df",
+      "saved_scale": 1.7327,
+      "clean_sha256": "69075a4af9018f94f844603674ddf81a961473544dbaecca9e33e5c93b4dd7a7",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/calibration.json",
+      "calibration_sha256": "3621f3bd48500fa502b9160a093569b728d0d6fe6540d66b2c8aebd1717a85a0",
+      "clean_to_original": [
+        [
+          1.655104168024827,
+          0.009211254755895366,
+          131.20124732668168
+        ],
+        [
+          -0.0401118803722357,
+          1.7007146693715092,
+          2050.6592874861612
+        ],
+        [
+          -1.3397413838627514e-05,
+          5.654747033084622e-06,
+          1.0000201708176646
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_1st.png": {
+      "layout": "layout_13",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/13上左右路   右▟▘2.jpg",
+      "source_sha256": "eabe72ec1284005c120462ecfc2d9cb43dbb7156a125d43a8610c9a1001905df",
+      "saved_scale": 1.7327,
+      "clean_sha256": "6e08331cb19a740da768724ca08e1ef8e7b29cbbe3aad1c1b8185c900040ea1a",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/calibration.json",
+      "calibration_sha256": "3621f3bd48500fa502b9160a093569b728d0d6fe6540d66b2c8aebd1717a85a0",
+      "clean_to_original": [
+        [
+          1.855239435646325,
+          0.0035636529009604708,
+          202.079210734032
+        ],
+        [
+          -0.01436721046797316,
+          1.8872060149894594,
+          40.76503891784722
+        ],
+        [
+          -1.2804031483372078e-05,
+          2.646952755067431e-06,
+          1.000000843246612
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_b1.png": {
+      "layout": "layout_13",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右▟▘2.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/13上左右路   右▟▘2.jpg",
+      "source_sha256": "eabe72ec1284005c120462ecfc2d9cb43dbb7156a125d43a8610c9a1001905df",
+      "saved_scale": 1.7327,
+      "clean_sha256": "b25f0d9a805b216c7ccafa98414c216d7f550f2533cb46564ef83fa5177cabde",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/calibration.json",
+      "calibration_sha256": "3621f3bd48500fa502b9160a093569b728d0d6fe6540d66b2c8aebd1717a85a0",
+      "clean_to_original": [
+        [
+          1.4425434892446092,
+          -0.0005010797018701333,
+          2266.0545086514244
+        ],
+        [
+          0.0006549588853802125,
+          1.4466550821721642,
+          -20.66945297375427
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_2nd.png": {
+      "layout": "layout_14",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图2）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/14左右路   右┛（相似图2）.jpg",
+      "source_sha256": "adec98c71fa8e9a9ae0d638c4251becb8026d3cfa2fb2fb7d925c3453388bb77",
+      "saved_scale": 1.7327,
+      "clean_sha256": "2e2f7599578178a3fc8325ada3863ee54143a008a2a46a6345e01527a8dd1e58",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/calibration.json",
+      "calibration_sha256": "26f23e9233471bf7605588c758f524c69be2a7f76c1496f1920d058f21cc6d40",
+      "clean_to_original": [
+        [
+          2.2395427216960697,
+          0.02047413483463208,
+          78.48177277759731
+        ],
+        [
+          0.008284901989267441,
+          2.3050154867453214,
+          1880.113761028215
+        ],
+        [
+          3.212837473560154e-06,
+          1.2765729506355091e-05,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_1st.png": {
+      "layout": "layout_14",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图2）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/14左右路   右┛（相似图2）.jpg",
+      "source_sha256": "adec98c71fa8e9a9ae0d638c4251becb8026d3cfa2fb2fb7d925c3453388bb77",
+      "saved_scale": 1.7327,
+      "clean_sha256": "ab081b6e99c61c3de8f36a911fe3265185d7a9eaa3cb79ba1c94a93e46e1f3f1",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/calibration.json",
+      "calibration_sha256": "26f23e9233471bf7605588c758f524c69be2a7f76c1496f1920d058f21cc6d40",
+      "clean_to_original": [
+        [
+          2.380967967804001,
+          -0.027909629827191702,
+          285.6441278507632
+        ],
+        [
+          0.008001142103103345,
+          2.3297408702315328,
+          123.59419790892059
+        ],
+        [
+          3.117637280322454e-06,
+          -1.8135840189853775e-05,
+          1.0000617579316686
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_b1.png": {
+      "layout": "layout_14",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图2）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/14左右路   右┛（相似图2）.jpg",
+      "source_sha256": "adec98c71fa8e9a9ae0d638c4251becb8026d3cfa2fb2fb7d925c3453388bb77",
+      "saved_scale": 1.7327,
+      "clean_sha256": "ffd576fd2385e26d0e5750dfdb5de29fdf5b54c9a9e7192cf2db32d904480a49",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/calibration.json",
+      "calibration_sha256": "26f23e9233471bf7605588c758f524c69be2a7f76c1496f1920d058f21cc6d40",
+      "clean_to_original": [
+        [
+          0.824066144919805,
+          0.05268809868705204,
+          2485.466146374856
+        ],
+        [
+          -0.006652524280402899,
+          0.8681996941615018,
+          247.68761004751204
+        ],
+        [
+          -7.71854536970259e-06,
+          1.566486104460268e-05,
+          0.9998759627696157
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_2nd.png": {
+      "layout": "layout_15",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/15左右路   右┻┳.jpg",
+      "source_sha256": "177b4b12fea111afe5ddd4a7a5f4b91640f459b75706a3a552feed6ef9c31f89",
+      "saved_scale": 1.7178,
+      "clean_sha256": "c04dc0e407b7862b1394e9556d96ac5788e4804af201bb9c950602b886c831f0",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/calibration.json",
+      "calibration_sha256": "a1af6f2616bffa1c9c8f76c507b6f52304b311250d111990f8ec8ca2138d9cbf",
+      "clean_to_original": [
+        [
+          1.726991370909058,
+          -0.006564134160481496,
+          40.50314458891512
+        ],
+        [
+          -0.010587135676996684,
+          1.6842365162851556,
+          1872.2282137026302
+        ],
+        [
+          -5.277060504200132e-06,
+          -1.0007347543146591e-05,
+          0.9999829338906381
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_1st.png": {
+      "layout": "layout_15",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/15左右路   右┻┳.jpg",
+      "source_sha256": "177b4b12fea111afe5ddd4a7a5f4b91640f459b75706a3a552feed6ef9c31f89",
+      "saved_scale": 1.7178,
+      "clean_sha256": "173da481e42e6669eef23717f407a9f060bae757e2ac15adb6b97bcc53ccbae9",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/calibration.json",
+      "calibration_sha256": "a1af6f2616bffa1c9c8f76c507b6f52304b311250d111990f8ec8ca2138d9cbf",
+      "clean_to_original": [
+        [
+          1.6793105570061517,
+          0.02651768025983222,
+          164.76462876098424
+        ],
+        [
+          -0.017336678844731113,
+          1.7346340533218338,
+          362.9816726153734
+        ],
+        [
+          -1.162265896922665e-05,
+          1.5254457722458944e-05,
+          0.9999937085723132
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_b1.png": {
+      "layout": "layout_15",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┻┳.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/15左右路   右┻┳.jpg",
+      "source_sha256": "177b4b12fea111afe5ddd4a7a5f4b91640f459b75706a3a552feed6ef9c31f89",
+      "saved_scale": 1.7178,
+      "clean_sha256": "acc2e69c0ba963b4cdd303ddf219379761256b4e0d6d869de6a9b1be37063015",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/calibration.json",
+      "calibration_sha256": "a1af6f2616bffa1c9c8f76c507b6f52304b311250d111990f8ec8ca2138d9cbf",
+      "clean_to_original": [
+        [
+          1.169405494012125,
+          0.0015103785548566434,
+          2579.540499814332
+        ],
+        [
+          0.0003019602913208866,
+          1.1692897657672208,
+          226.08681855931582
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_2nd.png": {
+      "layout": "layout_16",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图3）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/16左右路   右┛（相似图3）.jpg",
+      "source_sha256": "084b9806dfb0ccf6898f4603224d26f0d53737a41ccf8e01fd9f1149158bb2c6",
+      "saved_scale": 1.8861,
+      "clean_sha256": "aa167161e82aa28452b2921ba6b50c86a060c700822b56b71860bcad820b26f8",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/calibration.json",
+      "calibration_sha256": "9c42ab2ab1d6f2b9f43e2bd1fbe4a77820d1bfb719d84d04ca4f85b6df5b9ba9",
+      "clean_to_original": [
+        [
+          1.746132358641992,
+          0.0018403492641067643,
+          188.53096294988515
+        ],
+        [
+          0.0004431495692023596,
+          1.7342732400532987,
+          1963.8532293881224
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_1st.png": {
+      "layout": "layout_16",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图3）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/16左右路   右┛（相似图3）.jpg",
+      "source_sha256": "084b9806dfb0ccf6898f4603224d26f0d53737a41ccf8e01fd9f1149158bb2c6",
+      "saved_scale": 1.8861,
+      "clean_sha256": "3c88c4acf9a05e893c2d2ba8f826e3a6183ab2c92dbcb8c6d06b0b0a1325a6ea",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/calibration.json",
+      "calibration_sha256": "9c42ab2ab1d6f2b9f43e2bd1fbe4a77820d1bfb719d84d04ca4f85b6df5b9ba9",
+      "clean_to_original": [
+        [
+          1.768569292036447,
+          0.019218944677255233,
+          230.65828062163501
+        ],
+        [
+          -0.01389996522572874,
+          1.8010045539505741,
+          11.900292492427063
+        ],
+        [
+          -1.2225451285360336e-05,
+          1.1854956646992665e-05,
+          0.9999983366367778
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_b1.png": {
+      "layout": "layout_16",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/左右路/左右路   右┛（相似图3）.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/16左右路   右┛（相似图3）.jpg",
+      "source_sha256": "084b9806dfb0ccf6898f4603224d26f0d53737a41ccf8e01fd9f1149158bb2c6",
+      "saved_scale": 1.8861,
+      "clean_sha256": "9f0c1d23fd7499e849a98abcd1107b08aa475ecfed3f82a8823e452a9d3f7359",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/calibration.json",
+      "calibration_sha256": "9c42ab2ab1d6f2b9f43e2bd1fbe4a77820d1bfb719d84d04ca4f85b6df5b9ba9",
+      "clean_to_original": [
+        [
+          1.3941513015603517,
+          0.05076435073095972,
+          2290.733817902461
+        ],
+        [
+          -0.00034594456110309454,
+          1.4284854428794975,
+          -124.68049998615948
+        ],
+        [
+          -4.5770900935046395e-06,
+          1.4133213450563531e-05,
+          0.9999259576926545
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_2nd.png": {
+      "layout": "layout_17",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/17上左路   上红┫.jpg",
+      "source_sha256": "d586f459399dffb28076a14059d30227e4d1155be28586f9e82d9e02557abf40",
+      "saved_scale": 1.9257,
+      "clean_sha256": "cc89fab84fb5d9462a6ae5f63409af27fecd4af065b0c14c8cee32b46b1d08fb",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/calibration.json",
+      "calibration_sha256": "11872cecabeb12ab30f6b38636c902c34edca92ad776f5c0c895dcd9d3b31ead",
+      "clean_to_original": [
+        [
+          2.0339093436775504,
+          0.007018002402724057,
+          1925.4696386122478
+        ],
+        [
+          0.004952716393168415,
+          2.0456913073676795,
+          1701.0166558522417
+        ],
+        [
+          8.732361980835401e-07,
+          2.1516192068654134e-06,
+          0.9999985875487685
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_1st.png": {
+      "layout": "layout_17",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/17上左路   上红┫.jpg",
+      "source_sha256": "d586f459399dffb28076a14059d30227e4d1155be28586f9e82d9e02557abf40",
+      "saved_scale": 1.9257,
+      "clean_sha256": "9d9195d59acee0b230f6e6e107bba5e22076d3b41bd93788b2c1c2c9d6a3f7af",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/calibration.json",
+      "calibration_sha256": "11872cecabeb12ab30f6b38636c902c34edca92ad776f5c0c895dcd9d3b31ead",
+      "clean_to_original": [
+        [
+          2.13189971850135,
+          0.028025393121239462,
+          51.58993634161483
+        ],
+        [
+          -0.0330088235155014,
+          2.271991113280598,
+          1671.2781103092466
+        ],
+        [
+          -1.2078661721210658e-05,
+          2.3925410441640353e-05,
+          1.0001090825701597
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_b1.png": {
+      "layout": "layout_17",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上红┫.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/17上左路   上红┫.jpg",
+      "source_sha256": "d586f459399dffb28076a14059d30227e4d1155be28586f9e82d9e02557abf40",
+      "saved_scale": 1.9257,
+      "clean_sha256": "035fd71ff01dd14cb3adf8388ac08cb08b3a46434b92c05e032d4d45d80b8de3",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/calibration.json",
+      "calibration_sha256": "11872cecabeb12ab30f6b38636c902c34edca92ad776f5c0c895dcd9d3b31ead",
+      "clean_to_original": [
+        [
+          2.0023507966654273,
+          0.05603154934233177,
+          342.05333882084227
+        ],
+        [
+          0.04547606717484741,
+          1.9594199795141656,
+          -45.02227077964273
+        ],
+        [
+          3.3567286465957196e-05,
+          4.230930661133834e-05,
+          1.000557160496572
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_2nd.png": {
+      "layout": "layout_18",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/18上左路   上I.jpg",
+      "source_sha256": "3b41b86270fb17aad179d6059d87821779ada79e80835c934605a4ca14f210bd",
+      "saved_scale": 1.8366,
+      "clean_sha256": "5b310cb92415235dc808c3eb02654a0119da2d39f5a09d89b43e0d34806914ee",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/calibration.json",
+      "calibration_sha256": "f4860a982806d64d0cb68cd36b722a0a54194dc6c52615341cc00e7ac092f5e5",
+      "clean_to_original": [
+        [
+          1.5421169685125014,
+          -0.0006890656372383612,
+          26.612025980971957
+        ],
+        [
+          -0.0003326395144332166,
+          1.526948563199393,
+          2174.911890108107
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_1st.png": {
+      "layout": "layout_18",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/18上左路   上I.jpg",
+      "source_sha256": "3b41b86270fb17aad179d6059d87821779ada79e80835c934605a4ca14f210bd",
+      "saved_scale": 1.8366,
+      "clean_sha256": "9a992dca4c0e5f1549061e631427c471f87d0d6671a3a1601d4b8f2e1252834b",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/calibration.json",
+      "calibration_sha256": "f4860a982806d64d0cb68cd36b722a0a54194dc6c52615341cc00e7ac092f5e5",
+      "clean_to_original": [
+        [
+          1.9959948027367522,
+          0.021916501045085666,
+          204.2438375373274
+        ],
+        [
+          -0.013360593884862501,
+          2.026973760453991,
+          295.9874958140116
+        ],
+        [
+          -7.794445084178298e-06,
+          1.5812123113625394e-05,
+          1.0000275932722111
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_b1.png": {
+      "layout": "layout_18",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左路/上左路   上I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/18上左路   上I.jpg",
+      "source_sha256": "3b41b86270fb17aad179d6059d87821779ada79e80835c934605a4ca14f210bd",
+      "saved_scale": 1.8366,
+      "clean_sha256": "f9bc4710d51857e2807cd40ff7cea9dcea6484b9f933f72421110ba0b09d6db7",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/calibration.json",
+      "calibration_sha256": "f4860a982806d64d0cb68cd36b722a0a54194dc6c52615341cc00e7ac092f5e5",
+      "clean_to_original": [
+        [
+          1.1308246367992434,
+          0.007045085389248766,
+          1995.1610941279755
+        ],
+        [
+          -0.0014202718932577755,
+          1.1343557200799466,
+          612.1629579861618
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_2nd.png": {
+      "layout": "layout_19",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/19上左右路   右I.jpg",
+      "source_sha256": "7f8dcef6652b60ddef59cee777b6a49a823dcd624c2e50976777aa75d94056b2",
+      "saved_scale": 1.6832,
+      "clean_sha256": "e5a98f4d12bdb4800753424aa457c44b34ef149f1933a0c7f7a8ce9ebadc4573",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/calibration.json",
+      "calibration_sha256": "287affdbe5529a4f34dcfb59930c2fd392d64d306be1a3561b20933f6ba08601",
+      "clean_to_original": [
+        [
+          1.0966090187761588,
+          -0.006681154303499873,
+          2043.418115976572
+        ],
+        [
+          0.004886445294270647,
+          1.084194100431268,
+          1500.9154871213518
+        ],
+        [
+          1.8030184167751328e-06,
+          -2.6665974659465433e-06,
+          1.0000061823568538
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_1st.png": {
+      "layout": "layout_19",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/19上左右路   右I.jpg",
+      "source_sha256": "7f8dcef6652b60ddef59cee777b6a49a823dcd624c2e50976777aa75d94056b2",
+      "saved_scale": 1.6832,
+      "clean_sha256": "51feda6d7f7518adb8763fec9f130dbfcc50b06407e85e78a280ac0cec093ef2",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/calibration.json",
+      "calibration_sha256": "287affdbe5529a4f34dcfb59930c2fd392d64d306be1a3561b20933f6ba08601",
+      "clean_to_original": [
+        [
+          2.0398152670542045,
+          0.000572460058520648,
+          -24.748068815214662
+        ],
+        [
+          0.0047197872704930355,
+          2.0438700852297367,
+          1249.52715937205
+        ],
+        [
+          1.2260361246490925e-06,
+          1.6040780834267947e-06,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_b1.png": {
+      "layout": "layout_19",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上左右路/上左右路   右I.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/19上左右路   右I.jpg",
+      "source_sha256": "7f8dcef6652b60ddef59cee777b6a49a823dcd624c2e50976777aa75d94056b2",
+      "saved_scale": 1.6832,
+      "clean_sha256": "ca514141172d310aecd235569937a146e007d8415cf1ce1d16d291bbcbe923ae",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/calibration.json",
+      "calibration_sha256": "287affdbe5529a4f34dcfb59930c2fd392d64d306be1a3561b20933f6ba08601",
+      "clean_to_original": [
+        [
+          0.7520329698528497,
+          0.0006077880252758648,
+          773.9594824162989
+        ],
+        [
+          0.00043937660726404656,
+          0.7507239642324688,
+          417.9287963396526
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_2nd.png": {
+      "layout": "layout_20",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/20上右路   右▟▘.jpg",
+      "source_sha256": "c915c7108bae1066fa82f59e38ddfd8d045b4c02bfd7f6084387541029136902",
+      "saved_scale": 1.7376,
+      "clean_sha256": "c03cd62d6e2679613e00b0f83caf04f7e84d7f71318e0eac0514727eb76c247f",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/calibration.json",
+      "calibration_sha256": "3da946954ea62ba58803ae10d2b4161817c8aa81c5a6730ee209822f64ed1ee9",
+      "clean_to_original": [
+        [
+          1.669640670171115,
+          -0.020060869529719836,
+          96.4883265751675
+        ],
+        [
+          0.034793928402153326,
+          1.6245082618238464,
+          1888.9952462353292
+        ],
+        [
+          1.0425299174169209e-05,
+          -7.382275754115379e-06,
+          0.999976627518969
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_1st.png": {
+      "layout": "layout_20",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/20上右路   右▟▘.jpg",
+      "source_sha256": "c915c7108bae1066fa82f59e38ddfd8d045b4c02bfd7f6084387541029136902",
+      "saved_scale": 1.7376,
+      "clean_sha256": "718051853d949521232b53c23c39fdd6aece07d36dfaba1031965d5d73d1afd2",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/calibration.json",
+      "calibration_sha256": "3da946954ea62ba58803ae10d2b4161817c8aa81c5a6730ee209822f64ed1ee9",
+      "clean_to_original": [
+        [
+          1.7696358167931197,
+          -0.010462739055819438,
+          74.34264128134792
+        ],
+        [
+          0.0003909135206983449,
+          1.7354973602409633,
+          79.88489080879887
+        ],
+        [
+          1.9495394382835865e-06,
+          -1.338704604582062e-05,
+          0.9999260093628791
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_b1.png": {
+      "layout": "layout_20",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右▟▘.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/20上右路   右▟▘.jpg",
+      "source_sha256": "c915c7108bae1066fa82f59e38ddfd8d045b4c02bfd7f6084387541029136902",
+      "saved_scale": 1.7376,
+      "clean_sha256": "251af1f3a49b410c4b2882d230b486836a8545ee549fda9e39cacc476105588d",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/calibration.json",
+      "calibration_sha256": "3da946954ea62ba58803ae10d2b4161817c8aa81c5a6730ee209822f64ed1ee9",
+      "clean_to_original": [
+        [
+          1.3477478562360938,
+          0.005253343968700006,
+          2244.9260407178967
+        ],
+        [
+          0.0003777578132319234,
+          1.3408097756048751,
+          430.05979660378637
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_2nd.png": {
+      "layout": "layout_21",
+      "floor": "2nd",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右一.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/21上右路   右一.jpg",
+      "source_sha256": "e81172d1a6cccc03a8e0ded951875bb2dc2c3ae5433b0447992cdba972f59c44",
+      "saved_scale": 1.8861,
+      "clean_sha256": "e01e6fb8b00c91a3f066d91659d27ded38692e88e5e0ddec77d35b61c3ff7bc9",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/calibration.json",
+      "calibration_sha256": "fec38c5751d3044fa29d37d4e9401efd2e32de905c4efe547213eba5d39f2a74",
+      "clean_to_original": [
+        [
+          2.139069530589549,
+          0.0004480877061718501,
+          1950.8969900585291
+        ],
+        [
+          -0.003184096519560959,
+          2.14104479839812,
+          1585.517185447498
+        ],
+        [
+          -2.0903309611300175e-06,
+          -1.3295746809850017e-06,
+          0.9999902604342392
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_1st.png": {
+      "layout": "layout_21",
+      "floor": "1st",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右一.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/21上右路   右一.jpg",
+      "source_sha256": "e81172d1a6cccc03a8e0ded951875bb2dc2c3ae5433b0447992cdba972f59c44",
+      "saved_scale": 1.8861,
+      "clean_sha256": "5f0e112cfb5dc7d61a7f1402dbf0fc151e1cd232d23e4b74d48684939657c80f",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/calibration.json",
+      "calibration_sha256": "fec38c5751d3044fa29d37d4e9401efd2e32de905c4efe547213eba5d39f2a74",
+      "clean_to_original": [
+        [
+          2.294162840388767,
+          0.022127449195657355,
+          161.2859967339635
+        ],
+        [
+          0.0033635169993610626,
+          2.338386881943495,
+          1502.2233892110576
+        ],
+        [
+          7.166007529279561e-07,
+          1.6668092913549454e-05,
+          0.9999516149670443
+        ]
+      ]
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_b1.png": {
+      "layout": "layout_21",
+      "floor": "b1",
+      "source_reference": "images/噩梦速刷/上右路/上右路   右一.jpg",
+      "source_image": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast/21上右路   右一.jpg",
+      "source_sha256": "e81172d1a6cccc03a8e0ded951875bb2dc2c3ae5433b0447992cdba972f59c44",
+      "saved_scale": 1.8861,
+      "clean_sha256": "d50e03ebcb25390e6b574009ac33fd5e8ebf47e3f8536d7b38a6313632b0ff8c",
+      "calibration": "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/calibration.json",
+      "calibration_sha256": "fec38c5751d3044fa29d37d4e9401efd2e32de905c4efe547213eba5d39f2a74",
+      "clean_to_original": [
+        [
+          0.8258932356549321,
+          0.00825578519084077,
+          13.184557566774775
+        ],
+        [
+          0.013210958876027294,
+          0.8107712042677674,
+          171.86977441595442
+        ],
+        [
+          1.86183987637592e-05,
+          1.1675802422434294e-05,
+          0.9998472669733477
+        ]
+      ]
+    }
+  }
+}

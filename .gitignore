@@ -1,0 +1,39 @@
+# Python environments and caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Local data, generated results and backups
+logs/
+*.log
+tmp/
+archives/source_backups/
+archives/formal_before_v55_*/
+archives/formal_before_gpu_phase4_*/
+archives/formal_before_s4_assets_*/
+archives/before_ui_cleanup_*/
+archives/route_overlays/
+data/cache/
+data/raw/
+data/references/
+data/manifests/
+data/registration_ground_truth/
+data/splits/
+data/datasets/
+reports/*
+!reports/README.md
+
+# Training outputs; releases are separately published runtime models
+models/checkpoints/
+models/exported/
+
+# Local application settings
+configs/route_projection_app.json
+
+# Formal runtime and developer workspace are local state
+runtime/*
+workspace/*
+archives/before_structure_cleanup_*/
