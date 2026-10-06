@@ -21,7 +21,7 @@
             },
             {
               "id": "route_lhp_solo",
-              "name": "凉哈皮路线图",
+              "name": "凉哈皮单人速刷路线图",
               "kind": "route",
               "source_root": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
             },

@@ -21,10 +21,16 @@ import math
 from src.floor_indicator import CapturedFloorSample
 from src.map_probe_diagnostics import LatestDiagnosticWriter
 from src.paths import CACHE_ROOT, LOG_ROOT, DIAGNOSTIC_ROOT
-from src.app_catalog import map_capture_delay_ms
+from src.app_catalog import map_capture_delay_ms, selected_template_variant, TEMPLATE_VERSION_NAMES, load_default_settings
 from src.capture.map_keys import GlobalMapKeys
+from src.layout_retrieval import LayoutRetriever, BACKEND_LABELS
 
 MAP_PROBE_WINDOW_MS = 500
+
+
+def recognition_window_identity(titles):
+    client = foreground_game_client(titles)
+    return [int(ctypes.windll.user32.GetForegroundWindow()), *client.as_list()]
 
 
 def game_window_is_foreground(titles: list[str]) -> bool:
@@ -210,6 +216,7 @@ class RouteProjectionApp(QWidget):
         self.after(25, self._tick)
         self.after(300, self._start_model_load)
         self.after(350, self._start_registration_backend)
+        self.after(400, self._start_layout_retrieval)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -390,7 +397,8 @@ class RouteProjectionApp(QWidget):
         reference_row.addWidget(self.reference_opacity_value)
         form.addLayout(reference_row)
         self.reset_button = QPushButton("恢复默认投影")
-        self.reset_button.clicked.connect(lambda: self.opacity_slider.setValue(72))
+        self.reset_button.clicked.connect(lambda: self.opacity_slider.setValue(
+            opacity_to_percent(load_default_settings()['opacity'])))
         form.addWidget(self.reset_button)
         form.addWidget(self._heading("快捷键"))
         self.key_info = QLabel()
@@ -402,6 +410,9 @@ class RouteProjectionApp(QWidget):
         self.start_button.setObjectName("primary")
         self.start_button.clicked.connect(lambda: self._schedule_button_action("recognize"))
         layout.addWidget(self.start_button)
+        self.recognition_method_label = QLabel('识别方法：CNN')
+        self.recognition_method_label.setWordWrap(True)
+        layout.addWidget(self.recognition_method_label)
         action_row = QHBoxLayout()
         for text, callback in (("手动投影", lambda: self._schedule_button_action("project")),
                                ("隐藏投影", self.hide_overlay), ("复位地图", self.reset_map_state)):
@@ -464,7 +475,8 @@ class RouteProjectionApp(QWidget):
         self.decision_label.setWordWrap(True)
         layout.addWidget(self.decision_label)
         self.rank_widgets = []
-        layout.addWidget(self._heading("布局置信度排名"))
+        self.ranking_heading = self._heading("布局置信度排名")
+        layout.addWidget(self.ranking_heading)
         for _ in range(2):
             row = QHBoxLayout()
             name = CompatLabel("—")
@@ -556,6 +568,31 @@ class RouteProjectionApp(QWidget):
 
     def _route_changed(self, _label):
         if self.settings.get('registration_backend') == 'template':
+            variant_id = self.route_combo.currentData()
+            if not variant_id or variant_id == selected_template_variant(self.settings, self.profile.key):
+                return
+            self.settings.setdefault('template_route_versions', {})[self.profile.key] = variant_id
+            save_settings(self.settings, self.settings_path)
+            self.map_generation += 1
+            self.map_probe_pending = False
+            self._pending_auto_projection = None
+            self._pending_template_version_projection = None
+            self.reference_context = None
+            self.last_result = None
+            self.hide_overlay()
+            self._clear_alignment_preview()
+            self._refresh_reference_map()
+            self._update_assets()
+            if (self.map_state.is_open and self.locked_layout and not self.closed
+                    and game_window_is_foreground(self.settings['game_window_titles'])):
+                if self.busy:
+                    self._pending_template_version_projection = (
+                        self.map_generation, self.session_id, self.locked_layout, variant_id)
+                    self._set_status('原图版本已切换，等待旧任务结束后重新截图匹配', ACCENT)
+                else:
+                    self.request_work('project', auto=False)
+            else:
+                self._set_status('原图版本已切换，下次投影将使用新版本', ACCENT)
             return
         variant_id = self.route_combo.currentData()
         if not variant_id:
@@ -643,9 +680,11 @@ class RouteProjectionApp(QWidget):
         try:
             if self.settings.get('registration_backend') == 'template':
                 from src.registration.template_matching.direct import load_original
-                image = load_original(self.profile.key, layout)[3]
-                self.template_panel.set_image(image, f"{layout} · 三层完整原图")
-                self.preview_images['template'] = (image, f"三层完整原图 · {layout}")
+                variant = selected_template_variant(self.settings, self.profile.key)
+                image = load_original(self.profile.key, layout, variant)[3]
+                title = f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图"
+                self.template_panel.set_image(image, title)
+                self.preview_images['template'] = (image, title)
                 return
             path = self.catalog.clean_template(self.profile, layout, self.floor_var.get())
             image = cv2.imdecode(np.fromfile(str(path), dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -663,7 +702,9 @@ class RouteProjectionApp(QWidget):
         if self.settings.get('registration_backend') == 'template':
             try:
                 from src.registration.template_matching.direct import load_original
-                self.route_panel.set_image(load_original(self.profile.key, layout)[3], f"{layout} · 定尺度模板匹配完整原图")
+                variant = selected_template_variant(self.settings, self.profile.key)
+                self.route_panel.set_image(load_original(self.profile.key, layout, variant)[3],
+                                          f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图")
             except (OSError, ValueError, KeyError, cv2.error) as exc:
                 self.route_panel.set_image(None, f"完整原图不可用：{exc}")
             return
@@ -691,7 +732,9 @@ class RouteProjectionApp(QWidget):
         self.current_difficulty_label.setText(f"当前难度       {self.profile.difficulty_name}")
         self.current_layout_label.setText(f"当前布局       {self.locked_layout or '待识别'}")
         confidence = (self.last_decision or {}).get("confidence")
-        self.match_label.setText(f"匹配度          {confidence:.1%}" if confidence is not None else "匹配度          —")
+        score = (self.last_decision or {}).get('score')
+        self.match_label.setText(f"匹配分数       {score:.4f}" if score is not None else
+                                f"匹配度          {confidence:.1%}" if confidence is not None else "匹配度          —")
         self.status_rows["route"].setText(self.asset_var.get())
         self.status_rows["projection"].setText(self.overlay_var.get())
         self.status_rows["capture"].setText("已截图" if self.last_result is not None else "等待截图")
@@ -746,6 +789,8 @@ class RouteProjectionApp(QWidget):
         save_settings(self.settings, self.settings_path)
         self._update_assets()
         self._start_model_load()
+
+        self._start_layout_retrieval()
 
     def _floor_changed(self, _event=None):
         self.map_generation += 1
@@ -825,10 +870,18 @@ class RouteProjectionApp(QWidget):
                 self.route_combo.setCurrentIndex(self.route_combo.findData(selected.variant_id))
             template = self.settings.get('registration_backend') == 'template'
             if template:
+                from src.registration.template_matching.direct import available_variants
                 self.route_combo.clear()
-                self.route_combo.addItem('三层完整原图', 'full_original')
-                self.asset_var.set(f'{layout} / 三层完整原图 · 不分楼层')
-            self.route_combo.setEnabled(not template)
+                try:
+                    choices = available_variants(self.profile.key, choice_layout)
+                except (OSError, ValueError, KeyError):
+                    choices = []
+                preferred = selected_template_variant(self.settings, self.profile.key)
+                for variant_id in dict.fromkeys([*choices, preferred]):
+                    self.route_combo.addItem(TEMPLATE_VERSION_NAMES[variant_id], variant_id)
+                self.route_combo.setCurrentIndex(self.route_combo.findData(preferred))
+                self.asset_var.set(f'{layout} / {TEMPLATE_VERSION_NAMES[preferred]} · 三层完整原图 · 不分楼层')
+            self.route_combo.setEnabled(True)
             self.floor_combo.setEnabled(not template)
             for index, floor in enumerate(FLOORS):
                 self.floor_combo.setItemText(index, '不分楼层' if template else FLOOR_NAMES[floor])
@@ -838,6 +891,8 @@ class RouteProjectionApp(QWidget):
         self._refresh_status()
 
     def _start_model_load(self):
+        if self.settings.get('layout_recognition_backend', 'cnn') != 'cnn':
+            return
         profile = self.profile
         if profile.key in self.model_cache:
             self._log(f"模型就绪：{profile.map_name} / {profile.difficulty_name}")
@@ -849,6 +904,27 @@ class RouteProjectionApp(QWidget):
             except Exception as exc:
                 self.results.put(("model", profile.key, None, str(exc)))
         threading.Thread(target=worker, name="load-layout-model", daemon=True).start()
+
+    def _layout_retriever(self):
+        cache = getattr(self, 'layout_retrievers', None)
+        if cache is None:
+            cache = self.layout_retrievers = {}
+        if self.profile.key not in cache:
+            cache[self.profile.key] = LayoutRetriever(self.profile.clean_root,
+                cache_root=CACHE_ROOT / 'layout_retrieval' / self.profile.map_id / self.profile.difficulty_id)
+        return cache[self.profile.key]
+
+    def _start_layout_retrieval(self):
+        if self.settings.get('layout_recognition_backend', 'cnn') != 'icon_structure':
+            return
+        profile_key, retriever = self.profile.key, self._layout_retriever()
+        def worker():
+            try:
+                fingerprint = retriever.prepare()
+                self.results.put(('retrieval_index', profile_key, fingerprint, None))
+            except Exception as exc:
+                self.results.put(('retrieval_index', profile_key, None, str(exc)))
+        threading.Thread(target=worker, name='prepare-layout-retrieval', daemon=True).start()
 
     def _start_registration_backend(self):
         backend = self.settings.get("registration_backend", "auto")
@@ -899,6 +975,8 @@ class RouteProjectionApp(QWidget):
         if getattr(self, 'map_keys', None) is not None:
             self._handle_map_key()
         backend_changed = self.settings.get("registration_backend", "auto") != settings.get("registration_backend", "auto")
+        recognition_changed = (self.settings.get('layout_recognition_backend', 'cnn') !=
+                               settings.get('layout_recognition_backend', 'cnn'))
         previous_keys = (self.settings.get("recognize_hotkey"), self.settings.get("project_hotkey"))
         if (self.settings.get("capture_roi") != settings.get("capture_roi")
                 or self.settings.get("capture_reference_size") != settings.get("capture_reference_size")):
@@ -910,6 +988,25 @@ class RouteProjectionApp(QWidget):
             self.map_generation += 1
             self.map_probe_pending = False
         self.settings = settings
+        if recognition_changed:
+            self._pending_confirmation = None
+            self._pending_auto_projection = None
+            self.clear_layout_lock()
+            self.last_result = None
+            self.last_decision = None
+            self.reference_context = None
+            self.preview_images.clear()
+            self.capture_panel.set_image(None, '请重新识别布局')
+            self.hide_overlay()
+            self._clear_alignment_preview()
+            for name, value, _bar in self.rank_widgets:
+                name.configure(text='—')
+                value.configure(text='—')
+            self._start_model_load()
+            self._start_layout_retrieval()
+        method = settings.get('layout_recognition_backend', 'cnn')
+        self.recognition_method_label.setText('识别方法：' + BACKEND_LABELS.get(method, 'CNN'))
+        self.ranking_heading.setText('布局匹配分数排名' if method == 'icon_structure' else '布局置信度排名')
         if getattr(self, 'map_keys', None) is not None:
             self.map_keys.configure(settings['map_key'], settings['game_window_titles'],
                                     suspended=self.settings_dialog is not None, discard=save)
@@ -1043,7 +1140,8 @@ class RouteProjectionApp(QWidget):
         for index, (name, pct, _bar) in enumerate(self.rank_widgets):
             item = ranking[index] if index < len(ranking) else None
             name.configure(text=item["layout"] if item else "—", fg=INK if index == 0 else MUTED)
-            pct.configure(text=f"{item['confidence']:.1%}" if item else "—", fg=GREEN if index == 0 else MUTED)
+            pct.configure(text=(f"{item['score']:.4f}" if 'score' in item else f"{item['confidence']:.1%}")
+                          if item else "—", fg=GREEN if index == 0 else MUTED)
         if self.locked_layout and result.decision is None:
             self.decision_label.configure(text=f"已锁定 {self.locked_layout} · 本次仅配准", fg=GREEN)
         elif decision:
@@ -1052,11 +1150,14 @@ class RouteProjectionApp(QWidget):
             description = (f"结构验证确认：{result.selected_layout}" if structure_confirmed and not accepted else
                            f"可判断：{decision['best_label']}" if accepted else
                            f"仅有候选：{decision['best_label']}")
-            self.decision_label.configure(text=(f"{description} · 置信度 {decision['confidence']:.1%} · "
-                                                f"前两名差距 {decision['margin']:.1%}"),
+            detail = (f"匹配分数 {decision['score']:.4f} · 分差 {decision['margin']:.4f} · 请核对入口图"
+                      if 'score' in decision else
+                      f"置信度 {decision['confidence']:.1%} · 前两名差距 {decision['margin']:.1%}")
+            self.decision_label.configure(text=f"{description} · {detail}",
                                           fg=GREEN if accepted or structure_confirmed else AMBER)
         else:
-            self.decision_label.configure(text="模型尚未就绪", fg=AMBER)
+            text = '没有有效布局候选' if getattr(self, 'settings', {}).get('layout_recognition_backend', 'cnn') == 'icon_structure' else '模型尚未就绪'
+            self.decision_label.configure(text=text, fg=AMBER)
 
     def request_work(self, mode: str, *, auto: bool) -> None:
         if getattr(self, 'map_keys', None) is not None:
@@ -1072,7 +1173,8 @@ class RouteProjectionApp(QWidget):
             self._set_status("请先按 F8 识别并确认布局，再打开地图投影", AMBER)
             RouteProjectionApp._map_toast(self, "布局尚未确认", "请按 F8 识别并确认布局，然后自动配准路线。", success=False)
             return
-        if mode == "recognize" and self.profile.key not in self.model_cache:
+        recognition_backend = self.settings.get('layout_recognition_backend', 'cnn')
+        if mode == "recognize" and recognition_backend == 'cnn' and self.profile.key not in self.model_cache:
             self._set_status("布局模型正在加载，请稍候", AMBER)
             return
         if mode == "recognize":
@@ -1105,8 +1207,10 @@ class RouteProjectionApp(QWidget):
         opening_floor = getattr(self, "opening_floor_sample", None)
         self.opening_floor_sample = None  # Single-use, even if the worker is cancelled.
         route_versions = json.loads(json.dumps(self.settings["route_versions"]))
+        template_variant_id = selected_template_variant(self.settings, profile.key)
         opacity = float(self.settings["opacity"])
         registration_backend = self.settings.get("registration_backend", "auto")
+        retriever = self._layout_retriever() if mode == 'recognize' and recognition_backend == 'icon_structure' else None
         work_requested_at = time.perf_counter()
         key_started_at = getattr(self, 'map_presence_started_at', None) if auto else None
         bundle = self.model_cache.get(profile.key) if fixed_layout is None else None
@@ -1117,6 +1221,7 @@ class RouteProjectionApp(QWidget):
             try:
                 started = time.perf_counter()
                 client = foreground_game_client(window_titles)
+                recognition_window = recognition_window_identity(window_titles) if retriever is not None else None
                 screen_region = game_capture_region(client, roi, reference_size)
                 ensure_region_on_screen(screen_region)
                 screen_roi = screen_region.as_list()
@@ -1137,6 +1242,8 @@ class RouteProjectionApp(QWidget):
                         floor_detection, floor_image, floor_region = capture_floor_indicator(client, reference_size)
                     floor_ms = (time.perf_counter() - floor_started) * 1000.0
                 screenshot = capture_bgr(screen_roi)
+                if recognition_window is not None and recognition_window_identity(window_titles) != recognition_window:
+                    raise RuntimeError('截图期间游戏窗口发生变化，请重新识别')
                 initial_floor_detection = floor_detection
                 if floor_detection is not None:
                     floor_started = time.perf_counter()
@@ -1178,6 +1285,10 @@ class RouteProjectionApp(QWidget):
                         registration_evidence=self.registration_evidence,
                         template_prepare_lock=self.template_prepare_lock,
                         registration_backend=registration_backend,
+                        template_variant_id=template_variant_id,
+                        layout_recognition_backend=recognition_backend,
+                        **({'layout_retriever': retriever,
+                            'recognition_reference_size': tuple(roi[2:])} if retriever is not None else {}),
                         **({'defer_projection_preview':True} if fast_display else {}))
                 if floor_detection is not None:
                     result.floor_detection = {**floor_detection.diagnostics(), "screen_roi": floor_region}
@@ -1187,6 +1298,7 @@ class RouteProjectionApp(QWidget):
                     result.timings_ms["floor_detection"] = floor_ms
                 result.timings_ms["capture"] = capture_ms
                 result.session_id = session_id
+                result.recognition_window = recognition_window
                 event = ("work", mode, auto, generation, screen_roi, result, None)
                 if fast_display:
                     meta = dict(posted_at=time.perf_counter(), requested_at=work_requested_at,
@@ -1303,6 +1415,16 @@ class RouteProjectionApp(QWidget):
             RouteProjectionApp._drain_pending_projection(self)
 
     def _drain_pending_projection(self):
+        version_pending = getattr(self, '_pending_template_version_projection', None)
+        if version_pending is not None and not self.busy:
+            self._pending_template_version_projection = None
+            generation, session, layout, variant = version_pending
+            if (not self.closed and generation == self.map_generation and session == self.session_id
+                    and layout == self.locked_layout and self.settings.get('registration_backend') == 'template'
+                    and variant == selected_template_variant(self.settings, self.profile.key)
+                    and self.map_state.is_open and game_window_is_foreground(self.settings['game_window_titles'])):
+                self.request_work('project', auto=False)
+                return
         pending = getattr(self, '_pending_auto_projection', None)
         if pending is None or self.busy:
             return
@@ -1318,6 +1440,22 @@ class RouteProjectionApp(QWidget):
         if getattr(self, 'map_keys', None) is not None:
             self._handle_map_key()
         self.busy = False
+        if mode == 'recognize' and result is not None:
+            if getattr(result, 'layout_recognition_backend', 'cnn') != getattr(self, 'settings', {}).get('layout_recognition_backend', 'cnn'):
+                return
+            if getattr(result, 'layout_recognition_backend', 'cnn') == 'icon_structure':
+                if (getattr(self, 'closed', False) or generation != self.map_generation or
+                        result.session_id != self.session_id or result.profile_key != self.profile.key):
+                    return
+            if getattr(result, 'recognition_window', None) is not None:
+                try:
+                    if recognition_window_identity(self.settings['game_window_titles']) != result.recognition_window:
+                        self._set_status('游戏窗口已变化，请重新识别', AMBER)
+                        return
+                except (OSError, RuntimeError):
+                    return
+        if mode == 'recognize' and error and generation != self.map_generation:
+            return
         if generation != self.map_generation:
             # A worker may have populated tentative hypotheses after a reset.
             # They must not leak into the next map session.
@@ -1506,7 +1644,7 @@ class RouteProjectionApp(QWidget):
         decision = result.decision
         candidates = sorted(decision.get("ranking") or [
             {"layout": result.selected_layout, "confidence": decision["confidence"]}
-        ], key=lambda item: item["confidence"], reverse=True)[:2]
+        ], key=lambda item: item.get('score', item.get('confidence', 0.)), reverse=True)[:2]
         settings = getattr(self, "settings", {})
         if settings.get("skip_layout_confirmation", False) and decision.get("accepted", False):
             selected_layout, skip_confirmation = candidates[0]["layout"], False
@@ -1572,7 +1710,8 @@ class RouteProjectionApp(QWidget):
         if getattr(self, 'map_keys', None) is not None:
             self._handle_map_key()
         if (self.closed or generation != self.map_generation or not self.map_state.is_open
-                or profile_key != self.profile.key or layout != self.locked_layout or floor not in FLOORS):
+                or profile_key != self.profile.key or layout != self.locked_layout
+                or (floor not in FLOORS and not (floor == 'all' and self.settings.get('registration_backend') == 'template'))):
             return
         self.reference_context = (generation, list(roi), floor, profile_key, layout)
         self.reference_auto = True
@@ -1595,13 +1734,14 @@ class RouteProjectionApp(QWidget):
         try:
             if self.settings.get('registration_backend') == 'template':
                 from src.registration.template_matching.direct import load_original
-                image = load_original(self.profile.key, layout)[3]
+                variant = selected_template_variant(self.settings, self.profile.key)
+                image = load_original(self.profile.key, layout, variant)[3]
                 if getattr(self, 'map_keys', None) is not None:
                     self._handle_map_key()
                     if self.reference_context is not context or context[0] != self.map_generation or not self.map_state.is_open:
                         return
                 self.reference_overlay.show_map(image, roi,
-                    f"{layout} · 三层完整原图 · {self.settings['reference_hotkey']} 隐藏", self.settings['reference_opacity'])
+                    f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图 · {self.settings['reference_hotkey']} 隐藏", self.settings['reference_opacity'])
                 return
             variant = self.catalog.selected_variant(self.profile, layout, self.settings["route_versions"])
             if variant is None:
@@ -2146,6 +2286,10 @@ class RouteProjectionApp(QWidget):
                 self._apply_map_presence_probe(*event[1:])
             elif event[0] == "reference_ready":
                 self._apply_reference_ready(*event[1:])
+            elif event[0] == 'retrieval_index':
+                if (event[1] == self.profile.key and
+                        self.settings.get('layout_recognition_backend', 'cnn') == 'icon_structure'):
+                    self._log(f'识别资源准备失败：{event[3]}' if event[3] else f'图标与结构识别资源就绪：{event[2][:12]}')
             elif event[0] == "preloaded_template":
                 _, key, prepared, error = event
                 if (prepared is not None and key[0] == self.profile.key

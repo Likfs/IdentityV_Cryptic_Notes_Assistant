@@ -2,6 +2,80 @@
 import cv2
 import numpy as np
 
+
+def fit_fixed_scale(source_points: np.ndarray, target_points: np.ndarray) -> tuple[float, dict]:
+    """Fit target = scale * source + translation, without rotation or scale search."""
+    source = np.asarray(source_points, dtype=np.float64)
+    target = np.asarray(target_points, dtype=np.float64)
+    if (source.shape != target.shape or source.ndim != 2 or source.shape[1] != 2
+            or len(source) < 3 or not np.isfinite(source).all() or not np.isfinite(target).all()):
+        raise ValueError('尺度推算需要至少三个有限的对应结构点')
+    a, b = source-source.mean(axis=0), target-target.mean(axis=0)
+    energy = float(np.sum(a*a))
+    if energy <= 1e-12:
+        raise ValueError('结构点空间范围不足，无法推算尺度')
+    scale = float(np.sum(a*b)/energy)
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError('推算尺度必须为有限正数')
+    translation = target.mean(axis=0)-scale*source.mean(axis=0)
+    errors = np.linalg.norm(target-(scale*source+translation), axis=1)
+    return scale, dict(sample_count=len(source), translation=translation.tolist(),
+                       residual_rms_original_pixels=float(np.sqrt(np.mean(errors**2))),
+                       residual_p95_original_pixels=float(np.percentile(errors, 95)))
+
+
+def verify_identity_geometry(original: np.ndarray, replacement: np.ndarray,
+                             floor_regions: dict[str, list[int]]) -> dict:
+    """Verify unchanged source coordinates before inheriting fixed scales, offline only."""
+    if original.shape != replacement.shape:
+        raise ValueError('底图版与对应原图尺寸不同，不能直接继承固定尺度')
+    sift = cv2.SIFT_create(nfeatures=1400)
+    matcher = cv2.BFMatcher()
+    report = {}
+    for floor, (x, y, width, height) in floor_regions.items():
+        ratio = min(1., 1000/max(width, height))
+        first = cv2.resize(original[y:y+height, x:x+width], None, fx=ratio, fy=ratio)
+        second = cv2.resize(replacement[y:y+height, x:x+width], None, fx=ratio, fy=ratio)
+        kp_a, desc_a = sift.detectAndCompute(first, None)
+        kp_b, desc_b = sift.detectAndCompute(second, None)
+        if desc_a is None or desc_b is None:
+            raise ValueError(f'{floor}: 原图结构特征不足，不能继承固定尺度')
+        reverse = {pair[0].queryIdx: pair[0].trainIdx
+                   for pair in matcher.knnMatch(desc_b, desc_a, k=2)
+                   if len(pair) == 2 and pair[0].distance < .72*pair[1].distance}
+        matches = [pair[0] for pair in matcher.knnMatch(desc_a, desc_b, k=2)
+                   if len(pair) == 2 and pair[0].distance < .72*pair[1].distance
+                   and reverse.get(pair[0].trainIdx) == pair[0].queryIdx]
+        if len(matches) < 12:
+            raise ValueError(f'{floor}: 原图结构对应点不足，不能继承固定尺度')
+        points_a = np.float32([kp_a[m.queryIdx].pt for m in matches])/ratio
+        points_b = np.float32([kp_b[m.trainIdx].pt for m in matches])/ratio
+        transform, mask = cv2.estimateAffinePartial2D(points_a, points_b, method=cv2.RANSAC,
+                                                      ransacReprojThreshold=2/ratio)
+        if transform is None or mask is None or not np.isfinite(transform).all():
+            raise ValueError(f'{floor}: 原图结构几何无法复核')
+        inliers = mask.ravel() > 0
+        if int(inliers.sum()) < 12:
+            raise ValueError(f'{floor}: 原图结构几何支持不足')
+        errors = np.linalg.norm(points_b[inliers]-points_a[inliers], axis=1)
+        span = np.ptp(points_a[inliers], axis=0)/[width, height]
+        corners = np.float64([[0, 0], [width, 0], [0, height], [width, height]])
+        displacement = np.linalg.norm(corners@transform[:,:2].T+transform[:,2]-corners, axis=1)
+        details = dict(region=[x, y, width, height], matches=len(matches), inliers=int(inliers.sum()),
+                       inlier_span_fraction=span.tolist(),
+                       median_displacement_pixels=float(np.median(errors)),
+                       p95_displacement_pixels=float(np.percentile(errors, 95)),
+                       max_corner_displacement_pixels=float(displacement.max()),
+                       original_to_replacement_affine=transform.tolist())
+        # Redrawn interiors change descriptors; require spatially spread identity evidence.
+        if (np.any(span < .3)
+                or details['median_displacement_pixels'] > 2
+                or details['p95_displacement_pixels'] > 6
+                or details['max_corner_displacement_pixels'] > 4):
+            raise ValueError(f'{floor}: 底图版结构位置有变化，须重新标定：{details}')
+        report[floor] = details
+    return report
+
 def affine_to_homogeneous(matrix: np.ndarray) -> np.ndarray:
     matrix = np.asarray(matrix, dtype=np.float64)
     if matrix.shape == (3, 3):

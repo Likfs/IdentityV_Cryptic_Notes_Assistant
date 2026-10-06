@@ -101,10 +101,11 @@ def load_route_overlay_asset(
     asset_path = resolve_calibration_path(floor_data["asset"])
     rgba = _read_unchanged(asset_path)
     kind = payload.get("asset_kind", "route")
-    if kind == "clean" and rgba.ndim == 3 and rgba.shape[2] == 3:
+    if kind == "clean" and rgba.ndim == 3 and rgba.shape[2] in (3, 4):
         # Reference assets are reused without duplicating or altering source PNGs.
-        alpha = np.uint8(cv2.cvtColor(rgba, cv2.COLOR_BGR2GRAY) > 48) * 255
-        rgba = np.dstack((rgba, alpha))
+        visible = cv2.cvtColor(rgba[:, :, :3], cv2.COLOR_BGR2GRAY) > 48
+        alpha = np.where(visible, rgba[:, :, 3] if rgba.shape[2] == 4 else 255, 0).astype(np.uint8)
+        rgba = np.dstack((rgba[:, :, :3], alpha))
     if rgba.ndim != 3 or rgba.shape[2] != 4:
         raise RuntimeError(f"路线资产必须是 BGRA 图片：{asset_path}")
     structure = None

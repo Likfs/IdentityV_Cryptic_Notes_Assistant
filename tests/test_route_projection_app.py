@@ -55,11 +55,11 @@ def test_layout_confidence_has_no_exploration_requirement() -> None:
     assert "explored_ratio" not in confident
 
 
-@pytest.mark.parametrize('value,expected', [(None,100),('invalid',100),(True,100),(-4,0),(900,500),(0,0),(35,35),(65,65)])
+@pytest.mark.parametrize('value,expected', [(None,150),('invalid',150),(True,150),(-4,0),(900,500),(0,0),(35,35),(65,65)])
 def test_capture_delay_settings_normalize_and_roundtrip(tmp_path,value,expected):
     path=tmp_path/'settings.json';catalog=MapCatalog()
     path.write_text('{}',encoding='utf-8')
-    assert load_settings(catalog,path)['map_capture_delay_ms']==100
+    assert load_settings(catalog,path)['map_capture_delay_ms']==150
     path.write_text(json.dumps({'map_capture_delay_ms':value}),encoding='utf-8')
     settings=load_settings(catalog,path)
     assert settings['map_capture_delay_ms']==expected
@@ -120,7 +120,7 @@ def test_map_key_toggles_only_on_each_new_press(monkeypatch) -> None:
     pressed["value"] = True
     app_module.RouteProjectionApp._handle_map_key(app)
     assert app.map_state.is_open and app.hidden == 1 and len(app.scheduled) == 1
-    assert app.scheduled[0][0] == 100  # User-requested initial map rendering delay.
+    assert app.scheduled[0][0] == 150  # User-requested initial map rendering delay.
     assert app.requests == []  # Key press alone must never start registration.
     app_module.RouteProjectionApp._handle_map_key(app)  # key repeat / still down
     pressed["value"] = False

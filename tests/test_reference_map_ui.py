@@ -19,7 +19,7 @@ def window(tmp_path, monkeypatch):
     monkeypatch.setattr(app, "GlobalActionHotkeys", lambda *_: SimpleNamespace(start=lambda: None, stop=lambda: None))
     qt = QApplication.instance() or QApplication([])
     # Floor-specific reference maps belong to the structure backend.
-    (tmp_path / "settings.json").write_text('{"registration_backend": "cpu"}', encoding="utf-8")
+    (tmp_path / "settings.json").write_text('{"registration_backend": "cpu", "layout_recognition_backend": "cnn"}', encoding="utf-8")
     instance = app.RouteProjectionApp(settings_path=tmp_path / "settings.json")
     instance.locked_layout = "layout_11"
     instance.layout_var.set("layout_11")

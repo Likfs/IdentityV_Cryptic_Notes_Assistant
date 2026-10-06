@@ -11,7 +11,16 @@ DEFAULT_CATALOG_PATH = PROJECT_ROOT / 'configs/map_catalog.json'
 DEFAULT_SETTINGS_PATH = SETTINGS_PATH
 FLOORS = ("2nd", "1st", "b1")
 FLOOR_NAMES = {"2nd": "2 楼", "1st": "1 楼", "b1": "地下室"}
-VERSION_NAMES = {"route_clean": "原版干净底图", "route_lhp_solo": "凉哈皮路线图", "route_zhanshi_fast": "展十速刷路线图"}
+VERSION_NAMES = {"route_clean": "原版干净底图", "route_lhp_solo": "凉哈皮单人速刷路线图", "route_zhanshi_fast": "展十速刷路线图"}
+TEMPLATE_VERSION_NAMES = {key: VERSION_NAMES[key] for key in ('route_zhanshi_fast', 'route_lhp_solo', 'route_clean')}
+TEMPLATE_VERSION_NAMES.update({
+    'route_lhp_solo_clean': '凉哈皮单人速刷路线图底图版',
+    'route_zhanshi_fast_clean': '展十速刷路线图底图版',
+})
+
+
+def selected_template_variant(settings: dict, profile_key: str) -> str:
+    return settings.get('template_route_versions', {}).get(profile_key, 'route_zhanshi_fast')
 
 
 def canonical_route_version(value: str) -> str:
@@ -200,7 +209,7 @@ def prediction_decision(ranking: list[tuple[str, float]], checkpoint: dict) -> d
     }
 
 
-DEFAULT_MAP_CAPTURE_DELAY_MS = 100
+DEFAULT_MAP_CAPTURE_DELAY_MS = 150
 MAX_MAP_CAPTURE_DELAY_MS = 500
 
 
@@ -215,9 +224,13 @@ def map_capture_delay_ms(settings: dict) -> int:
         return DEFAULT_MAP_CAPTURE_DELAY_MS
 
 
+def load_default_settings() -> dict:
+    return json.loads((CONFIG_ROOT / "app_defaults.json").read_text(encoding="utf-8-sig"))
+
+
 def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> dict:
     first = next(iter(catalog.profiles.values()))
-    settings = json.loads((CONFIG_ROOT / "app_defaults.json").read_text(encoding="utf-8-sig"))
+    settings = load_default_settings()
     settings["map_id"], settings["difficulty_id"] = first.map_id, first.difficulty_id
     if path.is_file():
         saved = json.loads(path.read_text(encoding="utf-8-sig"))
@@ -268,9 +281,15 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
     if settings.get("registration_backend") not in ("auto", "cpu", "template"):
         settings["registration_backend"] = "template"
     settings["skip_layout_confirmation"] = bool(settings["skip_layout_confirmation"])
+    if settings.get("layout_recognition_backend") not in ("cnn", "icon_structure"):
+        settings["layout_recognition_backend"] = "icon_structure"
     if not isinstance(settings["route_versions"], dict):
         settings["route_versions"] = {}
     settings["route_versions"] = normalize_route_versions(settings["route_versions"])
+    preferences = settings.get('template_route_versions', {})
+    settings['template_route_versions'] = {
+        key: value for key, value in preferences.items() if value in TEMPLATE_VERSION_NAMES
+    } if isinstance(preferences, dict) else {}
     return settings
 
 

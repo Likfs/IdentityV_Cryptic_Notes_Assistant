@@ -93,10 +93,25 @@ def runtime_files() -> list[Path]:
             include(path)
             if hashlib.sha256(path.read_bytes()).hexdigest() != entry[fingerprint]:
                 raise ValueError(f"定尺度模板匹配指纹不一致：{path}")
+    from src.registration.template_matching.direct import _source
+    for profile_key, layouts in config.get('original_variants', {}).items():
+        for layout, variants in layouts.items():
+            for variant_id in variants:
+                entry, source, _ = _source(profile_key, layout, variant_id)
+                if 'source_parts' in entry:
+                    for part in entry['source_parts']:
+                        include(part['path'])
+                else:
+                    include(source)
+                for candidate in entry['candidates']:
+                    for dependency in candidate.get('dependencies', []):
+                        include(dependency['path'])
     for floor in ("2nd", "1st", "b1"):
         include(f"assets/game_ui/floor_indicators/{floor}.png")
     include("assets/app_ui/home_wallpaper.jpg")
     include("assets/app_ui/icons/check.svg")
+    for name in ('query', 'clean_09', 'clean_15'):
+        include(f'assets/layout_retrieval/icons/{name}.png')
     include("src/registration/template_matching/provenance.json")
     return sorted(files)
 
@@ -168,7 +183,7 @@ def main() -> None:
         subprocess.run(command, cwd=ROOT, env=build_env, stdout=log,
                        stderr=subprocess.STDOUT, check=True)
     app = output / NAME
-    for document in ("README.md", "项目目录与文件说明.md"):
+    for document in ("README.md", "项目目录与文件说明.md", "新增布局教程.md"):
         shutil.copy2(ROOT / document, app / document)
     (output / "build_info.json").write_text(json.dumps({
         "built_at": datetime.now(timezone(timedelta(hours=8))).isoformat(),

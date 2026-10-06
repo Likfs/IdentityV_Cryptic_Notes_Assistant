@@ -21,10 +21,13 @@ def initialize():
 
 def _fingerprint(path,expected):
     stat=path.stat();stamp=(str(path),stat.st_mtime_ns,stat.st_size,expected)
-    if stamp not in _verified:
+    # Calibration files are small and can be rewritten without changing the
+    # filesystem timestamp or length. Always verify their contents.
+    cacheable=path.suffix.lower()!='.json'
+    if not cacheable or stamp not in _verified:
         if hashlib.sha256(path.read_bytes()).hexdigest()!=expected:
             raise ValueError(f'尺度对应资源已改变，请重新导入：{path.name}')
-        _verified[stamp]=True
+        if cacheable:_verified[stamp]=True
 
 def _load_entry(prepared):
     global _config,_config_stamp

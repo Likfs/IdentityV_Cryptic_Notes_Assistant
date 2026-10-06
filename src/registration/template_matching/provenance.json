@@ -2,9 +2,10 @@
   "description": "定尺度模板匹配模块内容指纹",
   "files": {
     "__init__.py": "4843fa4dcb707e8c551ddebd0a0cb182f00e9751ac73cb50d679e2e7b3e77e04",
-    "matcher.py": "cb5ffbd43bc852c689fe053cc39730b5a35461a8f5d51e34167235ad2a501697",
+    "matcher.py": "532cdeea9f385c7514e1a024341b9f3d6ec139c442637b9b0afa3b2cff96e2bb",
     "fog_crop.py": "74544c92f73e5d9a9bb93c6e09c1156dc46ec9c1b566ded1f5efed29c773040d",
     "fast_gray_detail.py": "a57c801a56ef89dec8e08298ac04bade801ca2c2820f645cad9b71e9e6fc0759",
-    "recognition.py": "d2f364c8fe0b1646e134b6b820ecc44f2068c58d12cec126927e91a3dc010ae5"
+    "recognition.py": "d2f364c8fe0b1646e134b6b820ecc44f2068c58d12cec126927e91a3dc010ae5",
+    "direct.py": "73a0581007fd407b051fcc6d17a155cdb48b192eb6a9abbfb2ba20cbaf6bf8e3"
   }
 }

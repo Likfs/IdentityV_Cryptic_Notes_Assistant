@@ -45,6 +45,11 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert window.windowFlags() & Qt.WindowType.WindowMinimizeButtonHint
         assert window.windowFlags() & Qt.WindowType.WindowSystemMenuHint
         assert not window._wallpaper.isNull()
+        assert window.settings['layout_recognition_backend'] == 'icon_structure'
+        window.opacity_slider.setValue(81)
+        window.reset_button.click()
+        assert window.opacity_slider.value() == 34
+        assert load_settings(window.catalog, path)['opacity'] == .34
         window.layout_var.set("layout_01")
         window._update_assets()
         assert window.template_panel._pixmap is not None
@@ -75,6 +80,8 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
             "多尺度结构配准（GPU）", "多尺度结构配准（CPU）", "定尺度模板匹配"]
         assert [dialog.registration_backend_combo.itemData(i) for i in range(3)] == ["auto", "cpu", "template"]
         assert not any("三套地图资产" in label.text() for label in dialog.findChildren(QLabel))
+        assert dialog.layout_recognition_combo.currentData() == 'icon_structure'
+        assert not dialog.skip_layout_confirmation_check.isEnabled()
 
         recognize = dialog.hotkey_buttons["recognize_hotkey"]
         recognize.click()
@@ -101,7 +108,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         project.click()
         QTest.keyClick(project, Qt.Key.Key_F9)
         assert dialog.vars["project_hotkey"].get() == "F9"
-        assert dialog.map_capture_delay_spin.value() == 100
+        assert dialog.map_capture_delay_spin.value() == 150
         dialog.map_capture_delay_spin.setValue(65)
         dialog.vars["opacity"].set(81)
         assert dialog._persist_settings()
@@ -112,7 +119,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert persisted["map_key"] == "J"
         assert persisted["recognize_hotkey"] == "R"
         assert persisted["project_hotkey"] == "F9"
-        assert len(persisted["route_versions"][window.profile.key]) == 21
+        assert set(persisted["route_versions"][window.profile.key]) == set(window.catalog.layouts(window.profile))
         assert set(persisted["route_versions"][window.profile.key].values()) == {"route_zhanshi_fast"}
         assert GlobalActionHotkeys.virtual_key("R") == ord("R")
         dialog.close()

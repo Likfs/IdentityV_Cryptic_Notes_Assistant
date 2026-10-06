@@ -21,6 +21,7 @@ from PyQt6.QtWidgets import (
 from src.app_catalog import ACTION_KEYS, MAP_KEYS, key_to_vk, load_settings
 from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
 from src.capture.region import CaptureRegion
+from src.layout_retrieval import BACKEND_LABELS
 
 
 BG = "#101a27"
@@ -212,7 +213,8 @@ class LayoutConfirmationDialog(QDialog):
             card.setMinimumSize(0, 240 if compact else 160)
             card.setStyleSheet(f"QPushButton#layoutCandidate {{ min-height: {240 if compact else 160}px; }}")
             card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            card.setAccessibleName(f"布局 {layout.removeprefix('layout_')}，置信度 {item['confidence']:.1%}")
+            score_text = f"分数 {item['score']:.4f}" if 'score' in item else f"置信度 {item['confidence']:.1%}"
+            card.setAccessibleName(f"布局 {layout.removeprefix('layout_')}，{score_text}")
             card_body = QVBoxLayout(card)
             card_body.setContentsMargins(18, 16, 18, 16)
             card_body.setSpacing(14)
@@ -224,7 +226,7 @@ class LayoutConfirmationDialog(QDialog):
             radio.setAutoExclusive(False)
             radio.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             row.addWidget(radio, 1)
-            score = QLabel(f"{item['confidence']:.1%}")
+            score = QLabel(score_text if 'score' in item else f"{item['confidence']:.1%}")
             score.setAlignment(Qt.AlignmentFlag.AlignCenter)
             row.addWidget(score)
             card_body.addWidget(row_widget)
@@ -249,6 +251,10 @@ class LayoutConfirmationDialog(QDialog):
         footer.setSpacing(18)
         self.skip_confirmation = QCheckBox("高置信度时不再提示")
         self.skip_confirmation.setToolTip("置信度或前两名分差不足时仍会弹框，由你选择；可在设置中的“布局确认”重新开启全部提示")
+        if candidates and 'score' in candidates[0]:
+            description.setText('请核对入口图片后确认布局。匹配分数不是正确概率。')
+            self.skip_confirmation.setText('图标与结构识别需要人工确认')
+            self.skip_confirmation.setEnabled(False)
         footer.addWidget(self.skip_confirmation)
         if width >= 850:
             footer.addStretch(1)
@@ -686,6 +692,8 @@ class SettingsPage(QWidget):
 
         def check(name, text, value):
             widget = QCheckBox(text)
+            if name == 'skip_layout_confirmation':
+                self.skip_layout_confirmation_check = widget
             widget.setChecked(value)
             self.vars[name] = Value(value)
             widget.toggled.connect(lambda checked, key=name: (self.vars[key].set(checked), self._schedule_settings_save()))
@@ -698,6 +706,19 @@ class SettingsPage(QWidget):
             return button
 
         self.hotkey_buttons = {}
+        self.layout_recognition_combo = QComboBox()
+        for key, label in BACKEND_LABELS.items():
+            self.layout_recognition_combo.addItem(label, key)
+        self.layout_recognition_combo.setCurrentIndex(
+            self.layout_recognition_combo.findData(settings.get('layout_recognition_backend', 'cnn')))
+        self.vars['layout_recognition_backend'] = Value(settings.get('layout_recognition_backend', 'cnn'))
+        self.layout_recognition_combo.currentIndexChanged.connect(lambda _index: (
+            self.vars['layout_recognition_backend'].set(self.layout_recognition_combo.currentData()),
+            self._update_recognition_controls(), self._schedule_settings_save()))
+        form.addRow('布局识别方法', self.layout_recognition_combo)
+        self.recognition_note = QLabel()
+        self.recognition_note.setWordWrap(True)
+        form.addRow('', self.recognition_note)
         form.addRow("游戏地图键", capture("map_key", MAP_KEYS, settings["map_key"]))
         form.addRow("识别快捷键", capture("recognize_hotkey", ACTION_KEYS, settings["recognize_hotkey"]))
         form.addRow("投影快捷键", capture("project_hotkey", ACTION_KEYS, settings["project_hotkey"]))
@@ -749,6 +770,13 @@ class SettingsPage(QWidget):
         close_button = QPushButton("←  返回首页")
         close_button.clicked.connect(self.close)
         outer.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
+        self._update_recognition_controls()
+
+    def _update_recognition_controls(self):
+        icon_structure = self.layout_recognition_combo.currentData() == 'icon_structure'
+        self.skip_layout_confirmation_check.setEnabled(not icon_structure)
+        self.recognition_note.setText('请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。'
+                                      if icon_structure else 'CNN 使用已发布模型；高置信度时可按设置跳过确认。')
 
     def _capture_key(self, name: str, key: str) -> bool:
         names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey")
@@ -810,7 +838,7 @@ class SettingsPage(QWidget):
             self.app.apply_settings(updated)
             persisted = load_settings(self.app.catalog, self.app.settings_path)
             fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "map_capture_delay_ms", "recognize_hotkey",
-                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation")
+                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "layout_recognition_backend")
             if any(persisted[name] != updated[name] for name in fields):
                 raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
         except Exception as exc:

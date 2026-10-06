@@ -18,7 +18,7 @@ def test_three_complete_sets_can_be_selected_without_changing_default():
     profile = next(iter(catalog.profiles.values()))
     saved = {"unrelated/profile": {"layout_01": "untouched"}}
     assert catalog.selected_variant(profile, "layout_01", saved).variant_id == "route_lhp_solo"
-    assert [v.label for v in catalog.variants(profile, "layout_01")] == ["原版干净底图", "凉哈皮路线图", "展十速刷路线图"]
+    assert [v.label for v in catalog.variants(profile, "layout_01")] == ["原版干净底图", "凉哈皮单人速刷路线图", "展十速刷路线图"]
     for version in ("route_clean", "route_zhanshi_fast", "route_lhp_solo"):
         catalog.select_version_for_all(profile, version, saved)
         for layout in catalog.layouts(profile):
@@ -73,3 +73,14 @@ def test_malformed_structure_asset_fails_closed(tmp_path):
     }), encoding="utf-8")
     with pytest.raises(ValueError, match="同尺寸"):
         load_route_overlay_asset(calibration, "1st")
+
+
+def test_clean_bgra_background_is_transparent_and_existing_alpha_is_preserved(tmp_path):
+    image = np.array([[[24, 32, 39, 255], [140, 140, 140, 128], [140, 140, 140, 0]]], np.uint8)
+    source = tmp_path/'clean.png'
+    cv2.imwrite(str(source), image)
+    calibration = tmp_path/'calibration.json'
+    calibration.write_text(json.dumps(dict(layout='layout_01', variant_id='route_clean', asset_kind='clean',
+        floors={'2nd': dict(status='PASS', asset=str(source), asset_to_clean_homography=np.eye(3).tolist())})))
+    asset = load_route_overlay_asset(calibration, '2nd')
+    np.testing.assert_array_equal(asset.rgba[:, :, 3], [[0, 128, 0]])

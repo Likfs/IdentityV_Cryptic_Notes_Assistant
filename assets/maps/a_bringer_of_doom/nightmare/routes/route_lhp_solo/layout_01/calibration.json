@@ -13,72 +13,72 @@
       "status": "PASS",
       "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_2nd.png",
       "asset": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/2nd.png",
-      "alignment_preview": "reports/route_asset_calibration/layout_01/route_01/2nd_alignment.png",
+      "alignment_preview": "workspace/reports/route_asset_calibration/layout_01/route_lhp_solo/2nd_alignment.png",
       "source_crop_xywh": [
         0,
         0,
         1000,
-        835
+        836
       ],
       "clean_to_route_homography": [
         [
-          0.6449712422372528,
-          -0.0026704772547153544,
-          85.91066453274938
+          0.4509757893185659,
+          0.004511306572255851,
+          60.63666227419997
         ],
         [
-          -0.0021508861347159475,
-          0.6466965646941607,
-          63.62804261113559
+          -0.003923459928753473,
+          0.45542973757568816,
+          114.74742564491626
         ],
         [
-          0.0,
-          0.0,
+          -1.0240614300107027e-05,
+          4.457923042940151e-06,
           1.0
         ]
       ],
       "route_to_clean_homography": [
         [
-          1.550478076694241,
-          0.006402564454173241,
-          -133.6099845561721
+          2.2142393097153197,
+          -0.020642333852066493,
+          -131.89542654863797
         ],
         [
-          0.0051568262140372625,
-          1.5463415545744288,
-          -98.83371269275925
+          0.01337726585595497,
+          2.1980726686064194,
+          -253.03433285489749
         ],
         [
-          0.0,
-          0.0,
-          1.0
+          2.261553591721902e-05,
+          -1.0010228978670562e-05,
+          0.9997773173918562
         ]
       ],
       "asset_to_clean_homography": [
         [
-          1.550478076694241,
-          0.006402564454173241,
-          -133.6099845561721
+          2.2142393097153197,
+          -0.020642333852066493,
+          -131.89542654863797
         ],
         [
-          0.0051568262140372625,
-          1.5463415545744288,
-          -98.83371269275925
+          0.01337726585595497,
+          2.1980726686064194,
+          -253.03433285489749
         ],
         [
-          0.0,
-          0.0,
-          1.0
+          2.261553591721902e-05,
+          -1.0010228978670562e-05,
+          0.9997773173918562
         ]
       ],
-      "calibration_ms": 2108.888000017032,
+      "calibration_ms": 4140.250200056471,
       "diagnostics": {
         "method": "masked_multiscale_template_matching",
-        "score": 0.9683588743209839,
-        "scale": 0.3091824948787689,
+        "score": 0.9886190891265869,
+        "scale": 0.21881996095180511,
         "translation": [
-          487,
-          541
+          477,
+          569
         ],
         "search_crop": [
           0,
@@ -87,154 +87,154 @@
           946
         ],
         "coarse_scale_range": [
-          0.3134090909090909,
-          0.7462121212121212
+          0.22241935483870967,
+          0.5295698924731183
         ],
         "feature_refinement": {
           "attempted": true,
-          "ratio_matches": 114,
+          "ratio_matches": 271,
           "geometrically_gated_matches": 0,
           "accepted": true,
           "candidates": [
             {
               "label": "ratio_0.78_similarity",
-              "matches": 114,
-              "inliers": 25,
-              "median_error_px": 0.0,
-              "p95_error_px": 0.0,
-              "effective_scale": 0.0,
-              "linear_condition": 5.472830433696897e-11,
-              "plausible": false
+              "matches": 271,
+              "inliers": 40,
+              "median_error_px": 1.9599714279174805,
+              "p95_error_px": 3.456928014755249,
+              "effective_scale": 0.4585746723702091,
+              "linear_condition": 1.0000000000000002,
+              "plausible": true
             },
             {
               "label": "ratio_0.78_affine",
-              "matches": 114,
-              "inliers": 26,
-              "median_error_px": 1.9579167366027832,
-              "p95_error_px": 3.420473098754883,
-              "effective_scale": 0.6481434409291289,
-              "linear_condition": 1.0031582917617767,
+              "matches": 271,
+              "inliers": 40,
+              "median_error_px": 1.818177342414856,
+              "p95_error_px": 3.7462852001190186,
+              "effective_scale": 0.45855905993800283,
+              "linear_condition": 1.0030497240692964,
               "plausible": true
             },
             {
               "label": "ratio_0.78_homography",
-              "matches": 114,
-              "inliers": 28,
-              "median_error_px": 0.10490046441555023,
-              "p95_error_px": 2.84647798538208,
-              "effective_scale": 2.174165578318449e-05,
-              "linear_condition": 33662.840608440754,
-              "plausible": false
+              "matches": 271,
+              "inliers": 41,
+              "median_error_px": 1.5152477025985718,
+              "p95_error_px": 3.434154510498047,
+              "effective_scale": 0.4580085400289556,
+              "linear_condition": 1.0097604246317398,
+              "plausible": true
             },
             {
               "label": "ratio_0.84_similarity",
-              "matches": 171,
-              "inliers": 30,
-              "median_error_px": 0.0,
-              "p95_error_px": 0.0,
-              "effective_scale": 0.0,
-              "linear_condition": 2.6077028303171875e-11,
-              "plausible": false
+              "matches": 384,
+              "inliers": 41,
+              "median_error_px": 2.2311506271362305,
+              "p95_error_px": 3.6470611095428467,
+              "effective_scale": 0.4586032258983407,
+              "linear_condition": 1.0,
+              "plausible": true
             },
             {
               "label": "ratio_0.84_affine",
-              "matches": 171,
-              "inliers": 24,
-              "median_error_px": 1.84467613697052,
-              "p95_error_px": 3.658170223236084,
-              "effective_scale": 0.6469055630123121,
-              "linear_condition": 1.0055253738117125,
+              "matches": 384,
+              "inliers": 40,
+              "median_error_px": 2.0115957260131836,
+              "p95_error_px": 3.5990471839904785,
+              "effective_scale": 0.4584834860521327,
+              "linear_condition": 1.0010989895857718,
               "plausible": true
             },
             {
               "label": "ratio_0.84_homography",
-              "matches": 171,
-              "inliers": 30,
-              "median_error_px": 0.03694714605808258,
-              "p95_error_px": 0.5366829037666321,
-              "effective_scale": 5.158444983462103e-06,
-              "linear_condition": 656703.5688157408,
-              "plausible": false
+              "matches": 384,
+              "inliers": 41,
+              "median_error_px": 1.5250658988952637,
+              "p95_error_px": 3.417179584503174,
+              "effective_scale": 0.4585436390247739,
+              "linear_condition": 1.0116580641929809,
+              "plausible": true
             },
             {
               "label": "ratio_0.90_similarity",
-              "matches": 274,
-              "inliers": 46,
-              "median_error_px": 0.0,
-              "p95_error_px": 0.0,
-              "effective_scale": 0.0,
-              "linear_condition": 5.5679367709171974e-11,
-              "plausible": false
+              "matches": 643,
+              "inliers": 47,
+              "median_error_px": 1.877035140991211,
+              "p95_error_px": 3.4651288986206055,
+              "effective_scale": 0.45837335960618336,
+              "linear_condition": 1.0000000000000002,
+              "plausible": true
             },
             {
               "label": "ratio_0.90_affine",
-              "matches": 274,
-              "inliers": 25,
-              "median_error_px": 2.0615556240081787,
-              "p95_error_px": 3.1241583824157715,
-              "effective_scale": 0.6476713656111827,
-              "linear_condition": 1.0030931747189196,
+              "matches": 643,
+              "inliers": 48,
+              "median_error_px": 1.9748344421386719,
+              "p95_error_px": 4.132832050323486,
+              "effective_scale": 0.45728540983862365,
+              "linear_condition": 1.0076699008051873,
               "plausible": true
             },
             {
               "label": "ratio_0.90_homography",
-              "matches": 274,
-              "inliers": 46,
-              "median_error_px": 0.23130285739898682,
-              "p95_error_px": 0.5155214667320251,
-              "effective_scale": 1.1158147565469025e-05,
-              "linear_condition": 23558.10894232049,
-              "plausible": false
+              "matches": 643,
+              "inliers": 50,
+              "median_error_px": 1.8142902851104736,
+              "p95_error_px": 3.902311086654663,
+              "effective_scale": 0.4571856253319508,
+              "linear_condition": 1.0099618887630697,
+              "plausible": true
             },
             {
               "label": "ratio_0.94_similarity",
-              "matches": 386,
-              "inliers": 52,
+              "matches": 973,
+              "inliers": 58,
               "median_error_px": 0.0,
               "p95_error_px": 0.0,
               "effective_scale": 0.0,
-              "linear_condition": 5.8100048914786937e-11,
+              "linear_condition": 4.6006260791841884e-11,
               "plausible": false
             },
             {
               "label": "ratio_0.94_affine",
-              "matches": 386,
-              "inliers": 35,
-              "median_error_px": 2.1471853256225586,
-              "p95_error_px": 3.9678893089294434,
-              "effective_scale": 0.6453133496488134,
-              "linear_condition": 1.0079604851664987,
+              "matches": 973,
+              "inliers": 39,
+              "median_error_px": 1.665501594543457,
+              "p95_error_px": 2.8628952503204346,
+              "effective_scale": 0.4593058743755818,
+              "linear_condition": 1.0084458309498825,
               "plausible": true
             },
             {
               "label": "ratio_0.94_homography",
-              "matches": 386,
-              "inliers": 56,
-              "median_error_px": 0.9869319200515747,
-              "p95_error_px": 4.256424903869629,
-              "effective_scale": 0.000148810760091204,
-              "linear_condition": 3265.6820839539428,
+              "matches": 973,
+              "inliers": 60,
+              "median_error_px": 0.016296524554491043,
+              "p95_error_px": 0.07815098017454147,
+              "effective_scale": 1.5047502101692639e-06,
+              "linear_condition": 774940.258300553,
               "plausible": false
             }
           ],
-          "selected_candidate": "ratio_0.94_affine",
-          "inliers": 35,
-          "median_inlier_error_px": 2.1471853256225586,
-          "p95_inlier_error_px": 3.9678893089294434,
+          "selected_candidate": "ratio_0.90_homography",
+          "inliers": 50,
+          "median_inlier_error_px": 1.8142902851104736,
+          "p95_inlier_error_px": 3.902311086654663,
           "homography": [
             [
-              0.6449712422372528,
-              -0.0026704772547153544,
-              85.91066453274938
+              0.4509757893185659,
+              0.004511306572255851,
+              60.63666227419997
             ],
             [
-              -0.0021508861347159475,
-              0.6466965646941607,
-              63.62804261113559
+              -0.003923459928753473,
+              0.45542973757568816,
+              114.74742564491626
             ],
             [
-              0.0,
-              0.0,
+              -1.0240614300107027e-05,
+              4.457923042940151e-06,
               1.0
             ]
           ]
@@ -243,12 +243,12 @@
         "route_file": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo/1右 - 一闪电 门.jpg",
         "template_file": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_2nd.png",
         "floor": "2nd",
-        "center_y": 447.6396179199219,
+        "center_y": 469.1706848144531,
         "route_bbox": [
-          82,
           60,
-          856,
-          775
+          109,
+          859,
+          720
         ]
       }
     },
@@ -256,23 +256,23 @@
       "status": "PASS",
       "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_1st.png",
       "asset": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/1st.png",
-      "alignment_preview": "reports/route_asset_calibration/layout_01/route_01/1st_alignment.png",
+      "alignment_preview": "workspace/reports/route_asset_calibration/layout_01/route_lhp_solo/1st_alignment.png",
       "source_crop_xywh": [
         0,
-        782,
+        811,
         1000,
-        827
+        784
       ],
       "clean_to_route_homography": [
         [
-          0.727249800740827,
-          0.0023206514452793108,
-          -24.59222265890109
+          0.47933837988000316,
+          0.0006063731215504202,
+          25.349005929001603
         ],
         [
-          -0.001027347116923006,
-          0.7281819813617136,
-          784.4094493066251
+          0.0011566762361412517,
+          0.47810416968119585,
+          811.8142217123518
         ],
         [
           0.0,
@@ -282,14 +282,14 @@
       ],
       "route_to_clean_homography": [
         [
-          1.3750371564507526,
-          -0.004382121565907191,
-          37.25259748000707
+          2.086215296847103,
+          -0.002645918948205251,
+          -50.73548929729984
         ],
         [
-          0.0019399552508838872,
-          1.3732769055477498,
-          -1077.1636734147387
+          -0.005047175511869038,
+          2.091600793062276,
+          -1697.8633290708144
         ],
         [
           0.0,
@@ -299,14 +299,14 @@
       ],
       "asset_to_clean_homography": [
         [
-          1.3750371564507526,
-          -0.004382121565907191,
-          33.825778415467646
+          2.086215296847103,
+          -0.002645918948205251,
+          -52.881329564294305
         ],
         [
-          0.0019399552508838872,
-          1.3732769055477498,
-          -3.2611332763983683
+          -0.005047175511869038,
+          2.091600793062276,
+          -1.5750858973085542
         ],
         [
           0.0,
@@ -314,14 +314,14 @@
           1.0
         ]
       ],
-      "calibration_ms": 2707.2253999649547,
+      "calibration_ms": 4564.328900072724,
       "diagnostics": {
         "method": "masked_multiscale_template_matching",
-        "score": 0.9790119528770447,
-        "scale": 0.30623579025268555,
+        "score": 0.9789522886276245,
+        "scale": 0.21081949770450592,
         "translation": [
-          521,
-          629
+          509,
+          628
         ],
         "search_crop": [
           0,
@@ -330,150 +330,150 @@
           1070
         ],
         "coarse_scale_range": [
-          0.29741193386053194,
-          0.7081236520488856
+          0.21546875000000001,
+          0.5130208333333334
         ],
         "feature_refinement": {
           "attempted": true,
-          "ratio_matches": 297,
+          "ratio_matches": 413,
           "geometrically_gated_matches": 0,
           "accepted": true,
           "candidates": [
             {
               "label": "ratio_0.78_similarity",
-              "matches": 297,
-              "inliers": 56,
-              "median_error_px": 1.7496922016143799,
-              "p95_error_px": 4.246912479400635,
-              "effective_scale": 0.7262714735210347,
-              "linear_condition": 1.0,
-              "plausible": true
+              "matches": 413,
+              "inliers": 75,
+              "median_error_px": 0.0,
+              "p95_error_px": 0.0,
+              "effective_scale": 0.0,
+              "linear_condition": 1.1302919471400112e-10,
+              "plausible": false
             },
             {
               "label": "ratio_0.78_affine",
-              "matches": 297,
-              "inliers": 58,
-              "median_error_px": 1.9377195835113525,
-              "p95_error_px": 4.786350727081299,
-              "effective_scale": 0.7265056866965554,
-              "linear_condition": 1.0055787611239702,
+              "matches": 413,
+              "inliers": 46,
+              "median_error_px": 1.3498581647872925,
+              "p95_error_px": 4.036136627197266,
+              "effective_scale": 0.47882975761057717,
+              "linear_condition": 1.0016553826590084,
               "plausible": true
             },
             {
               "label": "ratio_0.78_homography",
-              "matches": 297,
-              "inliers": 60,
-              "median_error_px": 1.9837758541107178,
-              "p95_error_px": 4.831210613250732,
-              "effective_scale": 0.7270658230307097,
-              "linear_condition": 1.0114569706389336,
-              "plausible": true
+              "matches": 413,
+              "inliers": 75,
+              "median_error_px": 0.10543068498373032,
+              "p95_error_px": 0.5917714834213257,
+              "effective_scale": 6.312841266817007e-07,
+              "linear_condition": 22455.510187448395,
+              "plausible": false
             },
             {
               "label": "ratio_0.84_similarity",
-              "matches": 438,
-              "inliers": 83,
-              "median_error_px": 0.05861562490463257,
-              "p95_error_px": 0.10392788797616959,
-              "effective_scale": 0.00013123642073331675,
-              "linear_condition": 1.0000000000000002,
+              "matches": 645,
+              "inliers": 81,
+              "median_error_px": 0.0,
+              "p95_error_px": 0.0,
+              "effective_scale": 0.0,
+              "linear_condition": 0.0,
               "plausible": false
             },
             {
               "label": "ratio_0.84_affine",
-              "matches": 438,
-              "inliers": 53,
-              "median_error_px": 1.634102463722229,
-              "p95_error_px": 3.872985601425171,
-              "effective_scale": 0.726551792895624,
-              "linear_condition": 1.005574205578636,
+              "matches": 645,
+              "inliers": 50,
+              "median_error_px": 1.7447504997253418,
+              "p95_error_px": 4.340494632720947,
+              "effective_scale": 0.478448714361856,
+              "linear_condition": 1.0045056853119199,
               "plausible": true
             },
             {
               "label": "ratio_0.84_homography",
-              "matches": 438,
-              "inliers": 87,
-              "median_error_px": 0.36434558033943176,
-              "p95_error_px": 1.7721747159957886,
-              "effective_scale": 0.0001421055612983651,
-              "linear_condition": 14419.372232182706,
+              "matches": 645,
+              "inliers": 83,
+              "median_error_px": 1.4096152782440186,
+              "p95_error_px": 5.18465518951416,
+              "effective_scale": 0.000272012789300436,
+              "linear_condition": 26255.451551543178,
               "plausible": false
             },
             {
               "label": "ratio_0.90_similarity",
-              "matches": 686,
-              "inliers": 104,
-              "median_error_px": 0.09805651009082794,
-              "p95_error_px": 0.17695309221744537,
-              "effective_scale": 0.00020797463908214534,
-              "linear_condition": 1.0000000000000002,
+              "matches": 1095,
+              "inliers": 85,
+              "median_error_px": 0.0,
+              "p95_error_px": 0.0,
+              "effective_scale": 0.0,
+              "linear_condition": 1.315939228369341e-11,
               "plausible": false
             },
             {
               "label": "ratio_0.90_affine",
-              "matches": 686,
-              "inliers": 58,
-              "median_error_px": 1.7591347694396973,
-              "p95_error_px": 4.54193639755249,
-              "effective_scale": 0.7276009651035923,
-              "linear_condition": 1.006199084162506,
+              "matches": 1095,
+              "inliers": 49,
+              "median_error_px": 1.414336085319519,
+              "p95_error_px": 4.487295627593994,
+              "effective_scale": 0.4786501740389489,
+              "linear_condition": 1.0044557691712928,
               "plausible": true
             },
             {
               "label": "ratio_0.90_homography",
-              "matches": 686,
-              "inliers": 104,
-              "median_error_px": 0.1380816400051117,
-              "p95_error_px": 0.9203445315361023,
-              "effective_scale": 1.686441034405317e-05,
-              "linear_condition": 11463.992564310518,
+              "matches": 1095,
+              "inliers": 84,
+              "median_error_px": 0.1123121827840805,
+              "p95_error_px": 1.0677075386047363,
+              "effective_scale": 1.664144965657245e-05,
+              "linear_condition": 27182.7996947508,
               "plausible": false
             },
             {
               "label": "ratio_0.94_similarity",
-              "matches": 867,
-              "inliers": 109,
-              "median_error_px": 0.0936293825507164,
-              "p95_error_px": 0.17028959095478058,
-              "effective_scale": 0.0001993674343246927,
-              "linear_condition": 1.0,
+              "matches": 1633,
+              "inliers": 87,
+              "median_error_px": 0.0,
+              "p95_error_px": 0.0,
+              "effective_scale": 0.0,
+              "linear_condition": 1.3024231570265577e-11,
               "plausible": false
             },
             {
               "label": "ratio_0.94_affine",
-              "matches": 867,
-              "inliers": 63,
-              "median_error_px": 1.841810941696167,
-              "p95_error_px": 4.364617347717285,
-              "effective_scale": 0.7271340812762087,
-              "linear_condition": 1.0021931396808654,
-              "plausible": true
+              "matches": 1633,
+              "inliers": 25,
+              "median_error_px": 1.1957515478134155,
+              "p95_error_px": 4.626840591430664,
+              "effective_scale": 0.0070964422632252624,
+              "linear_condition": 748.9396421516733,
+              "plausible": false
             },
             {
               "label": "ratio_0.94_homography",
-              "matches": 867,
-              "inliers": 106,
-              "median_error_px": 0.15125632286071777,
-              "p95_error_px": 2.268437385559082,
-              "effective_scale": 1.7621549312414636e-05,
-              "linear_condition": 16525.553702281282,
+              "matches": 1633,
+              "inliers": 87,
+              "median_error_px": 0.0005214845878072083,
+              "p95_error_px": 0.017019519582390785,
+              "effective_scale": 3.396943574161615e-07,
+              "linear_condition": 323862266.93948233,
               "plausible": false
             }
           ],
-          "selected_candidate": "ratio_0.94_affine",
-          "inliers": 63,
-          "median_inlier_error_px": 1.841810941696167,
-          "p95_inlier_error_px": 4.364617347717285,
+          "selected_candidate": "ratio_0.84_affine",
+          "inliers": 50,
+          "median_inlier_error_px": 1.7447504997253418,
+          "p95_inlier_error_px": 4.340494632720947,
           "homography": [
             [
-              0.727249800740827,
-              0.0023206514452793108,
-              -24.59222265890109
+              0.47933837988000316,
+              0.0006063731215504202,
+              25.349005929001603
             ],
             [
-              -0.001027347116923006,
-              0.7281819813617136,
-              784.4094493066251
+              0.0011566762361412517,
+              0.47810416968119585,
+              811.8142217123518
             ],
             [
               0.0,
@@ -486,12 +486,12 @@
         "route_file": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo/1右 - 一闪电 门.jpg",
         "template_file": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_1st.png",
         "floor": "1st",
-        "center_y": 1195.4818115234375,
+        "center_y": 1202.818603515625,
         "route_bbox": [
-          0,
-          782,
-          990,
-          827
+          25,
+          811,
+          923,
+          784
         ]
       }
     },
@@ -499,23 +499,23 @@
       "status": "PASS",
       "template": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_b1.png",
       "asset": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/b1.png",
-      "alignment_preview": "reports/route_asset_calibration/layout_01/route_01/b1_alignment.png",
+      "alignment_preview": "workspace/reports/route_asset_calibration/layout_01/route_lhp_solo/b1_alignment.png",
       "source_crop_xywh": [
         0,
-        1547,
+        1553,
         1000,
-        728
+        736
       ],
       "clean_to_route_homography": [
         [
-          0.4910096519230528,
-          0.002044684203683105,
-          146.35449883344108
+          0.48934180348767553,
+          -0.00038489652311019494,
+          178.3954739240002
         ],
         [
-          0.00015350246265715762,
-          0.4850452802389177,
-          1612.8337891024066
+          -1.2025403525022229e-05,
+          0.4903379229956477,
+          1609.9571397186762
         ],
         [
           0.0,
@@ -525,14 +525,14 @@
       ],
       "route_to_clean_homography": [
         [
-          2.0366225265536135,
-          -0.008585280753290028,
-          -284.222238298814
+          2.04356139647764,
+          0.0016041175674544753,
+          -367.1446643480918
         ],
         [
-          -0.0006445306986082459,
-          2.061665907498718,
-          -3325.0301074870317
+          5.011778463037559e-05,
+          2.03940990976347,
+          -3283.371485822661
         ],
         [
           0.0,
@@ -542,14 +542,14 @@
       ],
       "asset_to_clean_homography": [
         [
-          2.0366225265536135,
-          -0.008585280753290028,
-          -297.50366762415365
+          2.04356139647764,
+          0.0016041175674544753,
+          -364.653469765835
         ],
         [
-          -0.0006445306986082459,
-          2.061665907498718,
-          -135.63294858651489
+          5.011778463037559e-05,
+          2.03940990976347,
+          -116.16789595999217
         ],
         [
           0.0,
@@ -557,125 +557,125 @@
           1.0
         ]
       ],
-      "calibration_ms": 3001.043100026436,
+      "calibration_ms": 2560.988000012003,
       "diagnostics": {
-        "method": "masked_multiscale_template_matching",
-        "score": 0.9768824577331543,
-        "scale": 0.3058972656726837,
+        "method": "feature_seed_with_whole_floor_silhouette_ecc",
+        "score": 0.9912204146385193,
+        "scale": 0.22137586772441864,
         "translation": [
-          545,
-          1545
+          703,
+          2037
         ],
         "search_crop": [
-          0,
-          1269,
-          1000,
-          971
+          340,
+          846,
+          660,
+          1643
         ],
         "coarse_scale_range": [
-          0.3096556886227545,
-          0.7372754491017964
+          0.21669999999999998,
+          0.5159523809523809
         ],
         "feature_refinement": {
           "attempted": true,
-          "ratio_matches": 148,
+          "ratio_matches": 136,
           "geometrically_gated_matches": 0,
           "accepted": true,
           "candidates": [
             {
               "label": "ratio_0.78_similarity",
-              "matches": 148,
-              "inliers": 27,
+              "matches": 136,
+              "inliers": 38,
               "median_error_px": 0.0,
               "p95_error_px": 0.0,
               "effective_scale": 0.0,
-              "linear_condition": 0.0,
+              "linear_condition": 1.3757431707687424e-10,
               "plausible": false
             },
             {
               "label": "ratio_0.78_affine",
-              "matches": 148,
-              "inliers": 25,
-              "median_error_px": 1.614145278930664,
-              "p95_error_px": 3.732959747314453,
-              "effective_scale": 0.4864778940931653,
-              "linear_condition": 1.0099377267212413,
-              "plausible": true
+              "matches": 136,
+              "inliers": 13,
+              "median_error_px": 0.4853220283985138,
+              "p95_error_px": 2.097627878189087,
+              "effective_scale": 0.06513754323956865,
+              "linear_condition": 4.321145659901821,
+              "plausible": false
             },
             {
               "label": "ratio_0.78_homography",
-              "matches": 148,
-              "inliers": 27,
-              "median_error_px": 0.058233842253685,
-              "p95_error_px": 0.5835170149803162,
-              "effective_scale": 4.795222282621737e-06,
-              "linear_condition": 6690895.551565127,
+              "matches": 136,
+              "inliers": 38,
+              "median_error_px": 0.04377468675374985,
+              "p95_error_px": 0.2559984624385834,
+              "effective_scale": 6.186808065039058e-05,
+              "linear_condition": 62317.819023376025,
               "plausible": false
             },
             {
               "label": "ratio_0.84_similarity",
-              "matches": 208,
-              "inliers": 30,
+              "matches": 241,
+              "inliers": 51,
               "median_error_px": 0.0,
               "p95_error_px": 0.0,
               "effective_scale": 0.0,
-              "linear_condition": 0.0,
+              "linear_condition": 1.4167693901689464e-10,
               "plausible": false
             },
             {
               "label": "ratio_0.84_affine",
-              "matches": 208,
-              "inliers": 28,
-              "median_error_px": 1.7388399839401245,
-              "p95_error_px": 3.592982530593872,
-              "effective_scale": 0.4873294807145188,
-              "linear_condition": 1.013900325159162,
-              "plausible": true
+              "matches": 241,
+              "inliers": 16,
+              "median_error_px": 1.1321918964385986,
+              "p95_error_px": 3.0651068687438965,
+              "effective_scale": 0.06210459072471865,
+              "linear_condition": 4.953168789947245,
+              "plausible": false
             },
             {
               "label": "ratio_0.84_homography",
-              "matches": 208,
-              "inliers": 30,
-              "median_error_px": 0.024353155866265297,
-              "p95_error_px": 0.14291444420814514,
-              "effective_scale": 1.1226500921935433e-06,
-              "linear_condition": 1499666.9349779666,
+              "matches": 241,
+              "inliers": 51,
+              "median_error_px": 0.1796703040599823,
+              "p95_error_px": 0.9074013829231262,
+              "effective_scale": 1.4259430937992393e-05,
+              "linear_condition": 56041.08068395024,
               "plausible": false
             },
             {
               "label": "ratio_0.90_similarity",
-              "matches": 298,
-              "inliers": 32,
-              "median_error_px": 0.7886896133422852,
-              "p95_error_px": 3.727959632873535,
-              "effective_scale": 0.0011227732867856498,
-              "linear_condition": 1.0000000000000002,
+              "matches": 431,
+              "inliers": 74,
+              "median_error_px": 0.0,
+              "p95_error_px": 0.0,
+              "effective_scale": 0.0,
+              "linear_condition": 2.9816054350643036e-10,
               "plausible": false
             },
             {
               "label": "ratio_0.90_affine",
-              "matches": 298,
-              "inliers": 30,
-              "median_error_px": 0.7111330628395081,
-              "p95_error_px": 3.952068567276001,
-              "effective_scale": 0.000710934221638512,
-              "linear_condition": 2.2278431064766844,
+              "matches": 431,
+              "inliers": 18,
+              "median_error_px": 1.5185962915420532,
+              "p95_error_px": 4.384644508361816,
+              "effective_scale": 0.11378840402460798,
+              "linear_condition": 21.977618010051554,
               "plausible": false
             },
             {
               "label": "ratio_0.90_homography",
-              "matches": 298,
-              "inliers": 31,
-              "median_error_px": 0.28115642070770264,
-              "p95_error_px": 4.438158988952637,
-              "effective_scale": 7.892379664883912e-05,
-              "linear_condition": 29327.752382744235,
+              "matches": 431,
+              "inliers": 74,
+              "median_error_px": 0.016781626269221306,
+              "p95_error_px": 0.12836948037147522,
+              "effective_scale": 5.478522665144502e-06,
+              "linear_condition": 260794.5404002608,
               "plausible": false
             },
             {
               "label": "ratio_0.94_similarity",
-              "matches": 401,
-              "inliers": 32,
+              "matches": 569,
+              "inliers": 87,
               "median_error_px": 0.0,
               "p95_error_px": 0.0,
               "effective_scale": 0.0,
@@ -684,39 +684,39 @@
             },
             {
               "label": "ratio_0.94_affine",
-              "matches": 401,
-              "inliers": 32,
-              "median_error_px": 1.7639862298965454,
-              "p95_error_px": 3.3247766494750977,
-              "effective_scale": 0.48762808520935785,
-              "linear_condition": 1.013110344803014,
+              "matches": 569,
+              "inliers": 20,
+              "median_error_px": 1.0215922594070435,
+              "p95_error_px": 3.488421678543091,
+              "effective_scale": 0.4873137309817741,
+              "linear_condition": 1.004370922897795,
               "plausible": true
             },
             {
               "label": "ratio_0.94_homography",
-              "matches": 401,
-              "inliers": 32,
-              "median_error_px": 1.178134560585022,
-              "p95_error_px": 3.602559804916382,
-              "effective_scale": 2.8087726379065987e-05,
-              "linear_condition": 24842.539130526213,
+              "matches": 569,
+              "inliers": 87,
+              "median_error_px": 0.032330431044101715,
+              "p95_error_px": 0.13292458653450012,
+              "effective_scale": 5.789665036697058e-06,
+              "linear_condition": 1608930.247128439,
               "plausible": false
             }
           ],
           "selected_candidate": "ratio_0.94_affine",
-          "inliers": 32,
-          "median_inlier_error_px": 1.7639862298965454,
-          "p95_inlier_error_px": 3.3247766494750977,
+          "inliers": 20,
+          "median_inlier_error_px": 1.0215922594070435,
+          "p95_inlier_error_px": 3.488421678543091,
           "homography": [
             [
-              0.4910096519230528,
-              0.002044684203683105,
-              146.35449883344108
+              0.48826948987837804,
+              0.0007714353522127593,
+              178.6650958074303
             ],
             [
-              0.00015350246265715762,
-              0.4850452802389177,
-              1612.8337891024066
+              0.0010395169785298423,
+              0.48715368931163144,
+              1611.7540447379272
             ],
             [
               0.0,
@@ -725,16 +725,179 @@
             ]
           ]
         },
-        "quality_gate": "standard_feature_support",
+        "silhouette_ecc": 0.9583867086995875,
+        "selected_seed": "feature",
+        "search_attempts": [
+          {
+            "window": [
+              0,
+              0,
+              1000,
+              2489
+            ],
+            "seed": "feature",
+            "quality": {
+              "coverage": 0.837274415768026,
+              "iou": 0.8210764869720807,
+              "distance_p95_px": 9.550000190734863
+            }
+          },
+          {
+            "window": [
+              0,
+              0,
+              1000,
+              2489
+            ],
+            "seed": "coarse",
+            "quality": {
+              "coverage": 0.0016128910315698218,
+              "iou": 0.0014918867005293867,
+              "distance_p95_px": 743.5323486328125
+            }
+          },
+          {
+            "window": [
+              0,
+              0,
+              1000,
+              2489
+            ],
+            "seed": "semantic",
+            "quality": {
+              "coverage": 0.837155969082895,
+              "iou": 0.8211023801107867,
+              "distance_p95_px": 9.550000190734863
+            }
+          },
+          {
+            "window": [
+              0,
+              0,
+              660,
+              1643
+            ],
+            "seed": "feature",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 1052.275634765625
+            }
+          },
+          {
+            "window": [
+              0,
+              0,
+              660,
+              1643
+            ],
+            "seed": "coarse",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 1052.275634765625
+            }
+          },
+          {
+            "window": [
+              340,
+              0,
+              660,
+              1643
+            ],
+            "seed": "feature",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 1052.275634765625
+            }
+          },
+          {
+            "window": [
+              340,
+              0,
+              660,
+              1643
+            ],
+            "seed": "coarse",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 1052.275634765625
+            }
+          },
+          {
+            "window": [
+              0,
+              846,
+              660,
+              1643
+            ],
+            "seed": "feature",
+            "quality": {
+              "coverage": 0.8371610093673687,
+              "iou": 0.8212189683218543,
+              "distance_p95_px": 9.550000190734863
+            }
+          },
+          {
+            "window": [
+              0,
+              846,
+              660,
+              1643
+            ],
+            "seed": "coarse",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 3.4028234663852886e+38
+            }
+          },
+          {
+            "window": [
+              340,
+              846,
+              660,
+              1643
+            ],
+            "seed": "feature",
+            "quality": {
+              "coverage": 0.8372240129232894,
+              "iou": 0.8213173196732659,
+              "distance_p95_px": 9.550000190734863
+            }
+          },
+          {
+            "window": [
+              340,
+              846,
+              660,
+              1643
+            ],
+            "seed": "coarse",
+            "quality": {
+              "coverage": 0.0,
+              "iou": 0.0,
+              "distance_p95_px": 3.4028234663852886e+38
+            }
+          }
+        ],
+        "offline_structure_quality": {
+          "coverage": 0.9964390390193623,
+          "iou": 0.9503128132037696,
+          "distance_p95_px": 0.0
+        },
+        "quality_gate": "whole_floor_structure_confirmed",
         "route_file": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo/1右 - 一闪电 门.jpg",
         "template_file": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_b1.png",
         "floor": "b1",
-        "center_y": 1898.385498046875,
+        "center_y": 1904.15234375,
         "route_bbox": [
-          146,
-          1612,
-          660,
-          573
+          177,
+          1609,
+          619,
+          590
         ]
       }
     }

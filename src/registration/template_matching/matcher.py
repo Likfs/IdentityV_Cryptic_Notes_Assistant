@@ -65,18 +65,34 @@ def _crop_map(map_bw, ds):
     return image, left, top
 
 
-def _match_template(game, map_path, scale):
+def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH, search_region=None,
+                    map_image=None, image_fingerprint=None):
+    if not np.isfinite(scale) or scale <= 0:
+        raise ValueError('固定尺度必须为有限正数')
     ds = TEMPLATE_DS
     inv_ds = 1.0 / ds
-    key = ('template', map_path, ds)
+    region = tuple(search_region) if search_region is not None else None
+    if map_image is not None and not image_fingerprint:
+        raise ValueError('内存底图必须提供内容指纹')
+    key = ('template', map_path, ds, map_threshold, region, image_fingerprint)
     cached = _map_cache.get(key)
     if cached is None:
-        gray = cv2.cvtColor(read_image(map_path), cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(read_image(map_path) if map_image is None else map_image, cv2.COLOR_BGR2GRAY)
+        region_left = region_top = 0
+        if region is not None:
+            region_left, region_top, region_width, region_height = map(int, region)
+            if (min(region_left, region_top) < 0 or min(region_width, region_height) <= 0
+                    or region_left + region_width > gray.shape[1]
+                    or region_top + region_height > gray.shape[0]):
+                raise ValueError('原图搜索区域无效')
+            gray = gray[region_top:region_top+region_height, region_left:region_left+region_width]
         if ds < 1:
             gray = cv2.resize(gray, (int(gray.shape[1]*ds), int(gray.shape[0]*ds)),
                               interpolation=cv2.INTER_AREA)
-        _, map_bw = cv2.threshold(gray, TEMPLATE_MAP_THRESH, 255, cv2.THRESH_BINARY)
+        _, map_bw = cv2.threshold(gray, map_threshold, 255, cv2.THRESH_BINARY)
         map_bw, map_left, map_top = _crop_map(map_bw, ds)
+        map_left += region_left * ds
+        map_top += region_top * ds
         _map_cache[key] = (map_bw, map_left, map_top)
         cached = _map_cache[key]
     map_bw, map_left, map_top = cached
@@ -85,6 +101,8 @@ def _match_template(game, map_path, scale):
     game_gray = cv2.cvtColor(game, cv2.COLOR_BGR2GRAY)
     height, width = game_gray.shape
     scaled_width, scaled_height = int(width*scale), int(height*scale)
+    if min(scaled_width, scaled_height, int(scaled_width*ds), int(scaled_height*ds)) <= 0:
+        raise ValueError('固定尺度缩放后的截图尺寸过小')
     interpolation = cv2.INTER_LINEAR if scale >= 1 else cv2.INTER_AREA
     scaled = cv2.resize(game_gray, (scaled_width, scaled_height), interpolation=interpolation)
     if ds < 1:
@@ -92,20 +110,18 @@ def _match_template(game, map_path, scale):
                             interpolation=cv2.INTER_AREA)
     _, game_bw = cv2.threshold(scaled, TEMPLATE_GAME_THRESH, 255, cv2.THRESH_BINARY)
     cropped = fog_crop.crop(game_bw)
+    if not np.any(game_bw):
+        raise ValueError('缩放后的截图没有可匹配像素')
     game_bw = cropped['image']
     game_left, game_top = cropped['left'], cropped['top']
     if game_bw.shape[0] > map_white.shape[0] or game_bw.shape[1] > map_white.shape[1]:
-        fit = min(map_white.shape[1]/game_bw.shape[1], map_white.shape[0]/game_bw.shape[0])
-        game_bw = cv2.resize(game_bw, (int(game_bw.shape[1]*fit), int(game_bw.shape[0]*fit)),
-                            interpolation=cv2.INTER_AREA)
-        game_left = int(game_left*fit)
-        game_top = int(game_top*fit)
-        # Preserve original behavior: returned scale/size do not incorporate fit.
+        raise ValueError('固定尺度下截图可见区域大于原图搜索区域')
     game_white = (game_bw > 0).astype(np.float32)
     game_black = (game_bw == 0).astype(np.float32)
     white_count, black_count = float(game_white.sum()), float(game_black.sum())
-    ww = cv2.matchTemplate(map_white, game_white, cv2.TM_CCORR)
-    bb = cv2.matchTemplate(map_black, game_black, cv2.TM_CCORR)
+    # FFT roundoff can produce tiny negative counts, especially on uniform backgrounds.
+    ww = np.clip(cv2.matchTemplate(map_white, game_white, cv2.TM_CCORR), 0., white_count)
+    bb = np.clip(cv2.matchTemplate(map_black, game_black, cv2.TM_CCORR), 0., black_count)
     wb = np.maximum(white_count - ww, 0.0)
     local_map_white = np.maximum(ww + np.maximum(black_count - bb, 0.0), 0.0)
     local_map_black = wb + bb

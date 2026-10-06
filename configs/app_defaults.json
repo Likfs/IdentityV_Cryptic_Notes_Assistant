@@ -8,8 +8,9 @@
   ],
   "auto_project": true,
   "auto_floor": true,
-  "map_capture_delay_ms": 100,
+  "map_capture_delay_ms": 150,
   "registration_backend": "template",
+  "layout_recognition_backend": "icon_structure",
   "skip_layout_confirmation": false,
   "recognize_hotkey": "F8",
   "project_hotkey": "F10",
@@ -27,5 +28,6 @@
     2560,
     1440
   ],
-  "route_versions": {}
+  "route_versions": {},
+  "template_route_versions": {}
 }

@@ -29,7 +29,7 @@ def test_original_projection_matches_any_floor_without_clean_coordinates(monkeyp
         profile=SimpleNamespace(key='map/difficulty'),model_bundle=None,floor='unknown',layout_override='layout_16',
         route_versions={},opacity=1.,prepared_cache={},asset_cache={},registration_backend='template')
     x,y=origin
-    assert result.accepted and result.floor=='all' and result.variant_id=='full_original'
+    assert result.accepted and result.floor=='all' and result.variant_id=='route_zhanshi_fast'
     np.testing.assert_array_equal(result.layer[:,:,:3],original[y:y+10,x:x+10])
     assert np.all(result.layer[:,:,3]==255)
     assert result.registration.clean_to_screen is None and result.registration.screenshot_to_clean is None
@@ -68,7 +68,7 @@ def test_template_open_waits_then_projects_without_floor_capture(monkeypatch):
     clock[0]=100.099
     window.scheduled[-1][1]()
     assert not window.requests
-    clock[0]=100.101
+    clock[0]=100.151
     window.scheduled[-1][1]()
     assert window.requests==[('project',True)] and not window.map_probe_pending
     assert not window.floor_monitor_active and window.opening_floor_sample is None
@@ -126,8 +126,8 @@ def test_template_full_ui_result_reference_and_switch_back_to_cpu(window,monkeyp
     monkeypatch.setattr(window,'_start_registration_backend',lambda:None)
     versions=json.loads(json.dumps(window.settings['route_versions']))
     window.apply_settings({**window.settings,'registration_backend':'template'})
-    assert not window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
-    assert window.route_combo.currentData()=='full_original'
+    assert window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
+    assert window.route_combo.currentData()=='route_zhanshi_fast'
     result=workflow.process_screenshot(original,catalog=window.catalog,profile=window.profile,
         model_bundle=None,floor='unknown',layout_override=window.locked_layout,route_versions=versions,
         opacity=.3,prepared_cache={},asset_cache={},registration_backend='template')

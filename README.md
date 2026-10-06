@@ -1,10 +1,12 @@
-# 第五人格地图路线识别与投影工具 1.0
+# 第五人格地图路线识别与投影工具 1.1
 
 面向 Windows 的地图布局识别与透明路线投影工具。通过截图识别游戏地图布局，将预先制作的地图／路线图片覆盖到游戏地图上，并提供独立参考图、采集器、训练与资产维护工具。
 
-当前项目版本为 **1.0**。版本来源为 `src/version.py`，主窗口标题、首页版本标签、命令行、Qt 应用信息和 Windows EXE 构建信息共用该版本。Windows 文件／产品版本的数值形式为 `1.0.0.0`，显示文本为 `1.0`。本次版本命名不改变已有配准算法或模型。
+当前项目版本为 **1.1**。版本来源为 `src/version.py`，主窗口标题、首页版本标签、命令行、Qt 应用信息和 Windows EXE 构建信息共用该版本。Windows 文件／产品版本的数值形式为 `1.1.0.0`，显示文本为 `1.1`。
 
-项目说明集中在本文和 [项目目录与文件说明](项目目录与文件说明.md)；[AGENTS.md](AGENTS.md) 保留为开发协作规则。本文以当前代码、配置与实际资源为准，不将历史实验结果作为准确率或性能保证。
+1.1（2026-10-06）汇总自 1.0 发布以来的更新：正式接入图标与结构布局识别并设为新用户默认；地图与三套分层路线资源扩展至 `layout_01～layout_27`；模板模式提供展十、凉哈皮、原版干净底图和两套路线图底图版共五个显示版本，并完善版本切换、切层重匹配及异步图层提交。正式 CNN 模型仍覆盖 `layout_01～layout_21`，没有随此次发布重训；资源与配置检查不代替游戏内对齐验证。
+
+项目总说明在本文，文件职责见 [项目目录与文件说明](项目目录与文件说明.md)，新增布局的完整操作见 [新增布局教程](新增布局教程.md)；[AGENTS.md](AGENTS.md) 保留为开发协作规则。本文以当前代码、配置与实际资源为准，不将历史实验结果作为准确率或性能保证。
 
 ## 目录
 
@@ -18,16 +20,17 @@
 - [Demo 与资产维护](#demo-与资产维护)
 - [评测与验证](#评测与验证)
 - [目录边界与扩展](#目录边界与扩展)
+- [新增布局完整教程](新增布局教程.md)
 
 ## 功能与支持范围
 
 | 功能 | 当前行为 |
 | --- | --- |
-| 布局识别 | PyTorch 自定义 CNN 对地图截图分类，展示候选、置信度及前两名差距；可核对入口图后锁定布局 |
+| 布局识别 | 可选 CNN 或图标与结构匹配，核对入口图后锁定正式布局并继续配准投影；匹配分数与 CNN 置信度分别显示 |
 | 人工选择 | 可直接选择正式布局并确认，取消保留原锁定；选择“自动判断”解除锁定 |
 | 定尺度模板匹配 | 默认方式，使用保存尺度匹配并投影三层完整原图，跳过楼层与 mylocation 检测 |
 | 多尺度结构配准 | CPU 或 GPU 优先，搜索等比例缩放与平移，通过底图／截图证据检查后投影 |
-| 分层显示版本 | 多尺度模式提供原版干净底图、凉哈皮路线图和展十速刷路线图，可复用有效姿态切换 |
+| 路线版本 | 多尺度模式提供三个分层版本并复用有效姿态切换；模板模式提供展十、凉哈皮及各自底图版整图和原版干净底图拼接，共五个版本，切换后重新匹配 |
 | 楼层管理 | 多尺度模式支持自动识别、截图前后复核、切层检测及手动选择；模板模式显示三层整图 |
 | 原生覆盖层 | 透明、置顶、鼠标穿透、不抢游戏焦点，不透明度可调，地图关闭时隐藏 |
 | 参考路线图 | 左上角独立参考窗，无需配准；多尺度模式需要有效布局和楼层，模板模式显示完整原图 |
@@ -37,7 +40,9 @@
 | 开发工具 | PyQt6 固定区域采集器、Tkinter Demo、CNN 训练、样本维护、离线标定、预览、尺度导入及评测 |
 | Windows 发行 | PyInstaller 完整功能文件夹发行版，资源白名单收集，保留三种配准方式与模型 |
 
-当前正式资源为 **厄运之女／噩梦，layout_01～layout_21，共 21 个布局**。每布局包含 `2nd`、`1st`、`b1` 三层；三个分层显示版本各覆盖 63 个楼层。另有 21 张入口确认图、凉哈皮与展十各 21 张原始路线图。模板模式当前使用展十的三层完整原图。程序按资源目录发现布局，不在通用逻辑中固定数量。
+当前已标定资源为 **厄运之女／噩梦，layout_01～layout_27，共 27 个布局**。每布局包含 `2nd`、`1st`、`b1` 三层；三个分层显示版本各覆盖 81 个楼层。另有 27 张入口确认图、凉哈皮与展十各 27 张原始路线图。程序按资源目录发现布局，不在通用逻辑中固定数量。
+
+当前定尺度模板配置覆盖 `layout_01～layout_27`，保留 81 条展十楼层记录；展十、凉哈皮及各自底图版均有 27 张原图，原版干净底图使用 27 组现有三层图片在内存中拼接。两种展十版本各有 27 个固定候选，两种凉哈皮版本及原版干净底图各有 81 个分层尺度候选。新增六个布局的展十保存尺度已按原图 SHA256 导入，凉哈皮尺度由现有标定离线推算；底图版逐层复核结构坐标后继承对应原图尺度。图标与结构识别动态读取二楼底图，正式 CNN 模型仍仅覆盖 `layout_01～layout_21`，CNN 识别新增布局需要发布包含新类别的模型。尺度配置及资源校验不等于游戏内对齐验证。
 
 路线来自现成图片。项目没有自动寻路、角色控制或游戏内存读取功能。分类置信度和模板匹配分数都不是实际准确率。
 
@@ -80,9 +85,9 @@ CUDA 是否可用取决于显卡、驱动和已安装的 PyTorch 构建。GPU �
 .\.venv\Scripts\python.exe tools/release/build_windows_exe.py
 ```
 
-默认输出 `workspace/releases/windows_<时间>/IdentityVRouteAssistant/`。构建目录必须是新的工作区路径，已有产物不覆盖。脚本检查运行资源、标定状态和模板指纹，按白名单收集资源，不打包本机个人 runtime、训练样本或开发工具；构建完成后附带本文和目录说明。
+默认输出 `workspace/releases/windows_<时间>/IdentityVRouteAssistant/`。构建目录必须是新的工作区路径，已有产物不覆盖。脚本检查运行资源、标定状态和模板指纹，按白名单收集资源，不打包本机个人 runtime、训练样本或开发工具；构建完成后附带本文、目录说明和新增布局教程。
 
-`build_info.json` 记录应用版本、Windows 数值版本、依赖版本和构建命令；`asset_manifest.json` 记录资源大小及 SHA256。EXE 属性中的文件／产品版本通过 `--version-file` 写入。既有发行文件夹及压缩包属于当时的构建产物，源码升级不会自动改写它们；发布 1.0 时需重新构建。普通打包不提供资产加密保护。
+`build_info.json` 记录应用版本、Windows 数值版本、依赖版本和构建命令；`asset_manifest.json` 记录资源大小及 SHA256。EXE 属性中的文件／产品版本通过 `--version-file` 写入。既有发行文件夹及压缩包属于当时的构建产物，源码升级不会自动改写它们；发布 1.1 EXE 时需重新构建。普通打包不提供资产加密保护。
 
 ## 日常使用
 
@@ -106,19 +111,49 @@ CUDA 是否可用取决于显卡、驱动和已安装的 PyTorch 构建。GPU �
 
 ## 配准与投影
 
+### 布局识别方法
+
+设置中的“布局识别方法”提供 `cnn`（CNN）和 `icon_structure`（图标与结构匹配，默认）。使用图标与结构匹配时，请在二楼地图按 F8：算法按截图区域的参考尺寸归一化，固定搜索 0°，通过入口图标锚定和墙线／地面评分给出正式 `layout_XX` 候选；图标不可靠时使用墙线搜索。
+
+识别候选直接来自当前地图／难度的 `clean/<layout_id>/<layout_id>_2nd.png`，无须复制实验日期目录或训练模型。首次后台准备图标索引较慢，缓存按底图、图标、算法和 OpenCV 版本失效。结果显示匹配分数而非概率，始终人工核对前两名入口图并确认；确认后可切换楼层，正常使用定尺度、CPU 或 GPU 优先配准及参考路线。切换识别方法会清除旧锁定和结果，重新识别后再投影，不自动回退 CNN。
+
+该算法已从独立实验副本移入正式入口，旧实验副本已于 2026-10-02 清除；本次离线和窗口验证不能代替游戏内实机检查，已知入口样例存在首选误识别，仍须核对候选。
+
 ### 定尺度模板匹配（默认）
 
 `registration_backend=template` 使用已确认布局的保存尺度，匹配三层完整原图并直接投影。实际入口是 `src/registration/template_matching/direct.py`，尺度及源图指纹来自 `configs/template_matching.json`。
 
 - 不执行楼层识别、mylocation 检测或多尺度结构验收，最高分位置直接作为候选显示。没有可匹配像素、尺度无效或资源指纹错误时停止本次投影。
-- 坐标是 `original_source_image`，结果为 `floor=all`、`variant_id=full_original`；矩阵是 `screenshot_to_original` 和 `original_to_screen`，不能当作 `clean_to_screen`。
-- 原图近黑背景透明，其他内容按不透明度显示；超出截图区域的内容裁剪。原图可能含邻层文字或路线。
-- 首页固定显示“三层完整原图”，禁用分层楼层和路线版本选择，原有分层偏好仍保留，切回 CPU/GPU 后恢复。
+- 坐标是 `original_source_image`，结果为 `floor=all`，`variant_id` 为实际所选的模板版本 ID；矩阵是 `screenshot_to_original` 和 `original_to_screen`，不能当作 `clean_to_screen`。
+- 展十保留近黑背景透明处理；凉哈皮匹配前景为灰度大于 48 的像素，透明图层额外保留高饱和度彩色路线。超出截图区域的内容裁剪，原图可能含邻层文字或路线。
+- 首页可选择展十、凉哈皮、原版干净底图，以及“凉哈皮单人速刷路线图底图版”和“展十速刷路线图底图版”，默认展十；楼层选择仍禁用。模板偏好保存到 `template_route_versions`，独立于 CPU/GPU 的 `route_versions`。
+- 切换版本时隐藏旧图层并使旧任务失效。地图打开且游戏在前台时后台重新截图匹配，否则下次投影使用新版本；不会复用另一版本的原图矩阵。
+- 凉哈皮部分原图三层比例不同，每层保存一个固定尺度并限制在对应原图区域内匹配，最高分候选用于整图投影；候选楼层仅是尺度来源，不是楼层识别结果。不进行连续尺度搜索，截图可见区域无法容纳时拒绝该候选，不暗中缩放。
 - 点击游戏楼层按钮区域时使旧任务失效并隐藏图层，鼠标释放后等待截图延迟再匹配；不识别按钮高亮或编号。关闭自动投影后需要 F10 手动匹配。
 - 楼层按钮点击采用约 25 ms 轮询，极短点击、键盘切层及滚轮缩放可能无法自动检测，应按 F10 或关图后再开图。
 - 实时图层经 Qt 信号优先提交，然后后台合成预览及保存诊断；迟到图层和预览分别检查会话、代次和地图状态。
 
 模板分数只说明候选相关性。稀疏地图结构可能与其他位置相似，需要核对实际重合效果；模板模式没有独立画面标识纠正地图开关状态。
+
+原版干净底图按二楼、一楼、地下室原尺寸在内存中纵向拼接，不生成额外图片；每层使用离线推算的保存尺度及对应搜索区域，最高分候选用于整图投影，候选楼层不是独立楼层识别结果。图层与参考图均使用同一拼接坐标，切换版本必须重新匹配。
+
+两套路线图底图版直接读取 `sources/route_lhp_solo_clean/` 与 `sources/route_zhanshi_fast_clean/`，ID 与目录名相同，保留图片中的路线和文字。它们与对应原图同名、同尺寸；导入工具逐层验证结构坐标一致后，继承原图的固定尺度和搜索区域，分别保存源图指纹，并验证原图、标定及参考版本记录，资源改变后须重新导入。这两个版本只在模板模式提供，原版干净底图仍使用三层底图拼接。
+
+```powershell
+.\.venv\Scripts\python.exe tools/assets/imports/import_template_source_variants.py
+# 默认输出 workspace/asset_build/configs/template_matching_source_variants.json，核对后再复制到正式配置。
+.\.venv\Scripts\python.exe -m src --project-once tests/fixtures/registration/game2.png --layout layout_05 --registration-backend template --route-version route_lhp_solo_clean --output workspace/reports/template_source_variants/lhp_clean
+```
+
+凉哈皮及原版干净底图的初始固定尺度由现有两套路线标定和展十保存尺度离线推算，尚不能视为游戏内对齐验证。`configs/template_matching.json` 保留旧 `entries`，新增 `original_variants` 保存版本原图／底图拼接记录、候选尺度、搜索区域及推算依赖指纹。底图、标定、原图或参考尺度变化后，须重新推算：
+
+```powershell
+.\.venv\Scripts\python.exe tools/assets/imports/derive_template_variant_scales.py
+.\.venv\Scripts\python.exe tools/assets/imports/import_template_source_variants.py --config workspace/asset_build/configs/template_matching.json
+# 检查最终输出 workspace/asset_build/configs/template_matching_source_variants.json，再复制到 configs/template_matching.json
+```
+
+`--check` 的 `template_originals` 列出各版本原图、固定候选数量和指纹错误；这些检查不代替实际图像对齐。
 
 ### 多尺度结构配准（CPU／GPU）
 
@@ -145,8 +180,10 @@ GPU 使用 CUDA 颜色运算和稀疏评分，同时保留 CPU OpenCV 搜索、�
 | 显示版本 | 持久化 ID | 内容 |
 | --- | --- | --- |
 | 原版干净底图 | `route_clean` | 引用底图，单位标定矩阵 |
-| 凉哈皮路线图 | `route_lhp_solo` | 预先制作并标定的透明分层路线 |
+| 凉哈皮单人速刷路线图 | `route_lhp_solo` | 预先制作并标定的透明分层路线 |
 | 展十速刷路线图 | `route_zhanshi_fast` | 预先制作的透明分层路线及结构图 |
+
+原版干净底图的深色背景在显示时透明化；分层素材若自带 alpha，仍保留原有透明度，源 PNG 不改写。
 
 旧 `route_01` 设置与命令行作为 `route_lhp_solo` 的兼容别名。多尺度三版本使用同一底图配准结果：`asset_to_screen = clean_to_screen @ asset_to_clean`，矩阵计算前统一为齐次形式。离线标定可用 SIFT、RANSAC、仿射／单应矩阵及 ECC，不改变运行时搜索假设。
 
@@ -154,18 +191,18 @@ GPU 使用 CUDA 颜色运算和稀疏评分，同时保留 CPU OpenCV 搜索、�
 
 ## 设置、界面与状态保护
 
-默认配置来自 `configs/app_defaults.json`，个人设置在 `runtime/settings.json`；加载时补齐旧配置字段并兼容旧后端、路线 ID。新用户默认模板匹配，已有合法个人后端选择不覆盖。
+默认配置来自 `configs/app_defaults.json`，个人设置在 `runtime/settings.json`；加载时补齐旧配置字段并兼容旧后端、路线 ID。新用户默认图标与结构识别、定尺度模板匹配，已有合法个人后端选择不覆盖。
 
 | 设置 | 出厂值／说明 |
 | --- | --- |
 | 自动投影 | 开启，地图打开后自动投影 |
 | 自动识别楼层 | 开启，仅多尺度模式使用 |
-| 截图延迟 | 100 ms，可设 0～500 ms；控制开图首次等待和多尺度失败重试间隔 |
+| 截图延迟 | 150 ms，可设 0～500 ms；控制开图首次等待和多尺度失败重试间隔 |
 | 高置信度自动锁定 | 关闭；开启后仅置信度与分差均达标时跳过确认框 |
 | 截图 ROI | `[901, 185, 1180, 1050]`，格式为左、上、宽、高，需按个人游戏画面核对 |
 | 参考分辨率 | `[2560, 1440]`；按当前游戏客户区位置与尺寸换算 ROI，检查屏幕边界 |
 | 游戏窗口标题 | `第五人格`、`Identity V`、`IdentityV`，按标题关键词识别前台 |
-| 投影不透明度 | 34%，首页／设置页可调；首页另有重置按钮 |
+| 投影不透明度 | 34%，首页／设置页可调；“恢复默认投影”读取同一默认配置并恢复至 34% |
 | 参考图不透明度 | 默认 47%，作为独立偏好保存 |
 | 快捷键 | 点击设置页的键位按钮后按目标键，检查重复与合法性 |
 
@@ -268,21 +305,26 @@ GPU 使用 CUDA 颜色运算和稀疏评分，同时保留 CPU OpenCV 搜索、�
 
 Demo 设置在 `workspace/tool_state/`，缓存、报告在 `workspace/cache/` 与 `workspace/reports/`；不写正式个人设置、不读取可信历史。Demo 的 Tkinter 覆盖窗与正式 Qt 窗口分离。
 
-### 九个资产入口
+### 资产入口
 
 | 路径（相对于 `tools/assets/`） | 功能 |
 | --- | --- |
 | `calibration/calibrate_route_assets_batch.py` | 凉哈皮原图分层、离线标定、透明路线图与摘要 |
+| `imports/derive_template_variant_scales.py` | 从现有标定推算凉哈皮与原版干净底图各楼层固定尺度，输出暂存配置 |
+| `imports/import_template_source_variants.py` | 逐层验证两套路线图底图版坐标一致，继承对应原图固定尺度并生成暂存配置 |
 | `calibration/calibrate_zhanshi_routes.py` | 展十独立楼层定位、精化、透明图和结构图，支持选布局及 render-only |
 | `calibration/organize_map_assets.py` | 底图单位矩阵版本、资源清单与目录索引 |
 | `previews/export_all_route_registration_previews.py` | 将各版本路线按标定叠到底图并导出预览 |
 | `previews/export_three_version_overlaps.py` | 三版本两两与整体叠加、离线对照画廊 |
 | `previews/create_calibration_contact_sheet.py` | 从标定摘要生成拼图 |
+| `previews/build_route_review.py` | 从资产审计、配准回归和定尺度固定投影产物生成独立人工复核网页，支持叠加、分割、放大及结论 JSON 导入导出 |
 | `previews/project_route_asset.py` | 使用已有底图矩阵投影指定资产，不做配准搜索；拒绝原图坐标冒充底图坐标 |
 | `imports/import_template_scales.py` | 从外部 scale_config.json、config.json、images 导入保存尺度并核验内容指纹 |
 | `cache/build_local_structure_library.py` | 批量构建底图局部结构索引和特征预览 |
 
 所有入口支持 `--help`。标定／整理工具默认写 `workspace/asset_build/`，仅显式 `--publish` 才更新正式资产；模板尺度导入默认生成暂存配置。预览与审计默认写工作区。
+
+人工复核网页使用 `tools/assets/previews/build_route_review.py --report <含资产审计与两套定尺度固定投影的报告目录> --output workspace/reports/manual_route_review` 生成，当前报告目录为 `workspace/reports/template_source_variants_20261003`。用浏览器打开输出的 `index.html` 即可离线比较并记录结论；图片已内嵌，无须部署网站。记录保存在浏览器，也可导出 JSON；若内置浏览器未下载，可复制页面中的 JSON 保存。此工具会重放三个配准回归样例，不修改正式标定与程序设置。
 
 ```powershell
 .\.venv\Scripts\python.exe tools/assets/calibration/calibrate_route_assets_batch.py --help
@@ -291,6 +333,8 @@ Demo 设置在 `workspace/tool_state/`，缓存、报告在 `workspace/cache/` �
 ```
 
 正式地图路径为 `assets/maps/<map_id>/<difficulty_id>/`，其中 `clean/<layout_id>/` 是底图，`entrance/` 是入口图，`sources/<variant_id>/` 是原图，`routes/<variant_id>/<layout_id>/` 是运行图层和 `calibration.json`。替换图片或特征逻辑后核验对应标定与指纹，不能跨布局、楼层或源图错误复用缓存。
+
+重新制作 `clean` 后，重新标定对应布局的凉哈皮、展十分层图及结构图，并同步 `configs/template_matching.json` 的底图指纹、标定指纹和 `clean_to_original`；展十完整原图未变时保留其保存尺度，再重新推算 `original_variants` 的凉哈皮及原版干净底图尺度及依赖指纹，随后用 `import_template_source_variants.py` 重新核对并导入两套路线图底图版。原版底图继续使用单位矩阵引用。更新后重启程序，加载新资源并重新准备模板缓存。
 
 ## 评测与验证
 
@@ -302,6 +346,10 @@ Demo 设置在 `workspace/tool_state/`，缓存、报告在 `workspace/cache/` �
 ```
 
 `--check` 汇总模型是否存在、布局和各版本楼层状态；退出码 0 不代表质量已验证，仍须看缺失模型及 REVIEW。离线投影拒绝时退出码 2，输出诊断解释原因。`--smoke` 启动正式窗口后约 2 秒关闭，用于界面烟雾检查，不是游戏内验证。
+
+1.1 发布检查（2026-10-06）：模型、27 个布局、三套分层版本和五种模板版本的资源及指纹检查通过；分层资产审计覆盖 81 个楼层、243 份版本记录，无加载错误，14 项结构指标需人工复核。固定截图 `game2.png` 的 `layout_05` 凉哈皮底图版模板投影通过，并检查了合成预览。本次没有重新构建 EXE，也未做游戏内实机检查；这些离线结果不代表全部布局的实机对齐已验证。
+
+本次完整测试仍有三项配准回归失败，尚未完成原因定位：`test_first_sparse_registration.py` 的 layout_11 地下室稀疏候选冲突样例被拒绝；`test_joint_acceptance.py` 的 layout_16 地下室已复核房间样例未获补充接受；`test_pose_evidence.py` 的 layout_13 地下室区域竞争样例未按预期拒绝。测试断言和配准验收策略保持原样；不能将本次发布描述为全部回归通过。复现可运行这三个测试文件，人工复核工具为 `tools/assets/previews/build_route_review.py`。
 
 | 六个入口（`tools/evaluation/`） | 作用 |
 | --- | --- |
@@ -341,6 +389,8 @@ Demo 设置在 `workspace/tool_state/`，缓存、报告在 `workspace/cache/` �
 
 各源码／脚本／配置／测试文件职责及重复资产规则见 [项目目录与文件说明](项目目录与文件说明.md)。`.git`、`.venv` 和缓存只说明用途，不展开依赖内部文件。第三方许可证和依赖文档保持原样，历史发行包内部说明属于原构建产物。
 
-新增布局须配套采集样本、模型类别、三层底图、入口图与路线标定；模板模式另需完整原图及保存尺度。持久化布局、楼层、版本 ID 保持兼容，资源路径写项目相对路径。训练、发布模型、正式资产更新是不同步骤。
+新增布局须配套三层底图、入口图与路线标定；模板模式另需完整原图及保存尺度。图标与结构识别动态读取正式二楼底图；使用 CNN 时还须配套采集样本和模型类别。持久化布局、楼层、版本 ID 保持兼容，资源路径写项目相对路径。训练、发布模型、正式资产更新是不同步骤。
+
+逐步操作见 [新增布局教程](新增布局教程.md)：分别说明 `template`、`cpu`、`auto` 三种配准，以及三个分层路线版本，包含暂存发布、模板尺度导入和验证。CPU／GPU 共用分层路线；模板模式可选择展十、凉哈皮及各自底图版完整原图，以及三层原版干净底图的内存拼接版本。
 
 已删除的 archives、旧 packaging、comparison、experiments 及历史维护报告不是当前入口或回退来源。开发工具可重新生成工作区目录；存在生成目录不代表历史备份恢复。当前 CPU 回退依赖保留的 CPU 源码。

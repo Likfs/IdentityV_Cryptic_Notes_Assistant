@@ -14,6 +14,7 @@ from PIL import Image
 from src.paths import CACHE_ROOT, LOG_ROOT, DIAGNOSTIC_ROOT
 from src.app_catalog import DifficultyProfile, MapCatalog, prediction_decision
 from src.layout_classifier import predict_image
+from src.layout_retrieval import LayoutRetriever, LayoutRetrievalResult
 from src.projection.route_overlay import (
     RouteOverlayAsset,
     composite_route_layer,
@@ -259,6 +260,9 @@ class WorkflowResult:
     session_id: str | None = None
     projection_preview_pending: bool = False
     preview_error: str | None = None
+    layout_recognition_backend: str = 'cnn'
+    layout_retrieval: LayoutRetrievalResult | None = None
+    recognition_window: list[int] | None = None
 
     def diagnostics(self) -> dict:
         return {
@@ -270,6 +274,9 @@ class WorkflowResult:
             "floor": self.floor,
             "floor_detection": self.floor_detection,
             "decision": self.decision,
+            "layout_recognition_backend": self.layout_recognition_backend,
+            "layout_retrieval": self.layout_retrieval.diagnostics() if self.layout_retrieval else None,
+            "recognition_window": self.recognition_window,
             "selected_layout": self.selected_layout,
             "variant_id": self.variant_id,
             "variant_source": self.variant_source,
@@ -364,6 +371,10 @@ def process_screenshot(
     registration_backend: str = 'auto',
     defer_projection_preview: bool = False,
     template_cache_root: Path | None = None,
+    layout_recognition_backend: str = 'cnn',
+    layout_retriever: LayoutRetriever | None = None,
+    recognition_reference_size: tuple[int, int] = (1180, 1050),
+    template_variant_id: str = 'route_zhanshi_fast',
 ) -> WorkflowResult:
     started = time.perf_counter()
     template_cache_root = template_cache_root or CACHE_ROOT / 'route_projection_templates'
@@ -371,7 +382,17 @@ def process_screenshot(
         raise ValueError("截图必须为 BGR 三通道图片")
     timings: dict[str, float] = {}
     decision = None
-    if model_bundle is not None and (recognize_only or layout_override is None):
+    retrieval = None
+    if layout_recognition_backend not in ('cnn', 'icon_structure'):
+        raise ValueError('未知的布局识别方法')
+    if layout_recognition_backend == 'icon_structure' and (recognize_only or layout_override is None):
+        if not recognize_only:
+            raise ValueError('请先识别并确认布局，再进行配准投影')
+        retrieval = (layout_retriever or LayoutRetriever(profile.clean_root)).recognize(
+            screenshot_bgr, recognition_reference_size)
+        decision = retrieval.decision()
+        timings['classification'] = retrieval.timings_ms['total']
+    elif layout_recognition_backend == 'cnn' and model_bundle is not None and (recognize_only or layout_override is None):
         model, checkpoint, device = model_bundle
         image = Image.fromarray(cv2.cvtColor(screenshot_bgr, cv2.COLOR_BGR2RGB))
         inference_started = time.perf_counter()
@@ -397,6 +418,8 @@ def process_screenshot(
         template_path=None,
         asset_path=None,
         calibration_path=None,
+        layout_recognition_backend=layout_recognition_backend,
+        layout_retrieval=retrieval,
     )
     if recognize_only:
         # Recognition succeeds when candidates are available for manual review.
@@ -404,19 +427,21 @@ def process_screenshot(
         result.selected_layout = decision["best_label"] if decision else None
         result.accepted = bool(result.selected_layout)
         if not result.accepted:
-            result.reasons.append("模型未返回可供选择的布局候选")
+            result.reasons.extend(retrieval.reasons if retrieval else ["模型未返回可供选择的布局候选"])
         result.timings_ms["total"] = (time.perf_counter() - started) * 1000.0
         return result
     if registration_backend == 'template':
         from src.registration.template_matching.direct import project_original
         result.floor = 'all'
-        result.variant_id = 'full_original'
-        result.variant_source = '三层完整原图'
+        from src.app_catalog import TEMPLATE_VERSION_NAMES
+        result.variant_id = template_variant_id
+        result.variant_source = TEMPLATE_VERSION_NAMES.get(template_variant_id, template_variant_id) + ' · 三层完整原图'
         if not selected_layout:
             result.reasons = ['请先识别并确认布局，再进行 定尺度模板匹配 原图配准']
         else:
             registration, source, layer, composite, direct_timings = project_original(
-                screenshot_bgr, profile.key, selected_layout, opacity, defer_preview=defer_projection_preview)
+                screenshot_bgr, profile.key, selected_layout, opacity, variant_id=template_variant_id,
+                defer_preview=defer_projection_preview)
             result.registration = registration
             result.layer, result.projection = layer, composite
             result.asset_path = str(source) if source is not None else None
