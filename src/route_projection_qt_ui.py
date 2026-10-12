@@ -9,8 +9,8 @@ from pathlib import Path
 
 import cv2
 import numpy as np
-from PyQt6.QtCore import QEvent, QPoint, Qt, QTimer, QPropertyAnimation
-from PyQt6.QtGui import QColor, QGuiApplication, QImage, QPixmap
+from PyQt6.QtCore import QEvent, QPoint, QPointF, Qt, QTimer, QPropertyAnimation
+from PyQt6.QtGui import QColor, QGuiApplication, QImage, QPixmap, QPainter
 from PyQt6.QtWidgets import (
     QButtonGroup, QCheckBox, QComboBox, QDialog, QFormLayout, QFrame, QGridLayout,
     QGraphicsDropShadowEffect, QHBoxLayout, QLabel, QLineEdit, QMessageBox,
@@ -213,7 +213,7 @@ class LayoutConfirmationDialog(QDialog):
             card.setMinimumSize(0, 240 if compact else 160)
             card.setStyleSheet(f"QPushButton#layoutCandidate {{ min-height: {240 if compact else 160}px; }}")
             card.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-            score_text = f"分数 {item['score']:.4f}" if 'score' in item else f"置信度 {item['confidence']:.1%}"
+            score_text = f"分数 {item['score']:.4f}"
             card.setAccessibleName(f"布局 {layout.removeprefix('layout_')}，{score_text}")
             card_body = QVBoxLayout(card)
             card_body.setContentsMargins(18, 16, 18, 16)
@@ -226,7 +226,7 @@ class LayoutConfirmationDialog(QDialog):
             radio.setAutoExclusive(False)
             radio.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             row.addWidget(radio, 1)
-            score = QLabel(score_text if 'score' in item else f"{item['confidence']:.1%}")
+            score = QLabel(score_text)
             score.setAlignment(Qt.AlignmentFlag.AlignCenter)
             row.addWidget(score)
             card_body.addWidget(row_widget)
@@ -249,13 +249,11 @@ class LayoutConfirmationDialog(QDialog):
 
         footer = QVBoxLayout() if width < 850 else QHBoxLayout()
         footer.setSpacing(18)
-        self.skip_confirmation = QCheckBox("高置信度时不再提示")
-        self.skip_confirmation.setToolTip("置信度或前两名分差不足时仍会弹框，由你选择；可在设置中的“布局确认”重新开启全部提示")
-        if candidates and 'score' in candidates[0]:
-            description.setText('请核对入口图片后确认布局。匹配分数不是正确概率。')
-            self.skip_confirmation.setText('图标与结构识别需要人工确认')
-            self.skip_confirmation.setEnabled(False)
-        footer.addWidget(self.skip_confirmation)
+        self.confirmation_required = QCheckBox('布局识别需要人工确认')
+        self.confirmation_required.setToolTip('请核对入口图片后确认布局；匹配分数不是正确概率。')
+        self.confirmation_required.setEnabled(False)
+        description.setText('请核对入口图片后确认布局。匹配分数不是正确概率。')
+        footer.addWidget(self.confirmation_required)
         if width >= 850:
             footer.addStretch(1)
         actions = QHBoxLayout()
@@ -389,7 +387,7 @@ class DraggableTitleBar(QFrame):
         super().mouseDoubleClickEvent(event)
 
 
-class CompatLabel(QLabel):
+class StatusLabel(QLabel):
     """A QLabel with the tiny configure API used by the processing controller."""
 
     def configure(self, *, text=None, fg=None, **_kwargs):
@@ -576,16 +574,23 @@ class NotificationToast(QWidget):
 class RouteOverlayWindow(QWidget):
     """Transparent, mouse-through Qt window positioned over the game's map ROI."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, clear_before_hide: bool = True):
         super().__init__(parent, Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool |
                          Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.WindowDoesNotAcceptFocus)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.setAttribute(Qt.WidgetAttribute.WA_ShowWithoutActivating)
+        self._clear_before_hide = clear_before_hide
+        self.capture_excluded = False
+        self._pan_pixmap = None
+        self._pan_offset = (0., 0.)
         self.label = QLabel(self)
         self.label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.visible = False
 
     def show(self, bgra: np.ndarray, left: int = 0, top: int = 0):
+        self._pan_pixmap = None
+        self.label.show()
         if bgra.ndim != 3 or bgra.shape[2] != 4:
             raise ValueError("覆盖层必须为 BGRA 四通道图片")
         rgba = cv2.cvtColor(bgra, cv2.COLOR_BGRA2RGBA)
@@ -597,7 +602,44 @@ class RouteOverlayWindow(QWidget):
         self.label.setPixmap(pixmap)
         self.label.setGeometry(0, 0, logical_width, logical_height)
         self.setGeometry(x, y, logical_width, logical_height)
-        super().show()
+        if not self.isVisible():
+            self._prepare_native_window()
+            super().show()
+        self.visible = True
+
+    def set_pan_image(self, rgba, origin, roi):
+        """Cache the complete scaled source inside a fixed, clipping viewport."""
+        height, width = rgba.shape[:2]
+        image = QImage(rgba.data, width, height, rgba.strides[0], QImage.Format.Format_RGBA8888).copy()
+        x, y, w, h, scale = physical_to_qt_geometry(*map(int, roi))
+        self._pan_scale = scale
+        self._pan_origin = tuple(origin)
+        self._pan_offset = (0., 0.)
+        self._pan_pixmap = QPixmap.fromImage(image)
+        self._pan_pixmap.setDevicePixelRatio(scale)
+        self.label.clear()
+        self.label.hide()
+        self.setGeometry(x, y, w, h)
+        self.update()
+
+    def set_pan_offset(self, dx, dy):
+        if self._pan_pixmap is not None and (dx, dy) != self._pan_offset:
+            self._pan_offset = (float(dx), float(dy))
+            self.update()
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        if self._pan_pixmap is not None:
+            painter = QPainter(self)
+            painter.setClipRect(self.rect())
+            painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+            x = (self._pan_origin[0] + self._pan_offset[0]) / self._pan_scale
+            y = (self._pan_origin[1] + self._pan_offset[1]) / self._pan_scale
+            painter.drawPixmap(QPointF(x, y), self._pan_pixmap)
+            painter.end()
+
+    def _prepare_native_window(self):
+        # Apply native styles before exposing the window's first frame.
         if sys.platform == "win32":
             hwnd = int(self.winId())
             get_style = ctypes.windll.user32.GetWindowLongW
@@ -608,10 +650,16 @@ class RouteOverlayWindow(QWidget):
             set_style.restype = ctypes.c_long
             style = get_style(hwnd, -20)
             set_style(hwnd, -20, style | 0x20 | 0x80 | 0x08000000)
-            exclude_window_from_capture(self)
-        self.visible = True
+            self.capture_excluded = exclude_window_from_capture(self)
 
     def hide(self):
+        if self._clear_before_hide:
+            self._pan_pixmap = None
+            self.label.clear()
+            if self.isVisible():
+                # Clear the previous surface while painting is still possible.
+                # Hidden widgets cannot repaint; update() alone would be too late.
+                self.repaint()
         super().hide()
         self.visible = False
 
@@ -624,7 +672,7 @@ class ReferenceMapWindow(RouteOverlayWindow):
     """Unregistered floor reference, separate from the positioned route overlay."""
 
     def __init__(self):
-        super().__init__()
+        super().__init__(clear_before_hide=False)
         self.caption = QLabel(self)
         self.caption.setStyleSheet("color: white; background: #172331; padding: 3px; font-size: 12px;")
 
@@ -692,8 +740,6 @@ class SettingsPage(QWidget):
 
         def check(name, text, value):
             widget = QCheckBox(text)
-            if name == 'skip_layout_confirmation':
-                self.skip_layout_confirmation_check = widget
             widget.setChecked(value)
             self.vars[name] = Value(value)
             widget.toggled.connect(lambda checked, key=name: (self.vars[key].set(checked), self._schedule_settings_save()))
@@ -710,8 +756,8 @@ class SettingsPage(QWidget):
         for key, label in BACKEND_LABELS.items():
             self.layout_recognition_combo.addItem(label, key)
         self.layout_recognition_combo.setCurrentIndex(
-            self.layout_recognition_combo.findData(settings.get('layout_recognition_backend', 'cnn')))
-        self.vars['layout_recognition_backend'] = Value(settings.get('layout_recognition_backend', 'cnn'))
+            self.layout_recognition_combo.findData(settings['layout_recognition_backend']))
+        self.vars['layout_recognition_backend'] = Value(settings['layout_recognition_backend'])
         self.layout_recognition_combo.currentIndexChanged.connect(lambda _index: (
             self.vars['layout_recognition_backend'].set(self.layout_recognition_combo.currentData()),
             self._update_recognition_controls(), self._schedule_settings_save()))
@@ -724,31 +770,18 @@ class SettingsPage(QWidget):
         form.addRow("投影快捷键", capture("project_hotkey", ACTION_KEYS, settings["project_hotkey"]))
         form.addRow("左上角路线图显隐", capture("reference_hotkey", ACTION_KEYS, settings["reference_hotkey"]))
         form.addRow("自动投影", check("auto_project", "地图打开时自动配准并投影", settings["auto_project"]))
-        form.addRow("自动识别楼层", check("auto_floor", "多尺度结构配准使用楼层识别，定尺度模板匹配跳过", settings["auto_floor"]))
+        form.addRow("地图拖动跟随（试用）", check("template_motion_tracking", "拖动地图时路线同步平移（不支持缩放）", settings.get("template_motion_tracking", True)))
         self.map_capture_delay_spin = QSpinBox()
         self.map_capture_delay_spin.setRange(0, MAX_MAP_CAPTURE_DELAY_MS)
         self.map_capture_delay_spin.setSuffix(" ms")
         self.map_capture_delay_spin.setKeyboardTracking(False)
         self.map_capture_delay_spin.setValue(map_capture_delay_ms(settings))
-        self.map_capture_delay_spin.setToolTip(f"默认 {DEFAULT_MAP_CAPTURE_DELAY_MS} ms。控制地图键开图后的首次截图等待，以及楼层未识别成功时的重试间隔；修改自动保存，下次开图生效。")
+        self.map_capture_delay_spin.setToolTip(f"默认 {DEFAULT_MAP_CAPTURE_DELAY_MS} ms。从松开地图键开始计算首次截图等待，修改自动保存，下次开图生效。")
         self.vars["map_capture_delay_ms"] = Value(self.map_capture_delay_spin.value())
         self.map_capture_delay_spin.valueChanged.connect(lambda value: (
             self.vars["map_capture_delay_ms"].set(value), self._schedule_settings_save()))
         form.addRow("截图延迟", self.map_capture_delay_spin)
-        self.registration_backend_combo = QComboBox()
-        self.registration_backend_combo.addItem("多尺度结构配准（GPU）", "auto")
-        self.registration_backend_combo.addItem("多尺度结构配准（CPU）", "cpu")
-        self.registration_backend_combo.addItem("定尺度模板匹配", "template")
-        self.registration_backend_combo.setToolTip("GPU 不可用或运行异常时自动回退 CPU。定尺度模板匹配不识别楼层，固定显示三层完整原图；多尺度结构配准的显示版本在首页选择。")
-        self.registration_backend_combo.setCurrentIndex(
-            self.registration_backend_combo.findData(settings.get("registration_backend", "auto")))
-        self.vars["registration_backend"] = Value(settings.get("registration_backend", "auto"))
-        self.registration_backend_combo.currentIndexChanged.connect(lambda _index: (
-            self.vars["registration_backend"].set(self.registration_backend_combo.currentData()),
-            self._schedule_settings_save()))
-        form.addRow("配准计算", self.registration_backend_combo)
-        form.addRow("布局确认", check("skip_layout_confirmation", "高置信度时自动锁定，低置信度时仍由我选择",
-                                    settings["skip_layout_confirmation"]))
+        form.addRow("配准方式", QLabel("定尺度模板匹配 · 三层完整原图"))
         form.addRow("游戏窗口标题", entry("window_titles", ", ".join(settings["game_window_titles"])))
         form.addRow("截图区域 左, 上, 宽, 高", entry("roi", ", ".join(map(str, settings["capture_roi"]))))
         form.addRow("参考分辨率 宽, 高", entry("reference_size", ", ".join(map(str, settings["capture_reference_size"]))))
@@ -773,10 +806,10 @@ class SettingsPage(QWidget):
         self._update_recognition_controls()
 
     def _update_recognition_controls(self):
-        icon_structure = self.layout_recognition_combo.currentData() == 'icon_structure'
-        self.skip_layout_confirmation_check.setEnabled(not icon_structure)
-        self.recognition_note.setText('请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。'
-                                      if icon_structure else 'CNN 使用已发布模型；高置信度时可按设置跳过确认。')
+        self.recognition_note.setText(
+            '请将游戏地图缩到最小再识别；CPU 搜索三层底图，不自动适配其他缩放。请核对候选并人工确认，分数不是正确概率。'
+            if self.layout_recognition_combo.currentData() == 'pure_structure' else
+            '请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。')
 
     def _capture_key(self, name: str, key: str) -> bool:
         names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey")
@@ -816,7 +849,7 @@ class SettingsPage(QWidget):
         reference = [int(part.strip()) for part in self.vars["reference_size"].get().split(",")]
         if len(reference) != 2 or any(number <= 0 for number in reference):
             raise ValueError("游戏参考分辨率必须为：宽, 高")
-        from src.route_projection_app import game_capture_region, percent_to_opacity
+        from src.route_projection_core import game_capture_region, percent_to_opacity
         game_capture_region(CaptureRegion(0, 0, *reference), roi, reference)
         updated = dict(self.app.settings)
         updated.update({name: value.get() for name, value in self.vars.items()
@@ -827,6 +860,8 @@ class SettingsPage(QWidget):
         if not updated["game_window_titles"]:
             raise ValueError("请填写游戏窗口标题关键词，以便只截取游戏画面")
         updated["opacity"] = percent_to_opacity(round(self.vars["opacity"].get()))
+        updated.update(registration_backend="template", layout_recognition_backend=self.vars["layout_recognition_backend"].get(),
+                       auto_floor=False, skip_layout_confirmation=False)
         return updated
 
     def _persist_settings(self, *, show_error=False):
@@ -837,7 +872,7 @@ class SettingsPage(QWidget):
             updated = self._collect_settings()
             self.app.apply_settings(updated)
             persisted = load_settings(self.app.catalog, self.app.settings_path)
-            fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "map_capture_delay_ms", "recognize_hotkey",
+            fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "template_motion_tracking", "map_capture_delay_ms", "recognize_hotkey",
                       "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "layout_recognition_backend")
             if any(persisted[name] != updated[name] for name in fields):
                 raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
@@ -857,7 +892,3 @@ class SettingsPage(QWidget):
             return
         self.app._leave_settings(self)
         event.accept()
-
-
-# Keep the controller/test import stable while this widget is now an in-window page.
-SettingsDialog = SettingsPage

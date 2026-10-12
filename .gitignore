@@ -36,4 +36,7 @@ configs/route_projection_app.json
 # Formal runtime and developer workspace are local state
 runtime/*
 workspace/*
+retired_features/cnn/workspace/
+retired_features/multiscale_registration/workspace/
+retired_features/multiscale_registration/runtime/
 archives/before_structure_cleanup_*/

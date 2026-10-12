@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import sys
 import time
 from dataclasses import dataclass
@@ -16,20 +15,14 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(PROJECT_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from tools.common.paths import asset_output
-from src.registration_core.utils import imread_unicode, imwrite_unicode  # noqa: E402
+from tools.assets.image_io import imread_unicode, imwrite_unicode  # noqa: E402
 from tools.common.route_calibration import estimate_template_to_route  # noqa: E402
 
 
-CLEAN_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/clean"
+from tools.common.calibration_assets import (CLEAN_ROOT, OUTPUT_ROOT, FLOORS, route_asset_root,
+                                             project_relative, leading_number, floor_template)
 ROUTE_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
-OUTPUT_ROOT = PROJECT_ROOT / 'workspace/reports/route_asset_calibration'
-ASSET_ROOT = asset_output(PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/routes", publish="--publish" in sys.argv)
-FLOORS = ("2nd", "1st", "b1")
-
-
-def project_relative(path: Path) -> str:
-    return path.resolve().relative_to(PROJECT_ROOT).as_posix()
+ASSET_ROOT = route_asset_root()
 
 
 SEARCH_RATIOS = {
@@ -52,20 +45,8 @@ class Calibration:
     status: str
 
 
-def leading_number(path: Path) -> int | None:
-    match = re.match(r"^(\d+)", path.name)
-    return int(match.group(1)) if match else None
-
-
 def route_variants(layout_number: int, route_files: list[Path]) -> list[Path]:
     return sorted((path for path in route_files if leading_number(path) == layout_number), key=lambda path: path.name)
-
-
-def floor_template(layout_dir: Path, floor: str) -> Path:
-    matches = list(layout_dir.glob(f"*_{floor}.png"))
-    if len(matches) != 1:
-        raise RuntimeError(f"{layout_dir.name} 的 {floor} 干净底图数量不是1：{len(matches)}")
-    return matches[0]
 
 
 def transformed_geometry(template: np.ndarray, homography: np.ndarray, route_shape: tuple[int, ...]) -> tuple[float, tuple[int, int, int, int]]:
@@ -340,9 +321,11 @@ def write_summary(payloads: list[dict], failures: list[dict]) -> None:
 
 
 def main() -> None:
+    global ASSET_ROOT
     parser = argparse.ArgumentParser(description="批量制作路线资产，默认输出到 workspace/asset_build")
     parser.add_argument("--publish", action="store_true", help="明确将结果写入正式资产目录")
-    parser.parse_args()
+    args = parser.parse_args()
+    ASSET_ROOT = route_asset_root(publish=args.publish)
     route_files = sorted((path for path in ROUTE_ROOT.iterdir() if path.is_file()), key=lambda path: path.name)
     layout_dirs = sorted((path for path in CLEAN_ROOT.iterdir() if path.is_dir()), key=lambda path: path.name)
     payloads = []

@@ -18,7 +18,6 @@ PERF_MODES = (
     {'name': 'MAX', 'algo': 'template', 'ds': 0.25},
     {'name': 'TURBO', 'algo': 'template', 'ds': 0.1},
 )
-PERF_MODE = 3
 _map_cache = {}
 
 
@@ -35,20 +34,6 @@ def preload_map(map_path):
     if key not in _map_cache:
         _map_cache[key] = cv2.cvtColor(read_image(map_path), cv2.COLOR_BGR2GRAY)
     return _map_cache[key]
-
-
-def release_preloaded_map(map_path):
-    _map_cache.pop(_algo_key(map_path), None)
-
-
-def set_perf_mode(mode):
-    global PERF_MODE, TEMPLATE_DS
-    if not 0 <= mode < len(PERF_MODES):
-        return False
-    PERF_MODE = mode
-    TEMPLATE_DS = PERF_MODES[mode]['ds']
-    _map_cache.clear()
-    return True
 
 
 def _crop_map(map_bw, ds):

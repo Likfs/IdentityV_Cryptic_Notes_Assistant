@@ -14,7 +14,10 @@ import numpy as np
 from src.paths import PROJECT_ROOT, CACHE_ROOT
 
 RESOURCE_ROOT = PROJECT_ROOT / 'assets/layout_retrieval'
-BACKEND_LABELS = {'cnn': 'CNN', 'icon_structure': '图标与结构匹配'}
+BACKEND_LABELS = {'pure_structure': '纯结构识别（最小缩放·CPU）', 'icon_structure': '图标与结构匹配'}
+
+def normalize_recognition_backend(value):
+    return value if isinstance(value, str) and value in BACKEND_LABELS else 'pure_structure'
 PARAMETERS = {
     'algorithm_version': 'fixed_direction_icon_structure_layout_v1',
     'rotation_degrees': [0], 'scale_min': .30, 'scale_max': 1.40,
@@ -51,6 +54,8 @@ class LayoutRetrievalResult:
     resource_fingerprint: str = ''
     input_size: list[int] = field(default_factory=list)
     reference_size: list[int] = field(default_factory=list)
+    backend: str = 'icon_structure'
+    parameters: dict = field(default_factory=lambda: dict(PARAMETERS))
 
     @property
     def accepted(self):
@@ -66,21 +71,30 @@ class LayoutRetrievalResult:
         return self.candidates[0].score - self.candidates[1].score if len(self.candidates) > 1 else None
 
     def diagnostics(self):
-        return {**asdict(self), 'backend': 'icon_structure', 'accepted': self.accepted,
+        return {**asdict(self), 'backend': self.backend, 'accepted': self.accepted,
                 'strong_evidence': self.strong_evidence, 'top1_top2_gap': self.margin,
-                'parameters': PARAMETERS}
+                'parameters': self.parameters}
 
     def decision(self):
         """Expose manual-confirmation candidates without inventing probabilities."""
         if not self.candidates:
             return None
         return {
-            'backend': 'icon_structure', 'accepted': False, 'layout': None,
+            'backend': self.backend, 'accepted': False, 'layout': None,
             'best_label': self.candidates[0].layout, 'score': self.candidates[0].score,
             'margin': self.margin or 0., 'score_is_probability': False,
             'ranking': [{'layout': item.layout, 'score': item.score,
                          'evidence_status': item.evidence_status} for item in self.candidates],
         }
+
+
+def create_layout_retriever(backend, clean_root, **kwargs):
+    if backend == 'pure_structure':
+        from .structure_layout import PureStructureRetriever
+        return PureStructureRetriever(clean_root, **kwargs)
+    if backend == 'icon_structure':
+        return LayoutRetriever(clean_root, **kwargs)
+    raise ValueError('未知的布局识别方法')
 
 
 def read_image(path: Path):

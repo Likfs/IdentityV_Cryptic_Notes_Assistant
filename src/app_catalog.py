@@ -4,6 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 from pathlib import Path
+from src.layout_retrieval import normalize_recognition_backend
 
 
 from src.paths import PROJECT_ROOT, CONFIG_ROOT, SETTINGS_PATH
@@ -48,7 +49,6 @@ class DifficultyProfile:
     difficulty_name: str
     clean_root: Path
     calibration_root: Path
-    model_path: Path
     asset_versions: tuple[dict, ...] = ()
     entrance_root: Path | None = None
 
@@ -97,7 +97,6 @@ class MapCatalog:
                     difficulty_name=str(difficulty["name"]),
                     clean_root=self._resolve(difficulty["clean_root"]),
                     calibration_root=self._resolve(difficulty["calibration_root"]),
-                    model_path=self._resolve(difficulty["model"]),
                     asset_versions=tuple(difficulty.get("asset_versions", [])),
                     entrance_root=self._resolve(difficulty["entrance_root"]) if difficulty.get("entrance_root") else None,
                 )
@@ -150,15 +149,6 @@ class MapCatalog:
         default = next((item for item in variants if item.variant_id == "route_lhp_solo"), variants[0])
         return next((item for item in variants if item.variant_id == preferred), default)
 
-    def select_version_for_all(self, profile: DifficultyProfile, variant_id: str, saved: dict) -> None:
-        """Validate the whole set before changing any persisted layout choices."""
-        variant_id = canonical_route_version(variant_id)
-        layouts = self.layouts(profile)
-        for layout in layouts:
-            variant = next((v for v in self.variants(profile, layout) if v.variant_id == variant_id), None)
-            if variant is None or any(variant.floor_status.get(f) != "PASS" for f in FLOORS):
-                raise ValueError(f"{layout} 的所选版本尚未完成全部楼层标定，未更改路线选择")
-        saved.setdefault(profile.key, {}).update({layout: variant_id for layout in layouts})
 
     def clean_template(self, profile: DifficultyProfile, layout: str, floor: str) -> Path:
         matches = list((profile.clean_root / layout).glob(f"*_{floor}.png"))
@@ -187,26 +177,6 @@ def key_to_vk(key: str) -> int:
     return special[key]
 
 
-def prediction_decision(ranking: list[tuple[str, float]], checkpoint: dict) -> dict:
-    """Accept a layout from model confidence and margin, without exploration gating."""
-    if not ranking:
-        raise ValueError("模型未返回布局排名")
-    label, confidence = ranking[0]
-    second = ranking[1][1] if len(ranking) > 1 else 0.0
-    margin = confidence - second
-    confidence_threshold = float(checkpoint.get("confidence_threshold", 0.70))
-    margin_threshold = float(checkpoint.get("margin_threshold", 0.20))
-    accepted = confidence >= confidence_threshold and margin >= margin_threshold
-    return {
-        "accepted": accepted,
-        "layout": label if accepted else None,
-        "best_label": label,
-        "confidence": confidence,
-        "margin": margin,
-        "confidence_threshold": confidence_threshold,
-        "margin_threshold": margin_threshold,
-        "ranking": [{"layout": item, "confidence": score} for item, score in ranking],
-    }
 
 
 DEFAULT_MAP_CAPTURE_DELAY_MS = 150
@@ -275,14 +245,10 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
         raise ValueError("地图截图区域必须完全位于游戏参考画面内")
     settings["auto_project"] = bool(settings["auto_project"])
     settings["auto_floor"] = bool(settings["auto_floor"])
+    settings["template_motion_tracking"] = bool(settings.get("template_motion_tracking", True))
     settings["map_capture_delay_ms"] = map_capture_delay_ms(settings)
-    if settings.get("registration_backend") == "legacy":
-        settings["registration_backend"] = "template"
-    if settings.get("registration_backend") not in ("auto", "cpu", "template"):
-        settings["registration_backend"] = "template"
-    settings["skip_layout_confirmation"] = bool(settings["skip_layout_confirmation"])
-    if settings.get("layout_recognition_backend") not in ("cnn", "icon_structure"):
-        settings["layout_recognition_backend"] = "icon_structure"
+    settings.update(registration_backend="template", layout_recognition_backend=normalize_recognition_backend(settings.get("layout_recognition_backend")),
+                    auto_floor=False, skip_layout_confirmation=False)
     if not isinstance(settings["route_versions"], dict):
         settings["route_versions"] = {}
     settings["route_versions"] = normalize_route_versions(settings["route_versions"])
@@ -294,6 +260,7 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
 
 
 def save_settings(settings: dict, path: Path = DEFAULT_SETTINGS_PATH) -> None:
-    settings = {**settings, "route_versions": normalize_route_versions(settings.get("route_versions", {}))}
+    settings = {**settings, "registration_backend": "template", "layout_recognition_backend": normalize_recognition_backend(settings.get("layout_recognition_backend")),
+                "auto_floor": False, "skip_layout_confirmation": False, "route_versions": normalize_route_versions(settings.get("route_versions", {}))}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

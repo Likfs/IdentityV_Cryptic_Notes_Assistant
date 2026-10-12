@@ -43,6 +43,8 @@ def windows_version_resource() -> str:
 
 
 def runtime_files() -> list[Path]:
+    from src.registration.template_matching.resources import verify_module_provenance
+    verify_module_provenance(ROOT / 'src/registration/template_matching')
     files: set[Path] = set()
 
     def include(value: str | Path) -> None:
@@ -57,7 +59,6 @@ def runtime_files() -> list[Path]:
     catalog = json.loads((ROOT / "configs/map_catalog.json").read_text(encoding="utf-8-sig"))
     for map_item in catalog["maps"]:
         for profile in map_item["difficulties"]:
-            include(profile["model"])
             clean_root = ROOT / profile["clean_root"]
             layouts = sorted(p for p in clean_root.glob("layout_*") if p.is_dir())
             if not layouts:
@@ -76,14 +77,6 @@ def runtime_files() -> list[Path]:
                     raise ValueError(f"布局缺少路线标定：{layout.name}")
                 for calibration in calibrations:
                     include(calibration)
-                    data = json.loads(calibration.read_text(encoding="utf-8"))
-                    for floor in ("2nd", "1st", "b1"):
-                        entry = data["floors"][floor]
-                        if entry["status"] != "PASS" or not entry.get("asset"):
-                            raise ValueError(f"路线标定未完成：{calibration}/{floor}")
-                        include(entry["asset"])
-                        if entry.get("structure_mask"):
-                            include(entry["structure_mask"])
     config = json.loads((ROOT / "configs/template_matching.json").read_text(encoding="utf-8"))
     for entry in config["entries"].values():
         include(entry["source_image"])
@@ -106,8 +99,6 @@ def runtime_files() -> list[Path]:
                 for candidate in entry['candidates']:
                     for dependency in candidate.get('dependencies', []):
                         include(dependency['path'])
-    for floor in ("2nd", "1st", "b1"):
-        include(f"assets/game_ui/floor_indicators/{floor}.png")
     include("assets/app_ui/home_wallpaper.jpg")
     include("assets/app_ui/icons/check.svg")
     for name in ('query', 'clean_09', 'clean_15'):
@@ -162,9 +153,9 @@ def main() -> None:
                "--specpath", str(work), "--paths", str(ROOT), "--collect-submodules", "src",
                "--version-file", str(version_file)]
     for package in ("tkinter", "pytest", "tools", "tests", "IPython", "matplotlib",
-                    "pandas", "scipy", "torchvision", "torchaudio", "tensorboard"):
+                    "pandas", "scipy", "torch", "retired_features", "torchvision", "torchaudio", "tensorboard"):
         command.extend(["--exclude-module", package])
-    for directory in ("assets", "configs", "models", "src"):
+    for directory in ("assets", "configs", "src"):
         command.extend(["--add-data", f"{stage / directory}:{directory}"])
     command.append(str(launcher))
     # PyInstaller also searches PATH for DLLs. Host tools (e.g. Poppler) can
@@ -188,7 +179,7 @@ def main() -> None:
     (output / "build_info.json").write_text(json.dumps({
         "built_at": datetime.now(timezone(timedelta(hours=8))).isoformat(),
         "application_version": APP_VERSION, "windows_version": WINDOWS_VERSION,
-        "python": sys.version, "pyinstaller": build_version, "torch": version("torch"),
+        "python": sys.version, "pyinstaller": build_version, "recognition": "pure_structure", "recognition_options": ["pure_structure", "icon_structure"], "registration": "template",
         "format": "onedir", "resource_files": len(manifest),
         "executable": f"{NAME}/{NAME}.exe", "command": command,
     }, ensure_ascii=False, indent=2), encoding="utf-8")

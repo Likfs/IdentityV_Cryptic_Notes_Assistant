@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "candidate_layouts": [
+    "layout_05",
+    "layout_11",
+    "layout_15"
+  ],
+  "cases": [
+    {
+      "id": "layout05_partial",
+      "kind": "source_derived",
+      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png",
+      "crop_xywh": [
+        1300,
+        550,
+        550,
+        600
+      ],
+      "reference_size": [
+        917,
+        1000
+      ],
+      "expected_top1": "layout_05",
+      "expected_strong_evidence": true,
+      "label_provenance": "Source asset identity and explicit crop; not a gameplay accuracy label",
+      "sha256": "0a13e253ed487690191f5c491c4fe1e92544923cfd687675033099cdc0d41720"
+    },
+    {
+      "id": "layout11_partial",
+      "kind": "source_derived",
+      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png",
+      "crop_xywh": [
+        0,
+        180,
+        650,
+        600
+      ],
+      "reference_size": [
+        1083,
+        1000
+      ],
+      "expected_top1": "layout_11",
+      "expected_strong_evidence": true,
+      "label_provenance": "Source asset identity and explicit crop; not a gameplay accuracy label",
+      "sha256": "fbcee69c2417e2906c668b03e8d96a4913b00b8c30869f9f57cea3f16bca70cd"
+    },
+    {
+      "id": "layout05_missing_icon",
+      "kind": "source_derived",
+      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png",
+      "crop_xywh": [
+        1300,
+        550,
+        550,
+        600
+      ],
+      "reference_size": [
+        917,
+        1000
+      ],
+      "expected_strong_evidence": false,
+      "label_provenance": "Source asset identity and explicit crop; not a gameplay accuracy label",
+      "erase_xywh": [
+        450,
+        290,
+        48,
+        46
+      ],
+      "sha256": "0a13e253ed487690191f5c491c4fe1e92544923cfd687675033099cdc0d41720"
+    },
+    {
+      "id": "game2_sparse",
+      "kind": "unlabelled_game_capture",
+      "source": "tests/fixtures/registration/game2.png",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "expected_strong_evidence": false,
+      "label_provenance": "Historical offline projection input; no independently verified recognition label or alignment ground truth",
+      "sha256": "077e47c0b5a10186cade84637e140edfd4fd7a8beb44774f64ce29446ff0a67c"
+    }
+  ]
+}

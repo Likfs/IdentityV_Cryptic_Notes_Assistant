@@ -1,2 +1,2 @@
--r requirements-training.txt
+-r requirements.txt
 pytest>=7.0

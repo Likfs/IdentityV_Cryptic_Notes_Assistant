@@ -11,7 +11,6 @@
           "clean_root": "assets/maps/a_bringer_of_doom/nightmare/clean",
           "calibration_root": "assets/maps/a_bringer_of_doom/nightmare/routes",
           "entrance_root": "assets/maps/a_bringer_of_doom/nightmare/entrance",
-          "model": "models/releases/layout_classifier_pre_resized.pt",
           "asset_versions": [
             {
               "id": "route_clean",

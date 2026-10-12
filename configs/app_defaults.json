@@ -7,10 +7,11 @@
     "IdentityV"
   ],
   "auto_project": true,
-  "auto_floor": true,
+  "auto_floor": false,
   "map_capture_delay_ms": 150,
   "registration_backend": "template",
-  "layout_recognition_backend": "icon_structure",
+  "template_motion_tracking": true,
+  "layout_recognition_backend": "pure_structure",
   "skip_layout_confirmation": false,
   "recognize_hotkey": "F8",
   "project_hotkey": "F10",

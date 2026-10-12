@@ -1,5 +1,4 @@
 """Floor-independent 定尺度模板匹配 matching and projection in original-image coordinates."""
-from dataclasses import dataclass
 from time import perf_counter
 import json
 import hashlib
@@ -7,21 +6,11 @@ import cv2
 import numpy as np
 from src.app_catalog import PROJECT_ROOT, TEMPLATE_VERSION_NAMES
 from src.projection.route_overlay import composite_route_layer
-from src.registration.runtime_registration import RuntimeRegistrationResult
-from . import runtime, matcher
+from src.registration.result import OriginalRegistrationResult
+from . import resources, matcher
+from .screen import screen_info
 
 _images = {}
-
-
-@dataclass
-class OriginalRegistrationResult(RuntimeRegistrationResult):
-    original_to_screen: np.ndarray | None = None
-    screenshot_to_original: np.ndarray | None = None
-
-    def diagnostics(self):
-        return {**super().diagnostics(), 'coordinate_space': 'original_source_image',
-                'original_to_screen': self.original_to_screen.tolist() if self.original_to_screen is not None else None,
-                'screenshot_to_original': self.screenshot_to_original.tolist() if self.screenshot_to_original is not None else None}
 
 
 def entry_fingerprint(entry):
@@ -63,7 +52,7 @@ def _source(profile_key, layout, variant_id='route_zhanshi_fast'):
         for candidate in candidates:
             saved_scale_value(candidate)
             for dependency in candidate.get('dependencies', []):
-                runtime._fingerprint(PROJECT_ROOT/dependency['path'], dependency['sha256'])
+                resources.verify_fingerprint(PROJECT_ROOT/dependency['path'], dependency['sha256'])
             reference = candidate.get('reference_entry_key')
             if reference is not None and entry_fingerprint(config['entries'][reference]) != candidate['reference_entry_sha256']:
                 raise ValueError('推算尺度对应的展十记录已改变，请重新推算')
@@ -78,9 +67,9 @@ def _source(profile_key, layout, variant_id='route_zhanshi_fast'):
             if [part['floor'] for part in parts] != ['2nd', '1st', 'b1']:
                 raise ValueError('三层底图拼接记录不完整')
             for part in parts:
-                runtime._fingerprint(PROJECT_ROOT/part['path'], part['sha256'])
+                resources.verify_fingerprint(PROJECT_ROOT/part['path'], part['sha256'])
         else:
-            runtime._fingerprint(path, entry['source_sha256'])
+            resources.verify_fingerprint(path, entry['source_sha256'])
         return entry, path, config
     if variant_id != 'route_zhanshi_fast':
         raise ValueError('当前布局没有所选版本的完整原图及固定尺度')
@@ -94,7 +83,7 @@ def _source(profile_key, layout, variant_id='route_zhanshi_fast'):
         raise ValueError('同一布局的完整原图或尺度不一致，请重新导入')
     entry = entries[0]
     path = PROJECT_ROOT/entry['source_image']
-    runtime._fingerprint(path, entry['source_sha256'])
+    resources.verify_fingerprint(path, entry['source_sha256'])
     return entry, path, config
 
 
@@ -102,7 +91,7 @@ def check_original_resources(profile_key, layouts):
     """Inventory and fingerprint verification; this is not image-alignment validation."""
     summary = {v: dict(name=name, layouts=0, fixed_candidates=0, errors=[])
                for v, name in TEMPLATE_VERSION_NAMES.items()}
-    with runtime._lock:
+    with resources.resource_lock:
         for layout in layouts:
             for variant_id, item in summary.items():
                 try:
@@ -116,7 +105,7 @@ def check_original_resources(profile_key, layouts):
 
 def load_original(profile_key, layout, variant_id='route_zhanshi_fast'):
     """Load a complete original; derived scales additionally verify their calibration dependencies."""
-    with runtime._lock:
+    with resources.resource_lock:
         entry, path, config = _source(profile_key, layout, variant_id)
         threshold = int(entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH))
         preserve_colors = entry.get('preserve_colored_routes', variant_id == 'route_lhp_solo')
@@ -136,7 +125,7 @@ def load_original(profile_key, layout, variant_id='route_zhanshi_fast'):
                     image[y:y+height, x:x+width] = tile
             else:
                 image = matcher.read_image(path)
-            # Old source images have a black background; preserve every nonblack mark.
+            # Zhanshi source images have a black background; preserve every nonblack mark.
             foreground = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) > threshold
             if preserve_colors:
                 hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -158,9 +147,9 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
                       coordinate_space='original_source_image', floor_detection_enabled=False,
                       trusted_history_eligible=False, route_validation_enabled=False,
                       acceptance_policy='template_candidate_without_geometry_validation',
-                      registration_backend=runtime.initialize())
-    result = OriginalRegistrationResult(False, [], None, None, None, None, validation,
-        {'method':'fixed-scale-template', 'calibration':0., 'matching':0.}, None, None, None)
+                      registration_backend=resources.backend_info())
+    result = OriginalRegistrationResult(False, [], validation,
+        {'method':'fixed-scale-template', 'calibration':0., 'matching':0.})
     path = None
     layer = composite = None
     timings = {}
@@ -169,9 +158,9 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
             raise ValueError('投影不透明度必须在 0～1 之间')
         if not np.any(cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY) > matcher.TEMPLATE_GAME_THRESH):
             raise ValueError('截图中没有可匹配的可见像素，请保持地图打开后重试')
-        with runtime._lock:
+        with resources.resource_lock:
             entry, path, config, image, rgba = load_original(profile_key, layout, variant_id)
-            screen = runtime.screen_info(config.get('capture', {}).get('screen_name', ''))
+            screen = screen_info(config.get('capture', {}).get('screen_name', ''))
             mode = int(config['perf_mode'])
             if not 0 <= mode < len(matcher.PERF_MODES):
                 raise ValueError('性能档位无效')

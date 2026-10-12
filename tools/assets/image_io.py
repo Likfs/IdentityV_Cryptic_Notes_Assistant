@@ -5,15 +5,33 @@ import numpy as np
 
 
 def read_image(path: Path) -> np.ndarray:
-    image = cv2.imdecode(np.fromfile(str(path), np.uint8), cv2.IMREAD_COLOR)
+    image = _decode_image(Path(path), cv2.IMREAD_COLOR)
     if image is None:
         raise ValueError(f"无法读取图片：{path}")
     return image
 
 
 def write_image(path: Path, image: np.ndarray) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    ok, encoded = cv2.imencode(path.suffix or ".png", image)
-    if not ok:
+    if not imwrite_unicode(path, image):
         raise ValueError(f"无法编码图片：{path}")
-    encoded.tofile(str(path))
+
+
+def imread_unicode(path, flags=cv2.IMREAD_COLOR):
+    path = Path(path)
+    if not path.exists():
+        return None
+    return _decode_image(path, flags)
+
+
+def _decode_image(path, flags):
+    data = np.frombuffer(path.read_bytes(), dtype=np.uint8)
+    return cv2.imdecode(data, flags) if data.size else None
+
+
+def imwrite_unicode(path, image):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    ok, encoded = cv2.imencode(path.suffix or '.png', image)
+    if ok:
+        path.write_bytes(encoded.tobytes())
+    return ok

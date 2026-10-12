@@ -13,14 +13,15 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
-from tools.assets.calibration.calibrate_route_assets_batch import (  # noqa: E402
-    ASSET_ROOT, CLEAN_ROOT, FLOORS, OUTPUT_ROOT, floor_template,
+from tools.common.calibration_assets import (  # noqa: E402
+    route_asset_root, layout_numbers, CLEAN_ROOT, FLOORS, OUTPUT_ROOT, floor_template,
     leading_number, project_relative,
 )
 from tools.common.paths import asset_output
 from tools.common.route_calibration import estimate_template_to_route  # noqa: E402
-from src.registration_core.utils import imread_unicode, imwrite_unicode  # noqa: E402
+from tools.assets.image_io import imread_unicode, imwrite_unicode  # noqa: E402
 
+ASSET_ROOT = route_asset_root()
 VARIANT = "route_zhanshi_fast"
 SOURCE_ROOT = CLEAN_ROOT.parent / 'sources/route_zhanshi_fast'
 
@@ -260,11 +261,15 @@ def calibrate(layout: str, source: Path) -> dict:
 
 
 def main() -> None:
+    global ASSET_ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--publish", action="store_true", help="明确将结果写入正式资产目录")
-    parser.add_argument("--layouts", nargs="+", type=int, default=list(range(1, 22)))
+    parser.add_argument("--layouts", nargs="+", type=int, help="省略时读取当前底图目录中的全部布局")
     parser.add_argument("--render-only", action="store_true", help="Rebuild floor isolation from unchanged source and saved matrices")
     args = parser.parse_args()
+    ASSET_ROOT = route_asset_root(publish=args.publish)
+    if args.layouts is None:
+        args.layouts = layout_numbers(CLEAN_ROOT)
     cv2.setNumThreads(4)
     cv2.setRNGSeed(20260926)
     files = list(SOURCE_ROOT.glob("*.jpg"))

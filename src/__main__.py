@@ -17,10 +17,6 @@ if str(PROJECT_ROOT) not in sys.path:
 from src.paths import LOG_ROOT
 from src.version import APP_NAME, APP_VERSION
 from src.app_catalog import FLOOR_NAMES, MapCatalog, load_settings
-from src.floor_indicator import (
-    FLOOR_INDICATOR_ALTERNATE_ROI, FLOOR_INDICATOR_ROI, FLOOR_INDICATOR_SEARCH_ROI,
-)
-from src.layout_classifier import load_classifier
 from src.layout_retrieval import RESOURCE_ROOT
 from src.projection_workflow import process_screenshot, save_workflow_result
 
@@ -60,14 +56,13 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=f"{APP_NAME} {APP_VERSION}")
     parser.add_argument("--version", action="version", version=f"{APP_NAME} {APP_VERSION}",
                         help="显示程序版本并退出")
-    parser.add_argument("--check", action="store_true", help="检查地图、难度、模型与路线资产")
+    parser.add_argument("--check", action="store_true", help="检查地图、难度与模板资源")
     parser.add_argument("--project-once", type=Path, help="使用本地截图运行一次配准投影")
-    parser.add_argument("--layout", help="指定布局，例如 layout_05；省略则由模型识别")
-    parser.add_argument("--floor", choices=FLOOR_NAMES, help="指定楼层")
+    parser.add_argument("--layout", help="指定布局，例如 layout_05；必须指定已人工确认的布局")
     parser.add_argument("--route-version", help="显示版本：route_clean / route_lhp_solo / route_zhanshi_fast；模板模式另支持 route_lhp_solo_clean / route_zhanshi_fast_clean")
     parser.add_argument("--output", type=Path, help="一次性运行的诊断输出目录")
-    parser.add_argument("--registration-backend", choices=("auto", "cpu", "template"),
-                        help="离线配准后端：auto GPU 优先；cpu 原正式 CPU；template 定尺度模板匹配")
+    parser.add_argument("--registration-backend", choices=("template",),
+                        help="配准方式：template 定尺度模板匹配")
     parser.add_argument("--smoke", action="store_true", help="启动窗口并在 2 秒后关闭，用于界面烟雾检查")
     args = parser.parse_args()
     catalog = MapCatalog()
@@ -102,23 +97,22 @@ def main() -> None:
                             review.append(f"{layout}/{floor}: {state}")
             summary.append({
                 "map": item.map_name, "difficulty": item.difficulty_name,
-                "model_exists": item.model_path.is_file(), "layouts": len(layouts),
+                "layouts": len(layouts),
+                "pure_structure_floors": sum((item.clean_root / layout / f'{layout}_{floor}.png').is_file()
+                                             for layout in layouts for floor in ('2nd', '1st', 'b1')),
                 "icon_structure_layouts": sum((item.clean_root / layout / f'{layout}_2nd.png').is_file() for layout in layouts),
                 "pass_floors": status, "review": review,
                 "versions": versions,
                 "template_originals": check_original_resources(item.key, layouts),
             })
         print(json.dumps({"application_version": APP_VERSION,
-                          "layout_recognition_backend": settings.get('layout_recognition_backend', 'cnn'),
+                          "layout_recognition_backend": settings.get('layout_recognition_backend', 'icon_structure'),
                           "icon_templates_exist": all((RESOURCE_ROOT / 'icons' / f'{name}.png').is_file()
                                                       for name in ('query', 'clean_09', 'clean_15')),
                           "map_key": settings["map_key"], "press_to_toggle": True,
                           "game_window_titles": settings["game_window_titles"],
                           "capture_roi": settings["capture_roi"],
                           "auto_floor": settings["auto_floor"],
-                          "floor_indicator_roi": FLOOR_INDICATOR_ROI,
-                          "floor_indicator_alternate_roi": FLOOR_INDICATOR_ALTERNATE_ROI,
-                          "floor_indicator_search_roi": FLOOR_INDICATOR_SEARCH_ROI,
                           "profiles": summary},
                          ensure_ascii=False, indent=2))
         return
@@ -127,23 +121,18 @@ def main() -> None:
         from src.app_catalog import selected_template_variant, TEMPLATE_VERSION_NAMES
         backend = args.registration_backend or settings['registration_backend']
         template_variant = selected_template_variant(settings, profile.key)
-        recognition_backend = settings.get('layout_recognition_backend', 'cnn')
-        if recognition_backend == 'icon_structure' and args.layout is None:
-            parser.error('图标与结构识别需要人工确认，请通过 --layout 指定已确认的布局后离线投影')
+        recognition_backend = settings.get('layout_recognition_backend', 'icon_structure')
+        if args.layout is None:
+            parser.error('布局识别需要人工确认，请通过 --layout 指定已确认的布局后离线投影')
         if args.route_version:
-            if backend == 'template':
-                if args.route_version not in TEMPLATE_VERSION_NAMES:
-                    parser.error('模板模式的 --route-version 必须为：' + '、'.join(TEMPLATE_VERSION_NAMES))
-                template_variant = args.route_version
-            else:
-                catalog.select_version_for_all(profile, args.route_version, settings["route_versions"])
+            if args.route_version not in TEMPLATE_VERSION_NAMES:
+                parser.error('--route-version 必须为：' + '、'.join(TEMPLATE_VERSION_NAMES))
+            template_variant = args.route_version
         screenshot = _read_image(args.project_once)
-        bundle = load_classifier(profile.model_path, device="cpu") if args.layout is None else None
         result = process_screenshot(
-            screenshot, catalog=catalog, profile=profile, model_bundle=bundle,
-            floor=args.floor or settings["floor"], layout_override=args.layout,
-            route_versions=settings["route_versions"], opacity=settings["opacity"],
-            prepared_cache={}, asset_cache={},
+            screenshot, catalog=catalog, profile=profile,
+            layout_override=args.layout,
+            opacity=settings["opacity"],
             registration_backend=backend, template_variant_id=template_variant,
             layout_recognition_backend=recognition_backend)
         output = save_workflow_result(result, args.output)

@@ -1,8 +1,0 @@
-{
-  "recognize_hotkey": "F9",
-  "project_hotkey": "F10",
-  "floor": "2nd",
-  "opacity": 0.96,
-  "opencv_threads": 4,
-  "registration_backend": "auto"
-}

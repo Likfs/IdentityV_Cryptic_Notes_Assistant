@@ -6,7 +6,6 @@ import math
 import sys
 from pathlib import Path
 
-import cv2
 import numpy as np
 from PIL import Image, ImageDraw
 
@@ -16,16 +15,12 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from tools.assets.image_io import read_image, write_image
-from src.projection.route_overlay import load_route_overlay_asset, project_route_overlay  # noqa: E402
+from tools.common.layered_assets import load_route_overlay_asset, project_route_overlay  # noqa: E402
 
 
 CLEAN_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/clean"
 CALIBRATION_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/routes"
 FLOORS = ("b1", "1st", "2nd")
-
-
-
-
 
 
 def make_contact_sheet(files: list[Path], destination: Path, floor: str) -> None:

@@ -1,45 +1,20 @@
 from __future__ import annotations
 
 import ctypes
-import json
 import os
-import queue
 import sys
-import threading
-import time
-import uuid
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 from ctypes import wintypes
 
-import cv2
 import numpy as np
 
-from src.app_catalog import (
-    DEFAULT_SETTINGS_PATH,
-    FLOOR_NAMES,
-    FLOORS,
-    HOTKEYS,
-    MAP_KEYS,
-    MapCatalog,
-    key_to_vk,
-    load_settings,
-    save_settings,
-)
-from src.capture.region import CaptureRegion, enable_physical_pixel_coordinates
-from src.capture.runtime import GlobalActionHotkeys, capture_region, pil_to_bgr
-from src.floor_indicator import (
-    FLOOR_INDICATOR_MARGIN, FLOOR_INDICATOR_ROI, FLOOR_INDICATOR_SEARCH_ROI,
-    FloorDetection, classify_floor_indicator,
-)
-from src.layout_classifier import load_classifier
-from src.projection_workflow import WorkflowResult, process_screenshot, save_workflow_result
-from src.registration.runtime_registration import MAX_EDGE_MEDIAN_ERROR_PX
-from src.registration.temporal_evidence import TemporalEvidence
+from src.app_catalog import key_to_vk
+from src.capture.region import CaptureRegion
+from src.capture.runtime import capture_region, pil_to_bgr
+FLOOR_CONTROL_ROI = (1870, 70, 390, 66)
+from src.projection_workflow import WorkflowResult
 
 
-ROOT = Path(__file__).resolve().parents[1]
 AUTO = "自动判断"
 
 
@@ -53,7 +28,7 @@ def floor_control_mouse_down(titles: list[str], reference_size: list[int]) -> bo
         return False
     try:
         client = foreground_game_client(titles)
-        region = game_capture_region(client, list(FLOOR_INDICATOR_SEARCH_ROI), reference_size)
+        region = game_capture_region(client, list(FLOOR_CONTROL_ROI), reference_size)
         point = wintypes.POINT()
         if not ctypes.windll.user32.GetCursorPos(ctypes.byref(point)):
             return False
@@ -118,31 +93,6 @@ def ensure_region_on_screen(region: CaptureRegion) -> None:
         raise RuntimeError("地图截图区域超出可见屏幕，请移动或调整游戏窗口")
 
 
-def capture_floor_indicator(client: CaptureRegion, reference_size: list[int], *, timings=None) -> tuple[FloorDetection, np.ndarray, list[int]]:
-    region_started = time.perf_counter()
-    x, y, width, height = FLOOR_INDICATOR_ROI
-    search_x, search_y, search_width, search_height = FLOOR_INDICATOR_SEARCH_ROI
-    margin = FLOOR_INDICATOR_MARGIN
-    core = game_capture_region(client, [x, y, width, height], reference_size)
-    search = game_capture_region(
-        client,
-        [search_x - margin, search_y - margin, search_width + 2 * margin, search_height + 2 * margin],
-        reference_size,
-    )
-    ensure_region_on_screen(search)
-    capture_started = time.perf_counter()
-    if timings is not None:
-        timings['floor_region_ms'] = (capture_started - region_started) * 1000
-    image = capture_bgr(search.as_list())
-    classify_started = time.perf_counter()
-    if timings is not None:
-        timings['floor_capture_ms'] = (classify_started - capture_started) * 1000
-    detection = classify_floor_indicator(image, (core.width, core.height))
-    if timings is not None:
-        timings['floor_classify_ms'] = (time.perf_counter() - classify_started) * 1000
-    return detection, image, search.as_list()
-
-
 def map_key_down(key: str) -> bool:
     if sys.platform != "win32":
         return False
@@ -184,6 +134,7 @@ def foreground_window_title() -> str:
 
 
 def game_window_is_foreground(titles: list[str]) -> bool:
+    """Shared UI/capture focus check; foreground title lookup remains injectable."""
     if not titles:
         return False
     current = foreground_window_title().casefold()
@@ -203,110 +154,64 @@ class MapToggleState:
     is_open: bool = False
     key_was_down: bool = False
     escape_was_down: bool = False
+    open_on_release: bool = False
 
     def observe(self, key_down: bool, *, enabled: bool = True) -> str | None:
         pressed_now = key_down and not self.key_was_down
+        released_now = not key_down and self.key_was_down
         self.key_was_down = key_down
-        if not enabled or not pressed_now:
+        if not enabled:
+            self.open_on_release = False
             return None
-        self.is_open = not self.is_open
-        return "opened" if self.is_open else "closed"
+        if pressed_now:
+            if self.is_open:
+                # Hide early when closing; this release must not reopen the map.
+                self.is_open = False
+                self.open_on_release = False
+                return 'closed'
+            self.open_on_release = True
+        elif released_now:
+            opening = self.open_on_release
+            self.open_on_release = False
+            if opening:
+                self.is_open = True
+                return 'opened'
+        return None
 
     def reset(self, key_down: bool = False) -> None:
         self.is_open = False
         self.key_was_down = key_down
         self.escape_was_down = False
+        self.open_on_release = False
 
     def observe_escape(self, key_down: bool, *, enabled: bool = True) -> bool:
         pressed_now = key_down and not self.escape_was_down
         self.escape_was_down = key_down
-        if not enabled or not pressed_now or not self.is_open:
+        if not enabled or not pressed_now or not (self.is_open or self.open_on_release):
             return False
         self.is_open = False
+        self.open_on_release = False
         return True
 
 
 def format_projection_metrics(result: WorkflowResult) -> str:
     validation = result.registration.validation if result.registration else {}
-    method = getattr(result.registration, "timings", {}).get("method") if result.registration else None
-    method_name = {"fixed-scale-template": "定尺度模板匹配候选", "component_tolerance": "component_tolerance 几何配准",
-                   "temporal_reuse": "历史变换复核", "temporal_search": "时序快速搜索",
-                   "soft_pose_reuse": "暂存姿态复核",
-                   "temporal_local_zoom": "局部缩放搜索", "temporal_recenter_zoom": "地图重新居中搜索",
-                   "temporal_insufficient_evidence": "证据不足", "insufficient_evidence": "证据不足",
-                   "local_structure_index": "局部结构索引",
-                   "global_search": "全局搜索", "global_sparse_unique": "稀疏结构唯一匹配",
-                   "global_candidate_review": "候选结构复核"}.get(method, "尚未配准")
-    overlay = result.overlay_validation or {}
     timing = result.timings_ms
-    if validation.get('coordinate_space') == 'original_source_image':
-        template = validation.get('template', {})
-        preview = ('后台处理中' if getattr(result, 'projection_preview_pending', False)
-                   else f"{timing.get('projection_composite', 0):.0f} ms")
-        submit = f"{timing['overlay_submit']:.1f} ms" if 'overlay_submit' in timing else '未提交'
-        delivery = (f" · 回传 {timing['result_delivery']:.1f} ms · 覆盖提交 {submit}"
-                    if 'result_delivery' in timing else '')
-        end_to_end = (f" · 按键检测至覆盖提交 {timing['key_to_overlay_submit']:.0f} ms"
-                      if 'key_to_overlay_submit' in timing else '')
-        return (f"完整原图配准：{'候选已生成' if result.accepted else '未生成候选'} · 定尺度模板匹配不分楼层\n"
-                f"尺度 {template.get('scale', 0):.4f} · 原图位置 {template.get('location', '—')} · 请核对投影位置\n"
-                f"耗时：截图 {timing.get('capture', 0):.0f} ms · 楼层识别已跳过 · "
-                f"配准 {timing.get('registration', 0):.0f} ms · 投影图层 {timing.get('projection_layer', timing.get('projection', 0)):.0f} ms · "
-                f"预览合成 {preview}{delivery}{end_to_end}")
-    structure = validation.get("structure_precision")
-    semantic = validation.get("semantic_precision")
-    edge = validation.get("edge_median_error_px")
-    component_search = validation.get('registration_algorithm') == 'component_tolerance'
-    if component_search:
-        raster = validation.get('raster', {})
-        structure = raster.get('structure_precision')
-        semantic = raster.get('semantic_precision')
-    coverage = overlay.get("structure_coverage")
-    disagreement = overlay.get("route_pose_disagreement") or {}
-    disagreement_p95 = disagreement.get("p95_px")
-    soft_warning = " · 缩放仍待远处结构确认" if validation.get("soft_pose_reuse") else ""
-    route_corroborated = bool(validation.get("route_corroborated"))
-    registration_state = ("路线复核通过（完整显示，缩放持续校准）" if getattr(result,'accepted',False) and validation.get('projection_scope')=='local' else
-                          "路线复核通过" if route_corroborated else
-                          "通过" if result.registration and result.registration.accepted else "未通过")
-    structure_text = f"{structure:.1%}" if structure is not None else "未计算"
-    semantic_text = f"{semantic:.1%}" if semantic is not None else "未计算"
-    edge_text = ("未计算" if edge is None else
-                 f"{edge:.1f}px（路线已复核）" if route_corroborated else
-                 f"{edge:.1f}px（须 ≤ {MAX_EDGE_MEDIAN_ERROR_PX:g}px）")
-    if validation.get('edge_median_screen_px') is not None:
-        edge_text = f"{validation['edge_median_screen_px']:.1f} 屏幕px（可靠墙组）"
-    elif edge is not None and result.registration is not None:
-        matrix = getattr(result.registration,'screenshot_to_clean',None)
-        if matrix is not None:
-            factor = float(matrix[0,0])*float(result.registration.timings.get('template_registration_scale',1))
-            if factor>0:
-                edge_text = (f"{edge/factor:.1f} 屏幕px（路线已复核）" if route_corroborated else
-                             f"{edge/factor:.1f} 屏幕px（须 ≤ {MAX_EDGE_MEDIAN_ERROR_PX/factor:.1f}）")
-    coverage_text = (f"{coverage:.1%}" if coverage is not None else
-                     "未计算（底图配准未通过）" if registration_state == "未通过" else
-                     "未计算（尚未生成路线层）")
-    if component_search:
-        median = validation.get('component_acceptance', {}).get('checks', {}).get('trusted_edge_median', {}).get('value')
-        edge_text = '未计算' if median is None else f'{median:.1f} 屏幕px（可信结构）'
-        coverage_text = '已停用（按底图配准结果显示）'
-    route_uncertainty = (f" · 全图候选偏移 P95 {disagreement_p95:.1f}px"
-                         if disagreement_p95 is not None else "")
-    if validation.get('registration_algorithm') == 'fixed_scale_template':
-        registration_state = '候选已生成' if result.registration.accepted else '未生成候选'
-        coverage_text = '已停用（模板匹配候选直接显示）'
-        template = validation.get('template', {})
-        soft_warning = f" · 尺度 {template.get('scale', 0):.4f} · 请核对投影位置"
-    scale_sensitivity = (overlay.get("scale_profile_disagreement") or {}).get("p95_px")
-    if scale_sensitivity is not None and scale_sensitivity > 10:
-        route_uncertainty += f" · 缩放敏感度 {scale_sensitivity:.1f}px（非实测误差，请核对远处路线）"
-    return (
-        f"底图配准：{registration_state}（{method_name}）· 结构 {structure_text} · 语义 {semantic_text}\n"
-        f"边缘中位误差：{edge_text} · 路线覆盖：{coverage_text}{route_uncertainty}{soft_warning}\n"
-        f"耗时：截图 {timing.get('capture', 0):.0f} ms · 楼层 {timing.get('floor_detection', 0):.0f} ms · "
-        f"识别 {timing.get('classification', 0):.0f} ms · "
-        f"配准 {timing.get('registration', 0):.0f} ms · 投影 {timing.get('projection', 0):.0f} ms"
-    )
-
-
-
+    template = validation.get('template', {})
+    preview = ('后台处理中' if getattr(result, 'projection_preview_pending', False)
+               else f"{timing.get('projection_composite', 0):.0f} ms")
+    submit = f"{timing['overlay_submit']:.1f} ms" if 'overlay_submit' in timing else '未提交'
+    delivery = (f" · 回传 {timing['result_delivery']:.1f} ms · 覆盖提交 {submit}"
+                if 'result_delivery' in timing else '')
+    end_to_end = (f" · 按键检测至覆盖提交 {timing['key_to_overlay_submit']:.0f} ms"
+                  if 'key_to_overlay_submit' in timing else '')
+    scheduling = (f" · 按键至请求 {timing['key_to_request']:.0f} ms"
+                  if 'key_to_request' in timing else '')
+    if 'request_setup' in timing:
+        scheduling += (f" · 请求准备 {timing['request_setup']:.1f} ms"
+                       f" · 线程启动 {timing.get('worker_start_delay', 0):.1f} ms")
+    return (f"完整原图配准：{'候选已生成' if result.accepted else '未生成候选'} · 定尺度模板匹配不分楼层\n"
+            f"尺度 {template.get('scale', 0):.4f} · 原图位置 {template.get('location', '—')} · 请核对投影位置\n"
+            f"耗时：截图 {timing.get('capture', 0):.0f} ms · "
+            f"配准 {timing.get('registration', 0):.0f} ms · 投影图层 {timing.get('projection_layer', timing.get('projection', 0)):.0f} ms · "
+            f"预览合成 {preview}{delivery}{scheduling}{end_to_end}")

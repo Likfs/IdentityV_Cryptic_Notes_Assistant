@@ -1,11 +1,11 @@
 {
-  "description": "定尺度模板匹配模块内容指纹",
+  "description": "当前定尺度模板模块源码指纹；构建前核对文件集合与内容，不包含历史算法。",
   "files": {
     "__init__.py": "4843fa4dcb707e8c551ddebd0a0cb182f00e9751ac73cb50d679e2e7b3e77e04",
-    "matcher.py": "532cdeea9f385c7514e1a024341b9f3d6ec139c442637b9b0afa3b2cff96e2bb",
+    "direct.py": "dde7d7b3ca9ea6ed2b1f33e48ac56991270a85ed8c449e733dc43509b82d5a7f",
     "fog_crop.py": "74544c92f73e5d9a9bb93c6e09c1156dc46ec9c1b566ded1f5efed29c773040d",
-    "fast_gray_detail.py": "a57c801a56ef89dec8e08298ac04bade801ca2c2820f645cad9b71e9e6fc0759",
-    "recognition.py": "d2f364c8fe0b1646e134b6b820ecc44f2068c58d12cec126927e91a3dc010ae5",
-    "direct.py": "73a0581007fd407b051fcc6d17a155cdb48b192eb6a9abbfb2ba20cbaf6bf8e3"
+    "matcher.py": "2887eda57348fac9e89e0df765e35dfae58510b8ee6e62bb38c49c9f4e9e41e7",
+    "resources.py": "c27ac55bad10d34604441f5c2b4d5c4f94e39fac26c5adf3c9d33821633be5f3",
+    "screen.py": "f07a02bca7311d21c3715d91c465e4232fe976a791ac620dd41c2da9a80bc01d"
   }
 }

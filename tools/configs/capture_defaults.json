@@ -1,8 +1,0 @@
-{
-  "capture_roi": [901, 185, 1180, 1050],
-  "default_interval_seconds": 0.1,
-  "skip_exact_duplicates": true,
-  "voice_prompts_enabled": true,
-  "show_capture_border": false,
-  "minimize_on_start": false
-}

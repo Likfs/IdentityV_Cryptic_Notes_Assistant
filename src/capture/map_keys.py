@@ -37,7 +37,6 @@ class GlobalMapKeys:
         self._notify = notify
         self._lock = threading.Lock()
         self._stop = threading.Event()
-        self._initialized = threading.Event()
         self._hwnd = None
         self._revision = 0
         self._sequence = 0
@@ -103,14 +102,10 @@ class GlobalMapKeys:
             return
         if sys.platform != "win32":
             self.error = "地图按键事件监听仅支持 Windows"
-            self._initialized.set()
             self._wake()
             return
         self.thread = threading.Thread(target=self._run, name="map-key-raw-input", daemon=True)
         self.thread.start()
-
-    def wait_ready(self, timeout=2.) -> bool:
-        return self._initialized.wait(timeout) and self.ready
 
     def stop(self):
         self._stop.set()
@@ -127,7 +122,6 @@ class GlobalMapKeys:
         except Exception as exc:
             self.error = f"地图按键事件监听失败：{exc}"
             self.ready = False
-            self._initialized.set()
             self._wake()
 
     def _run_windows(self):
@@ -240,7 +234,6 @@ class GlobalMapKeys:
             if not user32.RegisterRawInputDevices(ctypes.byref(device), 1, ctypes.sizeof(device)):
                 raise ctypes.WinError(ctypes.get_last_error())
             registered_input = self.ready = True
-            self._initialized.set()
             self._wake()
             message = wintypes.MSG()
             while not self._stop.is_set():
@@ -255,7 +248,6 @@ class GlobalMapKeys:
             self._wake()
         finally:
             self.ready = False
-            self._initialized.set()
             if registered_input:
                 device = RawDevice(1, 6, 0x00000001, None)
                 user32.RegisterRawInputDevices(ctypes.byref(device), 1, ctypes.sizeof(device))

@@ -2,10 +2,6 @@
 from src.paths import PROJECT_ROOT
 
 WORKSPACE_ROOT = PROJECT_ROOT / "workspace"
-TOOL_CONFIG_ROOT = PROJECT_ROOT / "tools/configs"
-TOOL_STATE_ROOT = WORKSPACE_ROOT / "tool_state"
-TOOL_CACHE_ROOT = WORKSPACE_ROOT / "cache"
-TOOL_REPORT_ROOT = WORKSPACE_ROOT / "reports"
 ASSET_BUILD_ROOT = WORKSPACE_ROOT / "asset_build"
 
 

@@ -12,7 +12,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from src.app_catalog import FLOORS, FLOOR_NAMES, MapCatalog
-from src.projection.route_overlay import load_route_overlay_asset, composite_route_layer, warp_route_overlay
+from tools.common.layered_assets import load_route_overlay_asset, composite_route_layer, warp_route_overlay
 
 PAIRS = [("zhanshi_clean", "展十速刷 + 原版干净底图"), ("zhanshi_lianghapi", "展十速刷 + 凉哈皮"),
          ("all_three", "底图 + 凉哈皮 + 展十速刷")]
