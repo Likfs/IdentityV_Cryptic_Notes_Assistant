@@ -131,6 +131,7 @@ def process_screenshot(
     layout_retriever: LayoutRetriever | None = None,
     recognition_reference_size: tuple[int, int] = (1180, 1050),
     template_variant_id: str = 'route_zhanshi_fast',
+    recognition_cancelled=None,
 ) -> WorkflowResult:
     started = time.perf_counter()
     if screenshot_bgr.ndim != 3 or screenshot_bgr.shape[2] != 3:
@@ -147,7 +148,8 @@ def process_screenshot(
             raise ValueError('请先识别并确认布局，再进行配准投影')
         retriever = layout_retriever or create_layout_retriever(layout_recognition_backend, profile.clean_root)
         try:
-            retrieval = retriever.recognize(screenshot_bgr, recognition_reference_size)
+            retrieval = retriever.recognize(screenshot_bgr, recognition_reference_size,
+                **({'cancelled': recognition_cancelled} if recognition_cancelled is not None else {}))
         finally:
             if layout_retriever is None and hasattr(retriever, 'close'):
                 retriever.close()

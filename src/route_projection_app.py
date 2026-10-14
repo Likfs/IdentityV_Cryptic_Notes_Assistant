@@ -42,6 +42,7 @@ from src.app_catalog import (
 from src.capture.map_keys import GlobalMapKeys
 from src.layout_retrieval import create_layout_retriever, BACKEND_LABELS, normalize_recognition_backend
 from src.route_projection_pan import MousePanSession
+from src.recognition_control import RecognitionCancelled, check_cancelled
 
 LOG_VISIBLE_BLOCK_LIMIT = 2000
 LOG_REFRESH_INTERVAL_SECONDS = .1
@@ -56,7 +57,7 @@ def recognition_window_identity(titles):
 
 class QtMessageBox:
     @staticmethod
-    def confirm_layout(candidates, entrance_root, *, screen_roi=None):
+    def confirm_layout(candidates, entrance_root, *, screen_roi=None, is_current=None):
         screen = QGuiApplication.primaryScreen()
         if screen_roi is not None:
             try:
@@ -65,6 +66,10 @@ class QtMessageBox:
             except (OSError, ValueError):
                 pass
         dialog = LayoutConfirmationDialog(candidates, entrance_root, screen=screen)
+        if is_current is not None:
+            watcher = QTimer(dialog)
+            watcher.timeout.connect(lambda: dialog.reject() if not is_current() else None)
+            watcher.start(25)
         dialog.show()
         exclude_window_from_capture(dialog)
         bounds = screen.availableGeometry()
@@ -140,6 +145,7 @@ class RouteProjectionApp(QWidget):
         self._work_bridge.ready.connect(self._receive_work_event, Qt.ConnectionType.QueuedConnection)
         self._pending_auto_projection = None
         self.busy = False
+        self._active_work = None
         self.closed = False
         self.started_at = time.monotonic()
         self._last_clock_second = -1
@@ -1032,11 +1038,12 @@ class RouteProjectionApp(QWidget):
         gui_at_request = self._gui_diagnostic_snapshot()
         if getattr(self, 'map_keys', None) is not None:
             self._handle_map_key()
-        if mode == "recognize" and self._pending_confirmation is not None:
-            self._set_status("请先确认本次布局识别结果", AMBER)
-            return
-        if self.busy:
-            self._set_status("上一次配准仍在处理，请稍候", AMBER)
+        previous = getattr(self, '_active_work', None) or {}
+        restarting = mode == 'recognize' and self.busy and previous.get('mode') == 'recognize'
+        if self.busy and not restarting:
+            active = '正在识别布局' if previous.get('mode') == 'recognize' else '正在配准路线'
+            requested = '识别' if mode == 'recognize' else '配准'
+            self._set_status(f'{active}，本次{requested}未启动，请完成后重试', AMBER)
             return
         fixed_layout = self.locked_layout if mode == "project" else None
         if mode == "project" and fixed_layout is None:
@@ -1045,16 +1052,31 @@ class RouteProjectionApp(QWidget):
             return
         recognition_backend = self.settings.get('layout_recognition_backend', 'icon_structure')
         if mode == "recognize":
+            if previous.get('cancel') is not None:
+                previous['cancel'].set()
+            self._pending_confirmation = None
             self.hide_overlay()
             self._clear_alignment_preview()
             self.session_id = uuid.uuid4().hex[:12]
+            self.last_result = self.last_decision = None
+            if hasattr(self, 'rank_widgets'):
+                for name, score, _bar in self.rank_widgets:
+                    name.configure(text='—', fg=INK)
+                    score.configure(text='—', fg=MUTED)
+                self._refresh_template()
+                self._refresh_route_preview()
+            if restarting:
+                self._log('重复识别：上一请求已作废，立即重新截图，只采用本次识别结果')
+        work_id = uuid.uuid4().hex
+        cancel = threading.Event()
+        self._active_work = dict(id=work_id, mode=mode, cancel=cancel)
         self.busy = True
         template_direct = self.settings.get('registration_backend') == 'template'
         fast_display = mode == 'project' and template_direct and getattr(self, '_work_bridge', None) is not None
         if mode == "project":
             self.hide_overlay()
             self.reference_context = None
-            RouteProjectionApp._map_toast(self, "正在识别地图", f"已锁定 {fixed_layout}，" +
+            RouteProjectionApp._map_toast(self, "正在配准路线", f"已锁定 {fixed_layout}，" +
                 ("正在匹配三层完整原图…"), success=True)
         generation = self.map_generation
         session_id = self.session_id
@@ -1065,13 +1087,21 @@ class RouteProjectionApp(QWidget):
         capture_delay_configured = map_capture_delay_ms(self.settings)
         template_variant_id = selected_template_variant(self.settings, profile.key)
         opacity = float(self.settings["opacity"])
-        retriever = self._layout_retriever() if mode == 'recognize' and recognition_backend in BACKEND_LABELS else None
+        try:
+            retriever = self._layout_retriever() if mode == 'recognize' and recognition_backend in BACKEND_LABELS else None
+        except Exception as exc:
+            self.busy = False
+            self._active_work = None
+            self._set_status(f'布局识别未启动：{exc}', BAD)
+            self._log(f'布局识别初始化失败：{exc}')
+            return
         key_started_at = getattr(self, 'projection_triggered_at', None) if auto else None
-        self._set_status("正在截图与识别…" if mode == "recognize" else
-                         "正在截图与配准已锁定布局…" if fixed_layout else "正在截图、识别并配准…")
+        self._set_status(('已作废上次识别，正在重新截图…' if restarting else '正在为布局识别截图…')
+                         if mode == 'recognize' else '正在为路线配准截图…')
         def worker() -> None:
             delivered = False
             try:
+                check_cancelled(cancel.is_set)
                 started = time.perf_counter()
                 client = foreground_game_client(window_titles)
                 capture_window_id = (int(ctypes.windll.user32.GetForegroundWindow())
@@ -1081,11 +1111,16 @@ class RouteProjectionApp(QWidget):
                 ensure_region_on_screen(screen_region)
                 screen_roi = screen_region.as_list()
                 screenshot = capture_bgr(screen_roi)
+                check_cancelled(cancel.is_set)
                 if capture_window_id is not None and int(ctypes.windll.user32.GetForegroundWindow()) != capture_window_id:
                     raise RuntimeError('截图期间游戏窗口发生变化，请重新配准')
                 if recognition_window is not None and recognition_window_identity(window_titles) != recognition_window:
                     raise RuntimeError('截图期间游戏窗口发生变化，请重新识别')
                 capture_ms = (time.perf_counter() - started) * 1000.0
+                bridge = getattr(self, '_work_bridge', None)
+                if bridge is not None:
+                    bridge.ready.emit(('work_progress', work_id, session_id, generation,
+                        '正在识别布局…' if mode == 'recognize' else '正在配准路线，匹配三层完整原图…'))
                 result = process_screenshot(
                     screenshot, catalog=self.catalog, profile=profile,
                     layout_override=fixed_layout, opacity=opacity,
@@ -1094,7 +1129,9 @@ class RouteProjectionApp(QWidget):
                     template_variant_id=template_variant_id,
                     **({'layout_retriever': retriever,
                         'recognition_reference_size': tuple(roi[2:])} if retriever is not None else {}),
+                    **({'recognition_cancelled': cancel.is_set} if mode == 'recognize' else {}),
                     defer_projection_preview=fast_display)
+                check_cancelled(cancel.is_set)
                 result.timings_ms["capture"] = capture_ms
                 result.capture_window_id = capture_window_id
                 result.timings_ms['request_setup'] = (thread_dispatched_at-work_requested_at)*1000
@@ -1124,14 +1161,18 @@ class RouteProjectionApp(QWidget):
                     if not self.closed:
                         self._work_bridge.ready.emit(('preview', generation, session_id, ready_result, result))
                 else:
-                    self.results.put(event)
+                    self.results.put(('recognition_work', work_id, event) if mode == 'recognize' else event)
                 if mode == "project":
                     try:
                         saved = save_workflow_result(result)
                         self.results.put(("saved", result, str(saved), None))
                     except Exception as exc:
                         self.results.put(("saved", result, None, str(exc)))
+            except RecognitionCancelled:
+                return
             except Exception as exc:
+                if cancel.is_set():
+                    return
                 if delivered:
                     if not self.closed:
                         self._work_bridge.ready.emit(('preview_error', generation, session_id, result, str(exc)))
@@ -1142,17 +1183,30 @@ class RouteProjectionApp(QWidget):
                         dict(posted_at=time.perf_counter(), requested_at=work_requested_at,
                              key_started_at=key_started_at, session=session_id, ack=threading.Event())))
                 elif not fast_display:
-                    self.results.put(event)
+                    self.results.put(('recognition_work', work_id, event) if mode == 'recognize' else event)
             finally:
                 if (retriever is not None and hasattr(retriever, 'close') and
                         (self.closed or getattr(self, 'layout_retrievers', {}).get((profile.key, recognition_backend)) is not retriever)):
                     retriever.close()
         thread_dispatched_at = time.perf_counter()
-        threading.Thread(target=worker, name=f"route-{mode}", daemon=True).start()
+        try:
+            threading.Thread(target=worker, name=f"route-{mode}", daemon=True).start()
+        except Exception as exc:
+            cancel.set()
+            self.busy = False
+            self._active_work = None
+            self._set_status(f'{"识别" if mode == "recognize" else "配准"}任务未启动：{exc}', BAD)
 
     @pyqtSlot(object)
     def _receive_work_event(self, payload):
         entered_at = time.perf_counter()
+        if payload[0] == 'work_progress':
+            _, work_id, session, generation, message = payload
+            active = getattr(self, '_active_work', None) or {}
+            if (not self.closed and self.busy and active.get('id') == work_id
+                    and self.session_id == session and self.map_generation == generation):
+                self._set_status(message)
+            return
         if not self.closed:
             self._handle_map_key()
         if payload[0] == 'preview_error':
@@ -1262,6 +1316,7 @@ class RouteProjectionApp(QWidget):
         if getattr(self, 'map_keys', None) is not None:
             self._handle_map_key()
         self.busy = False
+        self._active_work = None
         if mode == 'recognize' and result is not None:
             if getattr(result, 'layout_recognition_backend', 'icon_structure') != getattr(self, 'settings', {}).get('layout_recognition_backend', 'icon_structure'):
                 return
@@ -1393,9 +1448,11 @@ class RouteProjectionApp(QWidget):
             candidates,
             self.profile.entrance_root if getattr(self, "profile", None) else None,
             screen_roi=roi,
+            is_current=lambda: RouteProjectionApp._recognition_can_confirm(self, generation, pending[2], pending[3]),
         )
         if not RouteProjectionApp._recognition_can_confirm(self, generation, pending[2], pending[3]):
-            self._set_status("地图状态已变化；请按 F8 重新识别", AMBER)
+            if self.session_id == pending[2]:
+                self._set_status("地图状态已变化；请按 F8 重新识别", AMBER)
             return
         if selected_layout:
             self.locked_layout = selected_layout
@@ -1724,6 +1781,12 @@ class RouteProjectionApp(QWidget):
                         self.settings.get('layout_recognition_backend', 'icon_structure') == (event[4] if len(event) > 4 else 'icon_structure') and
                         (len(event) < 6 or getattr(self, 'layout_retrievers', {}).get((event[1], event[4])) is event[5])):
                     self._log(f'识别资源准备失败：{event[3]}' if event[3] else f'布局识别资源就绪：{event[2][:12]}')
+            elif event[0] == 'recognition_work':
+                _, work_id, work = event
+                active = getattr(self, '_active_work', None) or {}
+                if active.get('id') == work_id and not active['cancel'].is_set():
+                    self._apply_result(*work[1:])
+                    RouteProjectionApp._drain_pending_projection(self)
             elif event[0] == "work":
                 self._apply_result(*event[1:])
                 RouteProjectionApp._drain_pending_projection(self)
@@ -1734,6 +1797,9 @@ class RouteProjectionApp(QWidget):
         if self.closed:
             return
         self.closed = True
+        active = getattr(self, '_active_work', None) or {}
+        if active.get('cancel') is not None:
+            active['cancel'].set()
         for retriever in getattr(self, 'layout_retrievers', {}).values():
             if hasattr(retriever, 'close'):
                 threading.Thread(target=retriever.close, name='close-layout-index', daemon=True).start()

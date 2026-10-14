@@ -8,6 +8,7 @@ from functools import partial
 import cv2
 import numpy as np
 from src.layout_retrieval import wall_edges
+from src.recognition_control import check_cancelled
 
 R=.3
 SIGMA=3.0
@@ -105,10 +106,11 @@ def merge(candidates):
         if c['layout'] not in best or c['score']>best[c['layout']]['score']:best[c['layout']]=c
     return sorted(best.values(),key=lambda c:(-c['score'],c['layout']))
 
-def search_target(t, *, templates, qpoints, negative, box, query_geometry):
+def search_target(t, *, templates, qpoints, negative, box, query_geometry, cancelled=None):
     """One independent floor; retain scale and seed order exactly."""
     bestfair=None;bestcombined=None
     for s,chs,neg,total in templates:
+        check_cancelled(cancelled)
         if chs[0].shape[0]>=t['low'].shape[0] or chs[0].shape[1]>=t['low'].shape[1]:continue
         maps=[np.exp(-.5*(d/(SIGMA*s*R))**2) for d in t['dist']]
         support=sum(cv2.matchTemplate(m,ch,cv2.TM_CCORR) for m,ch in zip(maps,chs))/total
@@ -122,10 +124,15 @@ def search_target(t, *, templates, qpoints, negative, box, query_geometry):
     if bestfair is None:return None
     seeds=[bestcombined]
     if any(abs(bestfair[k]-bestcombined[k])>1e-6 for k in ['scale','x','y']):seeds.append(bestfair)
-    return [score_pose(t,seed,qpoints,negative,box,query_geometry) for seed in seeds]
+    poses=[]
+    for seed in seeds:
+        check_cancelled(cancelled)
+        poses.append(score_pose(t,seed,qpoints,negative,box,query_geometry))
+    return poses
 
 
-def search(im, targets, executor=None):
+def search(im, targets, executor=None, *, cancelled=None):
+    check_cancelled(cancelled)
     start=time.perf_counter();edges=wall_edges(im,True)
     y,x=np.where(edges.sum(0)>0)
     if not len(x):return dict(floor_candidates=[],reason='no wall structure',elapsed_s=time.perf_counter()-start)
@@ -138,17 +145,24 @@ def search(im, targets, executor=None):
         yy,xx=np.where(ch>0);qpoints.append(np.column_stack((xx,yy)).astype(np.float32))
     templates=[]
     for s in MINIMUM_SCALES:
+        check_cancelled(cancelled)
         chs=[cv2.resize(ch.astype(np.float32),None,fx=s*R,fy=s*R,interpolation=cv2.INTER_AREA) for ch in crop]
         neg=cv2.resize(free,(chs[0].shape[1],chs[0].shape[0]),interpolation=cv2.INTER_AREA)
         templates.append((s,chs,neg,sum(ch.sum() for ch in chs)))
     origin=np.array(box[:2],np.float32)
     geometry=(origin,[p-origin for p in qpoints],sum(len(p) for p in qpoints))
     task=partial(search_target,templates=templates,qpoints=qpoints,negative=negative,
-                 box=box,query_geometry=geometry)
-    # Executor.map yields input order, preserving same-score floor/seed ties.
-    results=map(task,targets) if executor is None else executor.map(task,targets)
+                 box=box,query_geometry=geometry, cancelled=cancelled)
+    # Consume futures in input order, preserving same-score floor/seed ties.
+    futures=[] if executor is None else [executor.submit(task,t) for t in targets]
+    results=map(task,targets) if executor is None else (f.result() for f in futures)
     candidates=[]
-    for result in results:
-        if result is None:continue
-        candidates.extend(result)
+    try:
+        for result in results:
+            check_cancelled(cancelled)
+            if result is None:continue
+            candidates.extend(result)
+    finally:
+        for future in futures:
+            future.cancel()
     return dict(box=box,query_edges=edges,visible_interior_pixels=int(interior.sum()),floor_candidates=candidates,elapsed_s=time.perf_counter()-start)

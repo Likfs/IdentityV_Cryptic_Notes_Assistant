@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 
 from src.layout_retrieval import LayoutCandidate, LayoutRetrievalResult
+from src.recognition_control import check_cancelled, recognition_lock
 from .features import target_wall_edges, PARAMETERS as FEATURE_PARAMETERS
 from .local import attach_raw, evidence, review, PARAMETERS as LOCAL_PARAMETERS
 from .search import search, merge, R, SIGMA, PENALTY, MINIMUM_SCALES
@@ -64,14 +65,15 @@ class PureStructureRetriever:
             self._targets = []
             self._fingerprint = ''
 
-    def prepare(self):
-        with self._lock:
+    def prepare(self, *, cancelled=None):
+        with recognition_lock(self._lock, cancelled):
             paths = [p for p in sorted(self.clean_root.glob('layout_*/*.png'))
                      if p.stem.rsplit('_', 1)[-1] in ('2nd', '1st', 'b1')]
             if not paths:
                 raise ValueError('缺少纯结构识别底图')
             content = {}
             for p in paths:
+                check_cancelled(cancelled)
                 floor = p.stem.rsplit('_', 1)[-1]
                 if p.name != f'{p.parent.name}_{floor}.png':
                     raise ValueError('识别底图的布局目录与文件名不一致')
@@ -85,16 +87,19 @@ class PureStructureRetriever:
                 return fingerprint
             targets = []
             for p in paths:
+                check_cancelled(cancelled)
                 image = cv2.imdecode(np.frombuffer(content[p], np.uint8), cv2.IMREAD_COLOR)
                 if image is None:
                     raise ValueError(f'无法读取识别资源：{p.name}')
                 target = prepare_target(image, p.parent.name, p.stem.rsplit('_', 1)[-1])
                 target.update(path=p.relative_to(self.clean_root).as_posix(), sha256=digests[p])
                 targets.append(target)
+            check_cancelled(cancelled)
             self._targets, self._fingerprint = targets, fingerprint
             return fingerprint
 
-    def recognize(self, screenshot_bgr, reference_size=(1180, 1050)):
+    def recognize(self, screenshot_bgr, reference_size=(1180, 1050), *, cancelled=None):
+        check_cancelled(cancelled)
         started = time.perf_counter()
         result = LayoutRetrievalResult(backend='pure_structure',
             parameters=dict(PARAMETERS, workers=self.workers), reference_size=list(reference_size))
@@ -109,20 +114,22 @@ class PureStructureRetriever:
             image = screenshot_bgr if result.input_size == [width, height] else cv2.resize(
                 screenshot_bgr, (width, height), interpolation=cv2.INTER_AREA
                 if width < screenshot_bgr.shape[1] else cv2.INTER_LINEAR)
-            with self._lock:
+            with recognition_lock(self._lock, cancelled):
                 preparation = time.perf_counter()
-                result.resource_fingerprint = self.prepare()
+                result.resource_fingerprint = self.prepare(**({'cancelled': cancelled} if cancelled is not None else {}))
                 result.timings_ms['index_prepare'] = (time.perf_counter()-preparation)*1000
                 searching = time.perf_counter()
                 if self.workers > 1 and self._executor is None:
                     self._executor = ThreadPoolExecutor(max_workers=self.workers,
                                                         thread_name_prefix='layout-structure')
-                raw = search(image, self._targets, executor=self._executor)
+                raw = search(image, self._targets, executor=self._executor,
+                             **({'cancelled': cancelled} if cancelled is not None else {}))
                 candidates = []
                 if raw.get('floor_candidates'):
                     query = evidence(image, raw['query_edges'])
                     lookup = {(t['layout'], t['floor']): t for t in self._targets}
                     for candidate in raw['floor_candidates']:
+                        check_cancelled(cancelled)
                         target = lookup[candidate['layout'], candidate['floor']]
                         details = review(target, candidate, query, raw['box'])
                         candidates.append(dict(candidate, **details))
@@ -144,4 +151,5 @@ class PureStructureRetriever:
         except (ValueError, OSError, cv2.error) as exc:
             result.reasons.append(str(exc))
         result.timings_ms['total'] = (time.perf_counter()-started)*1000
+        check_cancelled(cancelled)
         return result

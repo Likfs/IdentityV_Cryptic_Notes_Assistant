@@ -12,6 +12,7 @@ import cv2
 import numpy as np
 
 from src.paths import PROJECT_ROOT, CACHE_ROOT
+from src.recognition_control import check_cancelled, recognition_lock
 
 RESOURCE_ROOT = PROJECT_ROOT / 'assets/layout_retrieval'
 BACKEND_LABELS = {'pure_structure': '纯结构识别（最小缩放·CPU）', 'icon_structure': '图标与结构匹配'}
@@ -251,11 +252,12 @@ def anchor_fit(query, target, qi, ti):
     return best
 
 
-def fallback_templates(image, box):
+def fallback_templates(image, box, *, cancelled=None):
     x0, y0, x1, y1 = box
     edges = wall_edges(image, True)[:, y0:y1, x0:x1]
     templates = []
     for scale in np.arange(.19, .811, .015):
+        check_cancelled(cancelled)
         channels = [cv2.resize(ch.astype(np.float32), None, fx=float(scale), fy=float(scale),
                                interpolation=cv2.INTER_AREA) for ch in edges]
         total = sum(ch.sum() for ch in channels)
@@ -264,9 +266,10 @@ def fallback_templates(image, box):
     return templates
 
 
-def fallback_fit(templates, box, image, target, qi, references):
+def fallback_fit(templates, box, image, target, qi, references, *, cancelled=None):
     best = {'score': -1}
     for scale, channels, total in templates:
+        check_cancelled(cancelled)
         height, width = channels[0].shape
         if height >= target['walls'][0].shape[0] or width >= target['walls'][0].shape[1]:
             continue
@@ -289,6 +292,7 @@ def fallback_fit(templates, box, image, target, qi, references):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     for reference in references:
         for factor in [.7, .85, 1., 1.15, 1.3]:
+            check_cancelled(cancelled)
             width = max(9, round(qi['w'] * best['scale'] * factor))
             height, radius = round(width * reference.shape[0] / reference.shape[1]), max(3, round(width * .16))
             left, top = round(cx - width / 2) - radius, round(cy - height / 2) - radius
@@ -325,8 +329,8 @@ class LayoutRetriever:
         self._targets = []
         self._references = []
 
-    def prepare(self):
-        with self._lock:
+    def prepare(self, *, cancelled=None):
+        with recognition_lock(self._lock, cancelled):
             paths = sorted(self.clean_root.glob('layout_*/layout_*_2nd.png'))
             if any(p.name != f'{p.parent.name}_2nd.png' for p in paths):
                 raise ValueError('识别底图的布局目录与文件名不一致')
@@ -349,6 +353,7 @@ class LayoutRetriever:
                 cache = {}
             targets = []
             for path in paths:
+                check_cancelled(cancelled)
                 image = read_image(path)
                 key = f'{PARAMETERS["algorithm_version"]}:{cv2.__version__}:{digests[icons[0]]}:{digests[path]}'
                 icon = cache.get(key)
@@ -368,10 +373,12 @@ class LayoutRetriever:
                 pending.replace(cache_file)
             except OSError:
                 pass
+            check_cancelled(cancelled)
             self._references, self._targets, self._fingerprint = references, targets, fingerprint
             return fingerprint
 
-    def recognize(self, screenshot_bgr, reference_size=(1180, 1050)):
+    def recognize(self, screenshot_bgr, reference_size=(1180, 1050), *, cancelled=None):
+        check_cancelled(cancelled)
         started = time.perf_counter()
         result = LayoutRetrievalResult(reference_size=list(reference_size))
         try:
@@ -386,21 +393,22 @@ class LayoutRetriever:
                 screenshot_bgr, (width, height), interpolation=cv2.INTER_AREA
                 if width < screenshot_bgr.shape[1] else cv2.INTER_LINEAR)
             query = query_data(image)
-            with self._lock:
+            with recognition_lock(self._lock, cancelled):
                 preparation = time.perf_counter()
-                result.resource_fingerprint = self.prepare()
+                result.resource_fingerprint = self.prepare(**({'cancelled': cancelled} if cancelled is not None else {}))
                 result.timings_ms['index_prepare'] = (time.perf_counter() - preparation) * 1000
                 search = time.perf_counter()
                 qi = detect_query(image, self._references[0])
                 templates = None
                 candidates = []
                 for target in self._targets:
+                    check_cancelled(cancelled)
                     if reliable_query(qi) and target['icon']['confidence'] >= .77:
                         fit = anchor_fit(query, target, qi, target['icon'])
                     else:
                         if templates is None:
-                            templates = fallback_templates(image, query['box'])
-                        fit = fallback_fit(templates, query['box'], target['image'], target, qi, self._references)
+                            templates = fallback_templates(image, query['box'], cancelled=cancelled)
+                        fit = fallback_fit(templates, query['box'], target['image'], target, qi, self._references, cancelled=cancelled)
                     if fit is not None and np.isfinite(fit['score']):
                         candidates.append((target, fit))
                 candidates.sort(key=lambda item: (-item[1]['score'], item[0]['path']))
@@ -416,4 +424,5 @@ class LayoutRetriever:
         except (ValueError, OSError, cv2.error) as exc:
             result.reasons.append(str(exc))
         result.timings_ms['total'] = (time.perf_counter() - started) * 1000
+        check_cancelled(cancelled)
         return result

@@ -50,7 +50,12 @@ def test_capture_worker_routes_selected_recognizer(window,monkeypatch):
     from tests.support.app_fakes import InlineThread
     from src.capture.region import CaptureRegion
     window.settings['layout_recognition_backend']='pure_structure'
-    retriever=SimpleNamespace(recognize=lambda *a:candidates())
+    recognition_calls=[]
+    def recognize(*args, cancelled=None):
+        recognition_calls.append(cancelled)
+        assert cancelled is not None and not cancelled()
+        return candidates()
+    retriever=SimpleNamespace(recognize=recognize)
     monkeypatch.setattr(window,'_layout_retriever',lambda:retriever)
     monkeypatch.setattr(app.threading,'Thread',InlineThread)
     monkeypatch.setattr(app,'foreground_game_client',lambda *a:None)
@@ -67,6 +72,9 @@ def test_capture_worker_routes_selected_recognizer(window,monkeypatch):
     window.request_work('recognize',auto=False)
     assert len(calls)==1 and calls[0]['layout_recognition_backend']=='pure_structure'
     event=window.results.get_nowait()
+    assert event[0]=='recognition_work' and event[1]==window._active_work['id']
+    assert len(recognition_calls)==1
+    event=event[2]
     assert event[0]=='work' and event[-1] is None
     assert event[-2].layout_recognition_backend=='pure_structure'
     assert not event[-2].decision['accepted']
