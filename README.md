@@ -27,7 +27,7 @@ py -m venv .venv
 .\.venv\Scripts\python.exe -m src
 ```
 
-也可双击根目录 `启动路线投影程序.bat`。正式入口是 `python -m src`，同一路径下正常启动只允许一个实例；更新源码后应先关闭旧窗口再启动。
+也可双击根目录 `启动路线投影程序.bat`。启动器先检查当前目录 `.venv`；Git 工作区缺少可用环境时，读取工作区元数据并复用原仓库的 `.venv`，最后才尝试系统 Python。各候选均先验证正式依赖，运行目录始终保持当前工作区，不自动安装或修改共享环境。启动记录在 `runtime/logs/launcher.log`，失败时终端保留错误信息。可用 `启动路线投影程序.bat --launcher-check` 查看选中的解释器，`启动路线投影程序.bat --smoke` 验证窗口启动并自动退出。正式入口是 `python -m src`，同一路径下正常启动只允许一个实例；更新源码后应先关闭旧窗口再启动。
 
 正式依赖为 PyQt6、OpenCV、NumPy、Pillow、MSS 及 Windows comtypes。运行不再依赖 PyTorch、CUDA 或 CNN 权重。已有开发环境可继续使用，无需重建；环境中以前安装的包不会自动卸载。
 

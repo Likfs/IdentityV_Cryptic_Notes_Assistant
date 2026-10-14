@@ -1,9 +1,15 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-if exist ".venv\Scripts\pythonw.exe" (
-  start "" ".venv\Scripts\pythonw.exe" -m src
+if exist ".venv\Scripts\python.exe" (
+  ".venv\Scripts\python.exe" launch.py %*
 ) else (
-  python -m src
+  python launch.py %*
 )
-endlocal
+set "launch_exit=%errorlevel%"
+if not "%launch_exit%"=="0" (
+  echo.
+  echo Startup failed. See runtime\logs\launcher.log and README.md.
+  pause
+)
+endlocal & exit /b %launch_exit%
