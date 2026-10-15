@@ -1,3 +1,4 @@
+from tests.support.qt_wait import wait_for
 import numpy as np
 import pytest
 from src.registration.template_matching import direct
@@ -11,7 +12,8 @@ def test_reference_uses_selected_source_version(window, monkeypatch, variant):
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: seen.append(a))
     window.reference_override = True
-    window._apply_reference_ready(window.map_generation, [0, 0, 1180, 1050], 'all', window.profile.key, window.locked_layout)
+    window._apply_reference_ready(window.map_generation, [0, 0, 1180, 1050], 'b1', window.profile.key, window.locked_layout)
+    wait_for(lambda: bool(seen))
     assert seen and '底图版' in seen[-1][2]
-    expected = direct.load_original(window.profile.key, window.locked_layout, variant)[3]
+    expected = direct.floors.load(window.profile.key, window.locked_layout, variant, 'b1')[3]
     np.testing.assert_array_equal(seen[-1][0], expected)

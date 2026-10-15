@@ -31,7 +31,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
     monkeypatch.setattr(app_module, "GlobalActionHotkeys", NoHotkeys)
     qt_app = QApplication.instance() or QApplication([])
     path = tmp_path / "settings.json"
-    # The current UI always uses complete original-image template projection.
+    # The current UI waits for an automatically matched floor before previewing a source.
     path.write_text('{}', encoding="utf-8")
     window = app_module.RouteProjectionApp(settings_path=path)
     try:
@@ -48,10 +48,11 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert load_settings(window.catalog, path)['opacity'] == .34
         window.layout_var.set("layout_01")
         window._update_assets()
-        assert window.template_panel._pixmap is not None
-        assert window.route_panel._pixmap is not None
+        assert window.template_panel._pixmap is None
+        assert '自动选中' in window.template_panel.caption.text()
+        assert window.route_panel._pixmap is None
         window._select_preview_tab(1)
-        assert window.overlay_panel._pixmap is not None
+        assert window.overlay_panel._pixmap is None
 
         scheduled = []
         actions = []

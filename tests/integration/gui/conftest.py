@@ -1,3 +1,4 @@
+from tests.support.template_inputs import install_floor_inputs
 from types import SimpleNamespace
 from queue import Queue
 import pytest
@@ -21,6 +22,8 @@ def no_live_input(monkeypatch):
         events=Queue(), error=None, start=lambda: None, stop=lambda: None))
     monkeypatch.setattr(MousePanHook, 'start', lambda self: None)
     monkeypatch.setattr(app.RouteProjectionApp, '_start_layout_retrieval', lambda self: None)
+    # Dedicated prewarm tests exercise the real coordinator; ordinary GUI tests stay isolated.
+    monkeypatch.setattr(app.RouteProjectionApp, '_prepare_template_sources', lambda self: None)
 
 
 @pytest.fixture(autouse=True)
@@ -78,9 +81,9 @@ def direct_inputs(monkeypatch):
     original=np.full((40,40,3),120,np.uint8)
     rgba=np.dstack((original,np.full((40,40),180,np.uint8)))
     entry={'saved_scale':1.,'source_sha256':'verified','source_image':'original.png'}
-    monkeypatch.setattr(direct,'load_original',lambda *a:(entry,Path('original.png'),{'perf_mode':2},original,rgba))
+    install_floor_inputs(monkeypatch, entry, original, rgba)
     monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
-    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a:dict(score=2.,location=(0,0)))
+    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=2.,location=(0,0)))
     return original
 
 

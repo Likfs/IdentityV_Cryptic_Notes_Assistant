@@ -190,7 +190,7 @@ def process_screenshot(
     from src.registration.template_matching.direct import project_original
     result.floor = 'all'
     result.variant_id = template_variant_id
-    result.variant_source = TEMPLATE_VERSION_NAMES.get(template_variant_id, template_variant_id) + ' · 三层完整原图'
+    result.variant_source = TEMPLATE_VERSION_NAMES.get(template_variant_id, template_variant_id) + ' · 单层自动匹配'
     if not selected_layout:
         result.reasons = ['请先识别并确认布局，再进行 定尺度模板匹配 原图配准']
     else:
@@ -198,6 +198,7 @@ def process_screenshot(
             screenshot_bgr, profile.key, selected_layout, opacity, variant_id=template_variant_id,
             defer_preview=defer_projection_preview)
         result.registration = registration
+        result.floor = registration.validation.get('template', {}).get('candidate_floor', 'unknown')
         result.layer, result.projection = layer, composite
         result.asset_path = str(source) if source is not None else None
         result.accepted = registration.accepted
@@ -205,7 +206,7 @@ def process_screenshot(
         result.reasons = list(registration.rejection_reasons)
         result.overlay_validation = {'accepted':result.accepted, 'enabled':False,
                                      'rejection_reasons':list(result.reasons),
-                                     'scope':'original_source_image'}
+                                     'scope':'single_floor_source_image'}
         result.timings_ms.update(direct_timings)
         result.attempts = [{'layout':selected_layout, 'accepted':result.accepted,
                             'reasons':list(result.reasons)}]

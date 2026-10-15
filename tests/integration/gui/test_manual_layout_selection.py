@@ -27,7 +27,8 @@ def test_manual_choice_requires_confirmation_and_cancel_restores_lock(window, mo
     expected='layout_12' if confirmed else 'layout_11'
     assert window.locked_layout==window.layout_var.get()==window.layout_combo.currentText()==expected
     assert window.map_generation==generation+1 and window.session_id!=session
-    assert window.template_panel._pixmap is not None
+    assert window.template_panel._pixmap is None
+    assert '自动选中' in window.template_panel.caption.text()
     assert window.live_projection is None
 
 

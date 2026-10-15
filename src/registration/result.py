@@ -1,4 +1,4 @@
-"""Fixed-scale registration results in original-source-image coordinates."""
+"""Fixed-scale results in selected single-floor pixels; matrix names retain API compatibility."""
 from dataclasses import dataclass
 import numpy as np
 
@@ -9,6 +9,7 @@ class OriginalRegistrationResult:
     rejection_reasons: list[str]
     validation: dict
     timings: dict
+    source_image: np.ndarray | None = None
     original_to_screen: np.ndarray | None = None
     screenshot_to_original: np.ndarray | None = None
 
@@ -16,7 +17,7 @@ class OriginalRegistrationResult:
         return {
             'accepted': self.accepted,
             'rejection_reasons': self.rejection_reasons,
-            'coordinate_space': 'original_source_image',
+            'coordinate_space': self.validation.get('coordinate_space', 'single_floor_source_image'),
             'original_to_screen': self.original_to_screen.tolist() if self.original_to_screen is not None else None,
             'screenshot_to_original': self.screenshot_to_original.tolist() if self.screenshot_to_original is not None else None,
             'validation': self.validation,

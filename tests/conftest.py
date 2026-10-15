@@ -47,13 +47,14 @@ def isolated_runtime_outputs(tmp_path, monkeypatch):
     # Shared matcher settings and caches must not leak between test files.
     for name, attributes in {
         'src.registration.template_matching.direct': ('_images',),
+        'src.registration.template_matching.floors': ('_images', '_config_cache'),
         'src.registration.template_matching.matcher': ('_map_cache',),
         'src.registration.template_matching.resources': ('verified_fingerprints',),
     }.items():
         module = sys.modules.get(name)
         if module:
             for attribute in attributes:
-                monkeypatch.setattr(module, attribute, {})
+                monkeypatch.setattr(module, attribute, type(getattr(module, attribute))())
     matcher = sys.modules.get('src.registration.template_matching.matcher')
     if matcher:
         monkeypatch.setattr(matcher, 'TEMPLATE_DS', matcher.TEMPLATE_DS)

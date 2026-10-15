@@ -1,16 +1,22 @@
+from tests.support.qt_wait import wait_for
 from types import SimpleNamespace
 from PyQt6.QtWidgets import QApplication, QLabel
 from src import route_projection_app as app
 from src.app_catalog import load_settings
 from src.route_projection_qt_ui import LayoutConfirmationDialog
+from src.app_catalog import selected_template_variant
+import numpy as np
+import pytest
 
 
-def ready(window, floor="all", generation=None):
+def ready(window, floor="b1", generation=None):
     window._apply_reference_ready(window.map_generation if generation is None else generation,
                                   [100, 100, 1180, 1050], floor, window.profile.key, window.locked_layout)
+    if window.reference_context is not None:
+        wait_for(lambda: window.reference_overlay.visible)
 
 
-def feedback(window, *, accepted=False, floor="all"):
+def feedback(window, *, accepted=False, floor="b1"):
     result = SimpleNamespace(accepted=accepted, selected_layout=window.locked_layout,
                              profile_key=window.profile.key, floor=floor, registration=None,
                              reasons=[] if accepted else ["可见结构不足"])
@@ -27,7 +33,7 @@ def press_h(window, monkeypatch):
 def test_reference_lifecycle_and_user_hide_survives_result(window, monkeypatch):
     ready(window)
     assert window.reference_overlay.visible
-    assert "三层完整原图" in window.reference_overlay.caption.text()
+    assert "地下室" in window.reference_overlay.caption.text()
     press_h(window, monkeypatch)
     assert not window.reference_overlay.visible
     feedback(window)
@@ -74,7 +80,7 @@ def test_reference_versions_opacity_and_focus(window, monkeypatch):
     images = []
     for version in ("route_clean", "route_lhp_solo", "route_zhanshi_fast"):
         window.route_combo.setCurrentIndex(window.route_combo.findData(version))
-        ready(window, floor="all")  # A source switch invalidates the previous context.
+        ready(window, floor="b1")  # A source switch invalidates the previous context.
         assert window.reference_overlay.visible
         images.append(window.reference_overlay.label.pixmap().toImage())
     assert requests == [('project', {'auto': False})] * 3
@@ -126,3 +132,24 @@ def test_map_toasts_do_not_appear_after_close(window):
     window.map_state.is_open = False
     window._map_toast("地图暂未配准", "保持地图打开", success=False)
     assert not window.toast.isVisible()
+
+
+def test_late_single_floor_reference_cannot_restore_previous_floor(window, monkeypatch):
+    window.reference_context = (window.map_generation, [0, 0, 500, 500], 'b1', window.profile.key, window.locked_layout)
+    key = (window.session_id, window.map_generation, window.profile.key, window.locked_layout,
+           selected_template_variant(window.settings, window.profile.key), 'b1')
+    window.map_generation += 1
+    window.reference_context = (window.map_generation, [0, 0, 500, 500], '2nd', window.profile.key, window.locked_layout)
+    monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: pytest.fail('old floor restored'))
+    window._receive_work_event(('floor_reference', key, np.ones((10, 10, 3), np.uint8), None))
+    assert getattr(window, '_floor_reference_image', None) is None
+
+
+def test_delayed_single_floor_reference_respects_manual_hide(window, monkeypatch):
+    window.reference_context = (window.map_generation, [0, 0, 500, 500], 'b1', window.profile.key, window.locked_layout)
+    key = (window.session_id, window.map_generation, window.profile.key, window.locked_layout,
+           selected_template_variant(window.settings, window.profile.key), 'b1')
+    window.reference_override = False
+    monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: pytest.fail('manual hide ignored'))
+    window._receive_work_event(('floor_reference', key, np.ones((10, 10, 3), np.uint8), None))
+    assert not window.reference_overlay.visible

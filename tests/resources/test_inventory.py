@@ -28,11 +28,11 @@ def test_all_production_originals_are_verified_and_in_release_manifest():
     summary = direct.check_original_resources(profile.key, layouts)
     assert summary['route_lhp_solo']['layouts'] == len(layouts)
     assert summary['route_lhp_solo']['fixed_candidates'] == len(layouts)*3
-    assert summary['route_zhanshi_fast']['fixed_candidates'] == len(layouts)
+    assert summary['route_zhanshi_fast']['fixed_candidates'] == len(layouts)*3
     assert summary['route_clean']['layouts'] == len(layouts)
     assert summary['route_clean']['fixed_candidates'] == len(layouts)*3
     assert summary['route_lhp_solo_clean']['fixed_candidates'] == len(layouts)*3
-    assert summary['route_zhanshi_fast_clean']['fixed_candidates'] == len(layouts)
+    assert summary['route_zhanshi_fast_clean']['fixed_candidates'] == len(layouts)*3
     assert all(not item['errors'] for item in summary.values())
     from tools.release.build_windows_exe import runtime_files, ROOT
     manifest = set(runtime_files())
@@ -48,3 +48,15 @@ def test_all_production_originals_are_verified_and_in_release_manifest():
             assert path.resolve() in manifest
             parent, _, _ = direct._source(profile.key, layout, source_variant['reference_variant_id'])
             assert [c['saved_scale'] for c in source_variant['candidates']] == [c['saved_scale'] for c in parent['candidates']]
+
+
+def test_every_single_floor_source_is_shipped():
+    from tools.release.build_windows_exe import runtime_files
+    manifest = set(runtime_files())
+    config = json.loads((PROJECT_ROOT/'configs/template_matching.json').read_text(encoding='utf-8'))
+    for profile, layouts in config['floor_variants'].items():
+        for layout, variants in layouts.items():
+            for version in variants:
+                entries, _ = direct.floors.sources(profile, layout, version)
+                assert set(entries) == {'2nd', '1st', 'b1'}
+                assert all((PROJECT_ROOT/e['source_image']).resolve() in manifest for e in entries.values())

@@ -85,11 +85,11 @@ def running(window, monkeypatch):
     assert isinstance(session, pan.MousePanSession)
     session.input = FakeHook()
     original = source()[:, :, [2, 1, 0, 3]].copy()
-    monkeypatch.setattr(pan, 'load_original', lambda *_: (None, None, None, None, original))
+    monkeypatch.setattr(pan, 'load_floor', lambda *_, **kw: (None, None, None, None, original))
     def no_capture(*_):
         pytest.fail('Mouse following must not capture frames')
     monkeypatch.setattr(pan.core, 'capture_bgr', no_capture)
-    result = SimpleNamespace(registration=SimpleNamespace(original_to_screen=np.eye(3)),
+    result = SimpleNamespace(registration=SimpleNamespace(original_to_screen=np.eye(3), validation={'template': {'source_record_sha256': 'test'}}), floor='b1',
                              capture_window_id=42, profile_key=window.profile.key,
                              selected_layout=window.locked_layout,
                              variant_id=selected_template_variant(window.settings, window.profile.key))

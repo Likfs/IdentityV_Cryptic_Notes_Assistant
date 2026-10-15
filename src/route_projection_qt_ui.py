@@ -781,7 +781,7 @@ class SettingsPage(QWidget):
         self.map_capture_delay_spin.valueChanged.connect(lambda value: (
             self.vars["map_capture_delay_ms"].set(value), self._schedule_settings_save()))
         form.addRow("截图延迟", self.map_capture_delay_spin)
-        form.addRow("配准方式", QLabel("定尺度模板匹配 · 三层完整原图"))
+        form.addRow("配准方式", QLabel("定尺度模板匹配 · 单层自动匹配"))
         form.addRow("游戏窗口标题", entry("window_titles", ", ".join(settings["game_window_titles"])))
         form.addRow("截图区域 左, 上, 宽, 高", entry("roi", ", ".join(map(str, settings["capture_roi"]))))
         form.addRow("参考分辨率 宽, 高", entry("reference_size", ", ".join(map(str, settings["capture_reference_size"]))))

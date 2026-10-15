@@ -99,6 +99,15 @@ def runtime_files() -> list[Path]:
                 for candidate in entry['candidates']:
                     for dependency in candidate.get('dependencies', []):
                         include(dependency['path'])
+    from src.registration.template_matching.floors import sources
+    for profile_key, layouts in config.get('floor_variants', {}).items():
+        for layout, variants in layouts.items():
+            for variant in variants:
+                records, _ = sources(profile_key, layout, variant)
+                for record in records.values():
+                    include(record['source_image'])
+                    for dependency in record.get('dependencies', []):
+                        include(dependency['path'])
     include("assets/app_ui/home_wallpaper.jpg")
     include("assets/app_ui/icons/check.svg")
     for name in ('query', 'clean_09', 'clean_15'):

@@ -100,5 +100,5 @@ def test_new_recognition_phase_uses_separate_capture_and_matching_messages(windo
     window._receive_work_event(('work_progress','current',window.session_id,window.map_generation,'正在识别布局…'))
     assert window.status_var.get()=='正在识别布局…'
     window._active_work['mode']='project'
-    window._receive_work_event(('work_progress','current',window.session_id,window.map_generation,'正在配准路线，匹配三层完整原图…'))
+    window._receive_work_event(('work_progress','current',window.session_id,window.map_generation,'正在配准路线，自动比较三层图片…'))
     assert '正在配准路线' in window.status_var.get()

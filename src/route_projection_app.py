@@ -147,6 +147,8 @@ class RouteProjectionApp(QWidget):
         self.busy = False
         self._active_work = None
         self.closed = False
+        from src.registration.template_matching.prewarm import FloorPrewarmer
+        self._template_prewarmer = FloorPrewarmer()
         self.started_at = time.monotonic()
         self._last_clock_second = -1
         self.map_state = MapToggleState(key_was_down=map_key_down(self.settings["map_key"]))
@@ -665,37 +667,28 @@ class RouteProjectionApp(QWidget):
                 self._set_status("游戏窗口未在前台；请切回游戏后使用快捷键重试", AMBER)
         self.after(3000, run)
 
+    def _matched_source_preview(self):
+        result = self.last_result
+        variant = selected_template_variant(self.settings, self.profile.key)
+        if (result is not None and result.selected_layout == self.layout_var.get()
+                and result.profile_key == self.profile.key and result.variant_id == variant
+                and result.floor in FLOORS and result.registration is not None):
+            image = getattr(result.registration, 'source_image', None)
+            if image is not None:
+                return image, f"{result.selected_layout} · {TEMPLATE_VERSION_NAMES[variant]} · {FLOOR_NAMES[result.floor]}"
+        return None, '配准后显示自动选中的单层图片'
+
     def _refresh_template(self):
-        layout = self.layout_var.get()
-        if layout == AUTO:
-            self.preview_images.pop("template", None)
-            self.template_panel.set_image(None, "先识别或手动选择布局")
-            return
-        try:
-            from src.registration.template_matching.direct import load_original
-            variant = selected_template_variant(self.settings, self.profile.key)
-            image = load_original(self.profile.key, layout, variant)[3]
-            title = f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图"
-            self.template_panel.set_image(image, title)
+        image, title = self._matched_source_preview()
+        self.template_panel.set_image(image, title)
+        if image is None:
+            self.preview_images.pop('template', None)
+        else:
             self.preview_images['template'] = (image, title)
-            return
-        except Exception as exc:
-            self.preview_images.pop("template", None)
-            self.template_panel.set_image(None, str(exc))
 
     def _refresh_route_preview(self):
-        layout = self.layout_var.get()
-        if layout == AUTO:
-            self.route_panel.set_image(None, "先确认布局")
-            return
-        try:
-            from src.registration.template_matching.direct import load_original
-            variant = selected_template_variant(self.settings, self.profile.key)
-            self.route_panel.set_image(load_original(self.profile.key, layout, variant)[3],
-                                      f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图")
-        except (OSError, ValueError, KeyError, cv2.error) as exc:
-            self.route_panel.set_image(None, f"完整原图不可用：{exc}")
-        return
+        image, title = self._matched_source_preview()
+        self.route_panel.set_image(image, title)
 
     def _refresh_status(self, *_args):
         if not hasattr(self, "status_rows"):
@@ -765,6 +758,7 @@ class RouteProjectionApp(QWidget):
 
 
     def _layout_changed(self, _event=None):
+        self._template_prewarmer.request(None)
         self.map_generation += 1
         self._pending_confirmation = None
         self.session_id = uuid.uuid4().hex[:12]
@@ -822,16 +816,27 @@ class RouteProjectionApp(QWidget):
             for variant_id in dict.fromkeys([*choices, preferred]):
                 self.route_combo.addItem(TEMPLATE_VERSION_NAMES[variant_id], variant_id)
             self.route_combo.setCurrentIndex(self.route_combo.findData(preferred))
-            self.asset_var.set(f'{layout} / {TEMPLATE_VERSION_NAMES[preferred]} · 三层完整原图 · 不分楼层')
+            self.asset_var.set(f'{layout} / {TEMPLATE_VERSION_NAMES[preferred]} · 单层图片 · 自动匹配楼层')
             self.route_combo.setEnabled(True)
             self.floor_combo.setEnabled(False)
             for index, floor in enumerate(FLOORS):
-                self.floor_combo.setItemText(index, '不分楼层')
+                self.floor_combo.setItemText(index, '自动匹配')
             self.route_combo.blockSignals(False)
             self._refresh_template()
             self._refresh_route_preview()
         self._refresh_status()
+        self._prepare_template_sources()
 
+
+    def _prepare_template_sources(self):
+        prewarmer = getattr(self, '_template_prewarmer', None)
+        if prewarmer is None:
+            return
+        layout = getattr(self, 'locked_layout', None)
+        key = ((self.session_id, self.profile.key, layout,
+                selected_template_variant(self.settings, self.profile.key))
+               if layout and not self.closed else None)
+        prewarmer.request(key)
 
     def _layout_retriever(self):
         cache = getattr(self, 'layout_retrievers', None)
@@ -1077,7 +1082,7 @@ class RouteProjectionApp(QWidget):
             self.hide_overlay()
             self.reference_context = None
             RouteProjectionApp._map_toast(self, "正在配准路线", f"已锁定 {fixed_layout}，" +
-                ("正在匹配三层完整原图…"), success=True)
+                ("正在分别匹配三层图片…"), success=True)
         generation = self.map_generation
         session_id = self.session_id
         profile = self.profile
@@ -1120,7 +1125,7 @@ class RouteProjectionApp(QWidget):
                 bridge = getattr(self, '_work_bridge', None)
                 if bridge is not None:
                     bridge.ready.emit(('work_progress', work_id, session_id, generation,
-                        '正在识别布局…' if mode == 'recognize' else '正在配准路线，匹配三层完整原图…'))
+                        '正在识别布局…' if mode == 'recognize' else '正在配准路线，自动比较三层图片…'))
                 result = process_screenshot(
                     screenshot, catalog=self.catalog, profile=profile,
                     layout_override=fixed_layout, opacity=opacity,
@@ -1209,6 +1214,19 @@ class RouteProjectionApp(QWidget):
             return
         if not self.closed:
             self._handle_map_key()
+        if payload[0] == 'floor_reference':
+            _, key, image, error = payload
+            context = self.reference_context
+            if (self.closed or context is None or not self.map_state.is_open or
+                    key != (self.session_id, context[0], context[3], context[4],
+                            selected_template_variant(self.settings, self.profile.key), context[2])):
+                return
+            if error:
+                self._log(f'单层参考图不可用：{error}')
+                return
+            self._floor_reference_image = (key, image)
+            self._refresh_reference_map()
+            return
         if payload[0] == 'preview_error':
             _, generation, session, result, error = payload
             if (not self.closed and generation == self.map_generation and session == self.session_id
@@ -1228,7 +1246,7 @@ class RouteProjectionApp(QWidget):
                 self.live_projection = (completed, self.live_projection[1], generation)
             if completed.projection is not None:
                 self._set_preview_kind('projection', completed.projection,
-                                       f'投影预览 · {completed.selected_layout} / 三层完整原图')
+                                       f'投影预览 · {completed.selected_layout} / {FLOOR_NAMES.get(completed.floor, completed.floor)}')
             if completed.preview_error:
                 self._log(f'后台预览失败（不影响已显示路线）：{completed.preview_error}')
             self.metric_var.set(format_projection_metrics(completed))
@@ -1351,6 +1369,8 @@ class RouteProjectionApp(QWidget):
                 RouteProjectionApp._map_toast(self, "地图处理失败", str(error), success=False, roi=roi)
         elif result:
             self.last_result = result
+            self._refresh_template()
+            self._refresh_route_preview()
             self.roi_label.configure(text=f"本次游戏截图  {roi[0]}, {roi[1]} · {roi[2]}×{roi[3]}")
             self._set_preview(result.screenshot, f"本次截图 · {datetime.now():%H:%M:%S} · {result.screenshot.shape[1]}×{result.screenshot.shape[0]}")
             self._update_ranking(result)
@@ -1381,7 +1401,7 @@ class RouteProjectionApp(QWidget):
                 timing = result.timings_ms
                 if result.accepted and result.projection is not None:
                     self._set_preview_kind("projection", result.projection,
-                                           f"投影预览 · {result.selected_layout} / {FLOOR_NAMES.get(result.floor, '三层完整原图')}")
+                                           f"投影预览 · {result.selected_layout} / {FLOOR_NAMES.get(result.floor, '未取得楼层候选')}")
                 self.metric_var.set(format_projection_metrics(result))
                 self._log(self.metric_var.get())
                 execution = result.registration.validation.get('registration_backend', {}) if result.registration else {}
@@ -1399,7 +1419,7 @@ class RouteProjectionApp(QWidget):
                             self._motion.start(result, roi)
                     percent = opacity_to_percent(float(self.settings["opacity"]))
                     self.overlay_var.set(("投影显示中" if self.show_overlay_check.isChecked() else "投影预览完成，显示已关闭") +
-                                         f" · {result.selected_layout} / {FLOOR_NAMES.get(result.floor, '三层完整原图')} / "
+                                         f" · {result.selected_layout} / {FLOOR_NAMES.get(result.floor, '未取得楼层候选')} / "
                                          f"{result.variant_id} · 不透明度 {percent}%")
                     self._set_status("模板匹配候选已投影，请核对位置", AMBER)
                 elif stale:
@@ -1493,7 +1513,7 @@ class RouteProjectionApp(QWidget):
             self._handle_map_key()
         if (self.closed or generation != self.map_generation or not self.map_state.is_open
                 or profile_key != self.profile.key or layout != self.locked_layout
-                or (floor not in FLOORS and not (floor == 'all' and self.settings.get('registration_backend') == 'template'))):
+                or floor not in FLOORS):
             return
         self.reference_context = (generation, list(roi), floor, profile_key, layout)
         self.reference_auto = True
@@ -1513,32 +1533,49 @@ class RouteProjectionApp(QWidget):
             self.reference_overlay.hide()
             return
         _, roi, floor, _, layout = context
-        try:
-            from src.registration.template_matching.direct import load_original
-            variant = selected_template_variant(self.settings, self.profile.key)
-            image = load_original(self.profile.key, layout, variant)[3]
-            if getattr(self, 'map_keys', None) is not None:
-                self._handle_map_key()
-                if self.reference_context is not context or context[0] != self.map_generation or not self.map_state.is_open:
-                    return
-            self.reference_overlay.show_map(image, roi,
-                f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · 三层完整原图 · {self.settings['reference_hotkey']} 隐藏", self.settings['reference_opacity'])
-            return
-        except (ValueError, OSError, cv2.error, AttributeError) as exc:
+        variant = selected_template_variant(self.settings, self.profile.key)
+        key = (self.session_id, *context[:1], context[3], layout, variant, floor)
+        cached = getattr(self, '_floor_reference_image', None)
+        result = self.last_result
+        image = None
+        if (result is not None and result.selected_layout == layout and result.profile_key == self.profile.key
+                and result.variant_id == variant and result.floor == floor and result.registration is not None):
+            image = getattr(result.registration, 'source_image', None)
+        if image is None and cached is not None and cached[0] == key:
+            image = cached[1]
+        if image is None:
             self.reference_overlay.hide()
-            self._log(f"左上角路线图不可用：{exc}")
+            if getattr(self, '_floor_reference_pending', None) != key:
+                self._floor_reference_pending = key
+                profile_key = self.profile.key
+                def worker():
+                    try:
+                        from src.registration.template_matching.floors import load
+                        loaded = load(profile_key, layout, variant, floor)[3]
+                        packet = ('floor_reference', key, loaded, None)
+                    except Exception as exc:
+                        packet = ('floor_reference', key, None, str(exc))
+                    try:
+                        self._work_bridge.ready.emit(packet)
+                    except RuntimeError:
+                        pass
+                threading.Thread(target=worker, name='floor-reference', daemon=True).start()
+            return
+        self.reference_overlay.show_map(image, roi,
+            f"{layout} · {TEMPLATE_VERSION_NAMES[variant]} · {FLOOR_NAMES[floor]} · {self.settings['reference_hotkey']} 隐藏",
+            self.settings['reference_opacity'])
 
     def _finish_map_feedback(self, generation, roi, result):
         if generation != self.map_generation or not self.map_state.is_open:
             return
         if hasattr(self, "reference_overlay"):
-            if result.floor in FLOORS or (result.floor == 'all' and self.settings.get('registration_backend') == 'template'):
+            if result.floor in FLOORS:
                 self.reference_context = (generation, list(roi), result.floor, result.profile_key, result.selected_layout)
             else:
                 self.reference_context = None
             self.reference_auto = not result.accepted
             self._refresh_reference_map()
-        label = f"{result.selected_layout or '布局待确认'} · {FLOOR_NAMES.get(result.floor, '三层完整原图' if result.floor == 'all' else '楼层待确认')}"
+        label = f"{result.selected_layout or '布局待确认'} · {FLOOR_NAMES.get(result.floor, '未取得楼层候选')}"
         if result.accepted:
             detail = label + ("，路线已投影。" if self.show_overlay_check.isChecked() else "，投影显示已关闭。")
             RouteProjectionApp._map_toast(self, "模板匹配候选已投影", detail, success=True, roi=roi)
@@ -1666,7 +1703,7 @@ class RouteProjectionApp(QWidget):
         delay = max(0, math.ceil(capture_delay - (time.perf_counter()-key_detected_at)*1000))
         self.after(delay, lambda: RouteProjectionApp._project_after_delay(
             self, generation, expected_session))
-        action = '匹配三层完整原图'
+        action = '自动匹配单层图片'
         self._set_status(f"地图键已松开，等待 {capture_delay} ms 后{action}…")
         self._log(f"地图键 {self.settings['map_key']} 松开：等待 {capture_delay} ms 后{action}")
 
@@ -1716,7 +1753,7 @@ class RouteProjectionApp(QWidget):
             self.projection_delay_pending = False
             return
         self.projection_delay_pending = False
-        self.projection_status_text = '定尺度模板匹配：匹配三层完整原图'
+        self.projection_status_text = '定尺度模板匹配：自动匹配单层图片'
         self.projection_wait_elapsed_ms = (time.perf_counter()-key_started)*1000 if key_started is not None else None
         self._refresh_status()
         self._log(f'定尺度模板匹配开图：设定等待 {capture_delay} ms，直接截图匹配原图')
@@ -1800,6 +1837,7 @@ class RouteProjectionApp(QWidget):
         active = getattr(self, '_active_work', None) or {}
         if active.get('cancel') is not None:
             active['cancel'].set()
+        self._template_prewarmer.close()
         for retriever in getattr(self, 'layout_retrievers', {}).values():
             if hasattr(retriever, 'close'):
                 threading.Thread(target=retriever.close, name='close-layout-index', daemon=True).start()

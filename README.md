@@ -1,6 +1,6 @@
 # 第五人格地图路线识别与投影工具 1.1
 
-Windows 地图布局识别与路线投影工具。正式流程为：**游戏截图 → 布局识别（纯结构或图标与结构） → 人工确认布局 → 定尺度模板匹配 → 三层完整原图透明投影**。
+Windows 地图布局识别与路线投影工具。正式流程为：**游戏截图 → 布局识别（纯结构或图标与结构） → 人工确认布局 → 定尺度模板匹配 → 单层自动匹配与透明投影**。
 
 CNN、CPU/GPU 多尺度结构配准、训练采集工具和专属测试已移除，旧 `retired_features/` 归档目录也已删除。需要查阅曾经提交的旧文件时，请查看 Git 历史；未提交的本机资料不在 Git 历史中。版本来源仍为 `src/version.py`，更新源码不会自动生成或改写 EXE。
 
@@ -90,45 +90,39 @@ py -m venv .venv
 
 ### 定尺度模板匹配
 
-`registration_backend=template` 使用已确认布局的保存尺度，匹配三层完整原图并直接投影。实际入口是 `src/registration/template_matching/direct.py`，尺度及源图指纹来自 `configs/template_matching.json`。
+`registration_backend=template` 在人工确认布局后，将所选版本的二楼、一楼、地下室单图分别按各自保存尺度匹配，最高分候选直接投影。用户无需选择楼层。运行入口是 `src/registration/template_matching/direct.py`，单层素材与尺度由 `floors.py` 读取。
 
-- 不执行楼层识别、mylocation 检测或多尺度结构验收，最高分位置直接作为候选显示。没有可匹配像素、尺度无效或资源指纹错误时停止本次投影。
-- 坐标是 `original_source_image`，结果为 `floor=all`，`variant_id` 为实际所选的模板版本 ID；矩阵是 `screenshot_to_original` 和 `original_to_screen`，不能当作 `clean_to_screen`。
-- 展十保留近黑背景透明处理；凉哈皮匹配前景为灰度大于 48 的像素，透明图层额外保留高饱和度彩色路线。超出截图区域的内容裁剪，原图可能含邻层文字或路线。
-- 首页可选择展十、凉哈皮、原版干净底图，以及“凉哈皮单人速刷路线图底图版”和“展十速刷路线图底图版”，默认展十；楼层选择仍禁用。模板偏好保存到 `template_route_versions`，独立于仅作旧设置迁移和离线维护使用的 `route_versions`。
-- 切换版本时隐藏旧图层并使旧任务失效。地图打开且游戏在前台时后台重新截图匹配，否则下次投影使用新版本；不会复用另一版本的原图矩阵。
-- 凉哈皮部分原图三层比例不同，每层保存一个固定尺度并限制在对应原图区域内匹配，最高分候选用于整图投影；候选楼层仅是尺度来源，不是楼层识别结果。不进行连续尺度搜索，截图可见区域无法容纳时拒绝该候选，不暗中缩放。
-- 点击游戏楼层按钮区域时使旧任务失效并隐藏图层，鼠标释放后等待截图延迟再匹配；不识别按钮高亮或编号。关闭自动投影后需要 F10 手动匹配。
-- 楼层按钮点击采用约 25 ms 轮询，极短点击及键盘切层可能无法自动检测，应回到保存尺度对应的开图缩放后按 F10 或关图重开。
-- 实时图层经 Qt 信号优先提交，然后后台合成预览及保存诊断；迟到图层和预览分别检查会话、代次和地图状态。
-- 投影覆盖窗口在隐藏前清空旧路线并立即重绘，重新显示前先完成窗口属性设置，减少旧画面在首次绘制前残留的可能；参考图保留原有隐藏行为。用户已在本次实机复测中确认移动后开图的闪烁消失，其他设备与场景仍需分别验证。
-- “更多设置 → 地图拖动跟随（试用）”默认开启，说明为“拖动地图时路线同步平移（不支持缩放）”。沿用 `template_motion_tracking=true` 设置键以兼容已有偏好，关闭后恢复静态投影。仅在定尺度首次配准显示后启动；跟随仅按鼠标位移平移，不做自动图像校正。首次位置需要人工核对，不修改保存尺度、首次配准结果。
-- 首次显示后后台准备完整原图的固定尺度缓存。覆盖窗口固定在地图截图区域，内部路线按鼠标物理像素位移平移并裁剪；原先在视野外的路线可随拖动进入画面。Windows 鼠标钩子只保存输入，Qt 主线程按 16 ms 定时器消费最新坐标（不代表实际帧率或显示延迟），拖动期间不截图、配准或重新缩放原图。静止时不更新路线，不会因地图结构稀疏而隐藏。
-- 仅游戏在前台、投影显示且左键按下点位于地图区域并避开已知楼层按钮时开始跟随。每次拖动从按下时的坐标和累计偏移计算，松手补交最终坐标；保留短拖动的按下／松开顺序，拖动开始后允许鼠标移出区域。鼠标事件继续传递给游戏，投影保持鼠标穿透和不抢焦点。
-- 暂不支持缩放。检测到地图区域滚轮操作后隐藏路线并结束跟随，需恢复保存尺度对应的开图缩放后按 F10 或关图重开；不会自动重新配准或推测滚轮倍率。其他方式的缩放暂不能自动检测。地图边界、游戏拖动倍率或动画若导致实际平移不等于鼠标位移，仍可能错位，需手动重新投影。
-- 关图、切层、切布局／版本、进入设置、手动隐藏以及游戏切出前台或窗口位置／尺寸变化时，结束当前跟随并丢弃旧输入与迟到缓存。重新投影建立新会话；退出时卸载鼠标钩子。跟随不依赖截图排除接口是否成功，因为不采集后续图像。此功能尚待实机验证，初始配准诊断与预览仅代表首次截图。
+- 五个版本 ID 和 `template_route_versions` 偏好保持不变。原版读取 `clean/<布局>/*_<楼层>.png`；展十、凉哈皮读取 `routes/<版本>/<布局>/<楼层>.png`；两套路线图底图版读取 `routes/<版本>_single_floor/<编号>/*_<楼层>.png`。
+- 正式配置是 `configs/template_matching.json` 的 `floor_variants[地图/难度][布局][版本][楼层]`。每层独立保存 `saved_scale`、`source_image`、尺寸、源图指纹及标定依赖。修改一层尺度不改变其他层；只比较三个保存尺度，不连续搜索、不读取按钮编号或识别高亮。分数不是正确概率，显示结果仍需人工核对。
+- `saved_scale` 表示截图到该单层图片的尺度，仍乘显示器 factor。数值减小会使投影放大；例如放大 1% 应将数值除以 1.01。修改配置后重新截图匹配，不复用旧矩阵。
+- 结果 `floor` 为胜出候选的 `2nd`、`1st` 或 `b1`；它表示模板候选，不是独立楼层检测。坐标为 `single_floor_source_image`；为兼容调用方，矩阵字段仍为 `screenshot_to_original`／`original_to_screen`，这里的 original 指当前单层文件，不能用于旧拼图或当作 `clean_to_screen`。
+- 只投影胜出单层；预览、参考图和拖动缓存均使用该层。配准前预览提示等待自动匹配，不拼接三层。缺少单层资源、尺度无效或依赖指纹改变时停止，不回退到三层原图。匹配失败没有楼层候选时不展示猜测的参考图。
+- 一次配准共用一份已校验的三层配置，匹配前和输出前各检查一次；同轮共享依赖只校验一次。匹配期间修改尺度、素材或相关配置会丢弃结果，重新截图后再匹配。
+- 同一截图按实际缩放尺寸和插值条件共享预处理；不同尺度仍分别处理，三层候选全部比较。二值边界裁剪使用等价的批量计算。配置全文每次仍读取核对，内容相同时复用解析结果，不能仅靠文件大小或时间戳判断未变。
+- 确认布局或切换版本后，后台预加载当前三层图片和匹配模板；完整图片缓存最多三张。新选择会取消旧预加载，实时匹配占用资源时预加载让出；关闭地图不会让预加载显示图层。预加载完成可减少首次开图等待，未完成时配准照常加载和校验，不使用旧矩阵。
+- 保留原有 RGBA 透明度，并将黑色背景透明处理；匹配忽略完全透明像素。彩色路线仍保留。
+- 切换版本时隐藏旧图层并使旧任务失效。地图打开且游戏在前台时后台重新截图匹配，否则下次投影使用新版本。
+- 点击游戏楼层按钮区域后隐藏投影，松开鼠标并等待截图延迟再自动匹配三张单图；不推断按钮目标楼层。关闭自动投影后使用 F10。约 25 ms 的轮询可能漏掉极短点击或键盘切层，必要时 F10 或关图重开。
+- 实时图层经 Qt 信号优先提交，后台再合成预览和保存诊断。迟到图层、预览和参考图均校验上下文，关图或切换状态不会恢复旧结果。参考图保留本次地图内 H 键手动显隐选择。
+- “地图拖动跟随（试用）”继续只按鼠标物理位移平移，不截图追踪、不修改尺度；单层中原本在视野外的路线可随拖动进入画面。覆盖层鼠标穿透且不抢焦点，Esc 只关闭。
+- 地图区域滚轮操作后隐藏图层，须恢复保存尺度对应的开图缩放后重新匹配。关图、切层、切版本、进入设置、手动隐藏、游戏切出前台或窗口变化时丢弃旧拖动缓存。
 
-模板分数只说明候选相关性。稀疏地图结构可能与其他位置相似，需要核对实际重合效果；模板模式没有独立画面标识纠正地图开关状态。
+当前尺度按干净底图的共同像素比例复核：81 张底图的主要走廊宽度均为 60 像素，现有游戏截图的分布式结构对应点支持标准屏幕 factor=1 时约 `1.490` 的截图到干净底图尺度。凉哈皮原版的部分素材有横纵比例差异，现用已有标定生成 `route_lhp_solo_rectified` 单层校正图，保留原有图片；校正后五个版本均可在干净底图像素比例下使用固定尺度。每层配置仍独立，支持后续单独微调；没有截图的楼层只完成素材比例推算，不代表逐层游戏内验收。
 
-原版干净底图按二楼、一楼、地下室原尺寸在内存中纵向拼接，不生成额外图片；每层使用离线推算的保存尺度及对应搜索区域，最高分候选用于整图投影，候选楼层不是独立楼层识别结果。图层与参考图均使用同一拼接坐标，切换版本必须重新匹配。
+新底图版在干净底图坐标上增加边距，通常为 128 像素；展十 `layout_05` 一楼左边距为 68 像素，导入记录保存实际偏移并核验结构。边距改变平移，不改变尺度。旧拼图的共享尺度保留作离线历史参考，不能直接恢复为正式单层尺度。
 
-两套路线图底图版直接读取 `sources/route_lhp_solo_clean/` 与 `sources/route_zhanshi_fast_clean/`，ID 与目录名相同，保留图片中的路线和文字。它们与对应原图同名、同尺寸；导入工具逐层验证结构坐标一致后，继承原图的固定尺度和搜索区域，分别保存源图指纹，并验证原图、标定及参考版本记录，资源改变后须重新导入。这两个版本只在模板模式提供，原版干净底图仍使用三层底图拼接。
+凉哈皮校正图由 `tools/assets/calibration/rectify_single_floor_routes.py --output <新的暂存目录>` 生成。核对后发布该目录下的 `assets/maps/<地图>/<难度>/routes/route_lhp_solo_rectified/`，再运行单层导入器。导入器会按原始图片与标定重新计算并核对像素，不能只更新指纹绕过几何检查；原素材、标定或校正图片变化时必须重新生成。
 
-```powershell
-.\.venv\Scripts\python.exe tools/assets/imports/import_template_source_variants.py
-# 默认输出 workspace/asset_build/configs/template_matching_source_variants.json，核对后再复制到正式配置。
-.\.venv\Scripts\python.exe -m src --project-once tests/fixtures/registration/game2.png --layout layout_05 --registration-backend template --route-version route_lhp_solo_clean --output workspace/reports/template_source_variants/lhp_clean
-```
-
-凉哈皮及原版干净底图的初始固定尺度由现有两套路线标定和展十保存尺度离线推算，尚不能视为游戏内对齐验证。`configs/template_matching.json` 保留旧 `entries`，新增 `original_variants` 保存版本原图／底图拼接记录、候选尺度、搜索区域及推算依赖指纹。底图、标定、原图或参考尺度变化后，须重新推算：
+旧 `entries` 与 `original_variants` 保留供离线推算和依赖追溯；正式投影不使用拼图记录。新导入器默认只写暂存文件，保留几何与参考记录未变的个人手工尺度：
 
 ```powershell
-.\.venv\Scripts\python.exe tools/assets/imports/derive_template_variant_scales.py
-.\.venv\Scripts\python.exe tools/assets/imports/import_template_source_variants.py --config workspace/asset_build/configs/template_matching.json
-# 检查最终输出 workspace/asset_build/configs/template_matching_source_variants.json，再复制到 configs/template_matching.json
+.\.venv\Scripts\python.exe tools/assets/imports/import_template_floors.py --output workspace/asset_build/configs/template_matching_floors.json
+# 将已核对的干净底图尺度同步换算到指定楼层的五个版本（可重复传入多层）：
+.\.venv\Scripts\python.exe tools/assets/imports/import_template_floors.py --clean-scale a_bringer_of_doom/nightmare:layout_15:b1=1.490 --output workspace/asset_build/configs/template_matching_floors.json
+.\.venv\Scripts\python.exe -m src --project-once tests/fixtures/registration/game2.png --layout layout_05 --registration-backend template --route-version route_lhp_solo_clean --output workspace/reports/template_single_floor/lhp_clean
 ```
 
-`--check` 的 `template_originals` 列出各版本原图、固定候选数量和指纹错误；这些检查不代替实际图像对齐。
+核对暂存配置后再替换正式文件。`--check` 的历史字段 `template_originals` 现在列出各版本单层资源、每布局三个候选和 `errors`；这不是实机验收。
 
 ## 设置、界面与状态保护
 

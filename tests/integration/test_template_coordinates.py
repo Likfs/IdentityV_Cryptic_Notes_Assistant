@@ -1,3 +1,4 @@
+from tests.support.template_inputs import install_floor_inputs
 from pathlib import Path
 from types import SimpleNamespace
 import hashlib
@@ -16,20 +17,20 @@ def test_original_projection_matches_any_floor_without_clean_coordinates(monkeyp
     original[:20,:20]=(70,90,180);original[:20,20:]=(200,80,60);original[20:,:20]=(90,190,70)
     rgba=np.dstack((original,np.uint8(np.any(original>0,axis=2))*255))
     entry={'saved_scale':scale,'source_sha256':'verified','source_image':'original.png'}
-    monkeypatch.setattr(direct,'load_original',lambda *a:(entry,Path('original.png'),{'perf_mode':2},original,rgba))
+    install_floor_inputs(monkeypatch, entry, original, rgba)
     monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
-    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a:dict(score=3.,location=origin))
+    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=3.,location=origin))
     monkeypatch.setattr(direct.matcher,'find_best_scale',lambda *a:pytest.fail('scale search was called'))
     result=workflow.process_screenshot(np.full((10, 10, 3), 100, np.uint8), catalog=object(), profile=SimpleNamespace(key='map/difficulty'), layout_override='layout_16', opacity=1.0, registration_backend='template')
     x,y=origin
-    assert result.accepted and result.floor=='all' and result.variant_id=='route_zhanshi_fast'
+    assert result.accepted and result.floor=='2nd' and result.variant_id=='route_zhanshi_fast'
     np.testing.assert_array_equal(result.layer[:,:,:3],original[y:y+10,x:x+10])
     assert np.all(result.layer[:,:,3]==255)
     assert result.registration.diagnostics()['clean_to_screen'] is None and result.registration.diagnostics()['screenshot_to_clean'] is None
     np.testing.assert_allclose(result.registration.screenshot_to_original@np.array([2,3,1]),[2*scale+x,3*scale+y,1])
     assert result.template_path is None and result.calibration_path is None
     assert result.diagnostics()['floor_detection'] is None and not result.registration.validation['trusted_history_eligible']
-    assert result.registration.diagnostics()['coordinate_space']=='original_source_image'
+    assert result.registration.diagnostics()['coordinate_space']=='single_floor_source_image'
 
 
 def test_source_lookup_has_no_clean_or_floor_calibration_dependency(tmp_path,monkeypatch):

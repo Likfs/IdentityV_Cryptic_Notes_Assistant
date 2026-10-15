@@ -1,4 +1,4 @@
-"""Floor-independent 定尺度模板匹配 matching and projection in original-image coordinates."""
+"""Automatic fixed-scale single-floor projection; legacy source readers serve offline imports."""
 from time import perf_counter
 import json
 import hashlib
@@ -7,7 +7,7 @@ import numpy as np
 from src.app_catalog import PROJECT_ROOT, TEMPLATE_VERSION_NAMES
 from src.projection.route_overlay import composite_route_layer
 from src.registration.result import OriginalRegistrationResult
-from . import resources, matcher
+from . import resources, matcher, floors
 from .screen import screen_info
 
 _images = {}
@@ -29,10 +29,8 @@ def saved_scale_value(candidate):
 
 def available_variants(profile_key, layout):
     config = json.loads((PROJECT_ROOT/'configs/template_matching.json').read_text(encoding='utf-8'))
-    variants = config.get('original_variants', {}).get(profile_key, {}).get(layout, {})
-    legacy = any(key.startswith(f'assets/maps/{profile_key}/clean/{layout}/')
-                 for key in config.get('entries', {}))
-    return [v for v in TEMPLATE_VERSION_NAMES if v in variants or (v == 'route_zhanshi_fast' and legacy)]
+    variants = config.get('floor_variants', {}).get(profile_key, {}).get(layout, {})
+    return [v for v in TEMPLATE_VERSION_NAMES if v in variants]
 
 
 def _source(profile_key, layout, variant_id='route_zhanshi_fast'):
@@ -95,9 +93,9 @@ def check_original_resources(profile_key, layouts):
         for layout in layouts:
             for variant_id, item in summary.items():
                 try:
-                    entry, _, _ = _source(profile_key, layout, variant_id)
+                    count = floors.check(profile_key, layout, variant_id)
                     item['layouts'] += 1
-                    item['fixed_candidates'] += len(entry.get('candidates', [entry]))
+                    item['fixed_candidates'] += count
                 except (OSError, ValueError, KeyError) as exc:
                     item['errors'].append(f'{layout}: {exc}')
     return summary
@@ -143,8 +141,8 @@ def load_original(profile_key, layout, variant_id='route_zhanshi_fast'):
 
 def project_original(screenshot, profile_key, layout, opacity, *, variant_id='route_zhanshi_fast', defer_preview=False):
     started = perf_counter()
-    validation = dict(registration_algorithm='fixed_scale_template', projection_scope='full',
-                      coordinate_space='original_source_image', floor_detection_enabled=False,
+    validation = dict(registration_algorithm='fixed_scale_template', projection_scope='single_floor',
+                      coordinate_space='single_floor_source_image', floor_detection_enabled=False,
                       trusted_history_eligible=False, route_validation_enabled=False,
                       acceptance_policy='template_candidate_without_geometry_validation',
                       registration_backend=resources.backend_info())
@@ -159,7 +157,8 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
         if not np.any(cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY) > matcher.TEMPLATE_GAME_THRESH):
             raise ValueError('截图中没有可匹配的可见像素，请保持地图打开后重试')
         with resources.resource_lock:
-            entry, path, config, image, rgba = load_original(profile_key, layout, variant_id)
+            snapshot = floors.SourceSnapshot(profile_key, layout, variant_id)
+            config = snapshot.config
             screen = screen_info(config.get('capture', {}).get('screen_name', ''))
             mode = int(config['perf_mode'])
             if not 0 <= mode < len(matcher.PERF_MODES):
@@ -168,43 +167,42 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
             matching_started = perf_counter()
             attempts = []
             best = None
-            for candidate in entry.get('candidates', [{'saved_scale': entry.get('saved_scale')}]):
+            prepared = matcher.ScreenshotPreparation(screenshot)
+            for floor in floors.FLOORS:
                 try:
-                    saved_scale = saved_scale_value(candidate)
-                    scale = saved_scale*screen['factor']
-                    if not np.isfinite(scale) or scale <= 0:
-                        raise ValueError('原图尚未保存有效尺度')
-                    options = {}
-                    if 'map_threshold' in entry or candidate.get('search_region') is not None:
-                        options = dict(map_threshold=entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
-                                       search_region=candidate.get('search_region'))
-                    if 'source_parts' in entry:
-                        options.update(map_image=image, image_fingerprint=entry['source_sha256'])
-                    match = matcher._match_template(screenshot, str(path), scale, **options)
+                    entry, path, _, image, rgba = snapshot.load(floor)
+                    saved_scale = saved_scale_value(entry)
+                    scale = saved_scale * screen['factor']
+                    match = matcher._match_template(
+                        screenshot, str(path), scale,
+                        map_threshold=entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
+                        map_image=image, image_fingerprint=floors.fingerprint(entry), prepared=prepared)
                     if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
                         raise ValueError('定尺度模板匹配未返回有限分数或坐标')
-                    attempts.append(dict(candidate_floor=candidate.get('floor'), saved_scale=saved_scale,
+                    attempts.append(dict(candidate_floor=floor, saved_scale=saved_scale,
                                          score=float(match['score']), location=list(match['location'])))
                     if best is None or match['score'] > best[0]['score']:
-                        best = match, scale, saved_scale, candidate
+                        best = match, scale, saved_scale, floor, entry, path, rgba, image
                 except (ValueError, cv2.error) as exc:
-                    attempts.append(dict(candidate_floor=candidate.get('floor'), reason=str(exc)))
+                    attempts.append(dict(candidate_floor=floor, reason=str(exc)))
             result.validation['fixed_candidates'] = attempts
             if best is None:
                 raise ValueError('所有固定尺度候选均不可匹配：' + '；'.join(a['reason'] for a in attempts))
-            match, scale, saved_scale, candidate = best
+            snapshot.validate()
+            match, scale, saved_scale, floor, entry, path, rgba, image = best
             result.timings['matching'] = (perf_counter()-matching_started)*1000
         if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
             raise ValueError('定尺度模板匹配未返回有限分数或坐标')
         x, y = match['location']
+        result.source_image = image
         result.screenshot_to_original = np.float64([[scale,0,x],[0,scale,y],[0,0,1]])
         result.original_to_screen = np.linalg.inv(result.screenshot_to_original)
         result.validation['template'] = dict(scale=scale, saved_scale=saved_scale,
             screen=screen, score=float(match['score']), location=[int(x),int(y)],
             ds=matcher.PERF_MODES[mode]['ds'], perf_mode=mode,
             source_sha256=entry['source_sha256'], source_image=entry['source_image'],
-            target='original_source_image', scale_policy='saved_original_scale_with_screen_factor',
-            variant_id=variant_id, candidate_floor=candidate.get('floor'),
+            target='single_floor_source_image', scale_policy='saved_original_scale_with_screen_factor',
+            variant_id=variant_id, candidate_floor=floor, source_record_sha256=floors.fingerprint(entry),
             scale_provenance=entry.get('scale_provenance', 'imported_saved_scale'))
         result.timings['total'] = (perf_counter()-started)*1000
         projection_started = perf_counter()
@@ -220,7 +218,7 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
         timings['projection'] = (perf_counter()-projection_started)*1000
         result.accepted = True
     except (OSError, ValueError, KeyError, cv2.error, np.linalg.LinAlgError) as exc:
-        result.rejection_reasons = [f'定尺度模板匹配 原图投影失败：{exc}']
+        result.rejection_reasons = [f'定尺度模板匹配 单层投影失败：{exc}']
         result.timings.setdefault('total', (perf_counter()-started)*1000)
     timings['registration'] = result.timings['total']
     return result, path, layer, composite, timings

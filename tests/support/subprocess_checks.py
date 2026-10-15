@@ -33,9 +33,9 @@ def run_probe(python, mode, output):
 def check_projection(directory):
     import numpy as np
     report = json.loads((directory/'result.json').read_text(encoding='utf-8'))
-    assert report['accepted'] and report['floor'] == 'all'
+    assert report['accepted'] and report['floor'] in ('2nd', '1st', 'b1')
     registration = report['registration']
-    assert registration['coordinate_space'] == 'original_source_image'
+    assert registration['coordinate_space'] == 'single_floor_source_image'
     assert registration['clean_to_screen'] is None
     np.testing.assert_allclose(np.array(registration['original_to_screen']) @
                                np.array(registration['screenshot_to_original']), np.eye(3), atol=1e-9)

@@ -9,7 +9,7 @@ from PyQt6.QtCore import QObject, QTimer, Qt, pyqtSignal
 from src import route_projection_core as core
 from src.app_catalog import selected_template_variant
 from src.capture.mouse_pan import MousePanHook
-from src.registration.template_matching.direct import load_original
+from src.registration.template_matching.floors import load as load_floor
 
 
 def window_identity(titles):
@@ -25,7 +25,8 @@ def prepare_pan_image(result, opacity):
             or not np.allclose(pose[:2, :2], np.eye(2) * pose[0, 0])
             or not np.allclose(pose[2], [0, 0, 1])):
         raise ValueError('鼠标跟随需要等比例缩放和平移矩阵')
-    *_, original = load_original(result.profile_key, result.selected_layout, result.variant_id)
+    *_, original = load_floor(result.profile_key, result.selected_layout, result.variant_id, result.floor,
+        expected_fingerprint=result.registration.validation['template']['source_record_sha256'])
     scale = float(pose[0, 0])
     height, width = original.shape[:2]
     size = (int(np.ceil(width * scale)) + 1, int(np.ceil(height * scale)) + 1)

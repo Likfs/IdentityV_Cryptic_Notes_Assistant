@@ -45,7 +45,7 @@ def test_real_candidates_only_project_after_explicit_confirmation(window, retrie
         layout_override=window.locked_layout, opacity=.5, template_variant_id='route_lhp_solo')
     assert projected.accepted, projected.reasons
     assert projected.selected_layout == selected and projected.layout_retrieval is None
-    assert projected.floor == 'all' and projected.diagnostics()['floor_detection'] is None
+    assert projected.floor in ('2nd', '1st', 'b1') and projected.diagnostics()['floor_detection'] is None
     np.testing.assert_allclose(projected.registration.original_to_screen @
                                projected.registration.screenshot_to_original, np.eye(3), atol=1e-9)
     window.settings['template_route_versions'][window.profile.key] = 'route_lhp_solo'

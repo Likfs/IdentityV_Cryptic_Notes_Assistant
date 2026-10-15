@@ -1,3 +1,4 @@
+from tests.support.template_inputs import install_floor_inputs
 from pathlib import Path
 from types import SimpleNamespace
 import json
@@ -61,9 +62,9 @@ def test_template_full_ui_result_reference_and_old_backend_setting_migrates(wind
     original=np.full((40,40,3),120,np.uint8)
     rgba=np.dstack((original,np.full((40,40),255,np.uint8)))
     entry={'saved_scale':1.,'source_sha256':'verified','source_image':'original.png'}
-    monkeypatch.setattr(direct,'load_original',lambda *a:(entry,Path('original.png'),{'perf_mode':2},original,rgba))
+    install_floor_inputs(monkeypatch, entry, original, rgba)
     monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
-    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a:dict(score=2.,location=(0,0)))
+    monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=2.,location=(0,0)))
     versions=json.loads(json.dumps(window.settings['route_versions']))
     window.apply_settings({**window.settings,'registration_backend':'template'})
     assert window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
@@ -75,12 +76,14 @@ def test_template_full_ui_result_reference_and_old_backend_setting_migrates(wind
     window.show_overlay_check.setChecked(True)
     window._apply_result('project',True,generation,[0,0,40,40],result,None)
     assert len(shown)==1 and window.live_projection[0] is result
-    assert window.reference_context[2]=='all'
+    assert window.reference_context[2]=='2nd'
+    assert window.template_panel._pixmap.width() == original.shape[1]
+    assert '2 楼' in window.template_panel.caption.text()
     assert 'floor_ms' not in window.status_rows
     references=[]
     monkeypatch.setattr(window.reference_overlay,'show_map',lambda *args:references.append(args))
     window.reference_override=True;window._refresh_reference_map()
-    assert references and '三层完整原图' in references[-1][2]
+    assert references and '2 楼' in references[-1][2]
     window.apply_settings({**window.settings,'registration_backend':'cpu'})
     assert window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
     assert window.settings["registration_backend"] == "template"

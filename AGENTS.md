@@ -5,10 +5,10 @@
 ## 当前正式范围
 
 - 正式支持 CPU 最小缩放纯结构识别、图标与结构识别＋定尺度模板匹配。CNN、CPU/GPU 多尺度结构配准、采集训练和旧评测已移除，用户已删除 `retired_features/` 归档目录；不得从正式程序重新导入旧功能。曾经提交的旧文件和规则可从 Git 历史查阅，不能假定未提交的本机资料仍有备份。
-- 正式入口 `python -m src`，由 Qt 应用调用 `src/projection_workflow.py`；识别由 `src/layout_retrieval.py` 创建，纯结构实现位于 `src/structure_layout/`，整图配准用 `src/registration/template_matching/direct.py`，共用资源校验位于 `resources.py`；旧楼层适配器已移除。
+- 正式入口 `python -m src`，由 Qt 应用调用 `src/projection_workflow.py`；识别由 `src/layout_retrieval.py` 创建，纯结构实现位于 `src/structure_layout/`，单层配准用 `src/registration/template_matching/direct.py`，共用资源校验位于 `resources.py`；旧楼层适配器已移除。
 - 纯结构识别默认 CPU 最多8线程，只搜索两个最小档尺度，读取所有三层底图，不精修、不接入GPU或自动尺度；图标识别仍读取二楼底图。两者固定 0°，必须人工确认布局；匹配分数不是正确概率。不训练或加载模型，不依赖 torch/CUDA。
-- 模板读取保存尺度候选，坐标为 `original_source_image`、`floor=all`，矩阵为 `original_to_screen`／`screenshot_to_original`。不识别楼层、mylocation，不执行连续尺度搜索或旧结构验收；最高分候选直接显示且保留核对提示。
-- 五个模板版本为 `route_zhanshi_fast`、`route_lhp_solo`、`route_clean`、`route_lhp_solo_clean`、`route_zhanshi_fast_clean`，偏好在 `template_route_versions`。原版底图三层按原尺寸在内存拼接。不同源图必须重新截图匹配，不复用矩阵。
+- 模板读取保存尺度候选，坐标为 `single_floor_source_image`、`floor` 为胜出候选 `2nd`／`1st`／`b1`，矩阵为 `original_to_screen`／`screenshot_to_original`。不独立识别楼层按钮或 mylocation，自动比较三张单层图，不执行连续尺度搜索或旧结构验收；最高分候选直接显示且保留核对提示。
+- 五个模板版本为 `route_zhanshi_fast`、`route_lhp_solo`、`route_clean`、`route_lhp_solo_clean`、`route_zhanshi_fast_clean`，偏好在 `template_route_versions`。正式尺度和单层图片在 `floor_variants`；原版底图三层独立读取，不拼接。不同源图必须重新截图匹配，不复用矩阵。
 - 当前布局从资源目录动态读取，不硬编码数量。三层 ID 保持 `2nd`、`1st`、`b1`，布局 `layout_XX`；`route_01` 只作历史别名。资源完整不等于实机对齐。
 
 ## 修改边界
@@ -21,7 +21,7 @@
 
 ## 资源和归档
 
-- 正式素材位于 `assets/maps/<map>/<difficulty>/`：clean、entrance、sources、routes。标定 JSON 和底图仍是模板尺度指纹依赖；分层 PNG 为离线维护资源，不随意删除。
+- 正式素材位于 `assets/maps/<map>/<difficulty>/`：clean、entrance、sources、routes。标定 JSON 和底图仍是模板尺度指纹依赖；配置引用的分层 PNG 为正式运行资源，其他分层文件保留作离线维护，不随意删除。
 - 正式资源路径保存为项目相对路径。修改底图、原图、标定或尺度必须核对对应关系及缓存失效，不能只更新哈希绕过几何检查。
 - 资产工具按 calibration、imports、previews 分类，复用 `tools/common/route_calibration.py`、`calibration_assets.py` 和 `layered_assets.py`；默认写 workspace/asset_build。只有明确更新正式资产任务才发布。
 - 定尺度 matcher 中 find_best_scale 只供离线尺度核对，不能接入实时流程。不要将离线素材标定的 SIFT／RANSAC 等与实时配准混淆。
@@ -46,5 +46,5 @@
 - 图像回放来源/指纹/标签依据记录在 tests/fixtures/retrieval/cases.json。底图裁剪合成样例可验证已知布局，缺少人工标签的游戏截图不能断言识别准确率；不恢复多尺度拒绝门槛。
 - 使用说明维护 README，逐文件职责维护 项目目录与文件说明.md，新增素材流程维护 新增布局教程.md。文档中的目录、命令和链接必须与当前项目一致，不承诺已删除归档仍可用。
 - 模板模块 `provenance.json` 覆盖当前目录全部 Python 源码；修改该模块后同步代码指纹并检查构建拒绝陈旧指纹。它不能代替素材几何校验。
-- 版本统一读取 src/version.py（当前 1.1）。构建入口 tools/release/build_windows_exe.py，输出 workspace/releases/windows_<时间>/IdentityVRouteAssistant；完整文件夹分发。排除归档、模型、训练包、个人状态和旧分层 PNG；保留实际原图与标定依赖。旧产物不自动改写。
+- 版本统一读取 src/version.py（当前 1.1）。构建入口 tools/release/build_windows_exe.py，输出 workspace/releases/windows_<时间>/IdentityVRouteAssistant；完整文件夹分发。排除归档、模型、训练包、个人状态和未引用的旧分层 PNG；包含 floor_variants 引用的单层图片；保留实际原图与标定依赖。旧产物不自动改写。
 - 交付写清修改、迁移位置、实际验证和未验证限制；不得把历史测试数量、模型准确率或旧性能写成保证。

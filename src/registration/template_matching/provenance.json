@@ -1,10 +1,12 @@
 {
   "description": "当前定尺度模板模块源码指纹；构建前核对文件集合与内容，不包含历史算法。",
   "files": {
-    "__init__.py": "4843fa4dcb707e8c551ddebd0a0cb182f00e9751ac73cb50d679e2e7b3e77e04",
-    "direct.py": "dde7d7b3ca9ea6ed2b1f33e48ac56991270a85ed8c449e733dc43509b82d5a7f",
-    "fog_crop.py": "74544c92f73e5d9a9bb93c6e09c1156dc46ec9c1b566ded1f5efed29c773040d",
-    "matcher.py": "2887eda57348fac9e89e0df765e35dfae58510b8ee6e62bb38c49c9f4e9e41e7",
+    "__init__.py": "cb91ededcf59847da462345d55c23ddeaed4ec44c123a67342f54c1c0c85660f",
+    "direct.py": "cfd6dc54644facc9eb4de1cc63ac32dd756b2892382d6b4ee9f626ec4a3ac10f",
+    "floors.py": "cb510fd6e5a89f4e518d0d15852c093e9a143953efa022dac94ff79ab73a71c2",
+    "fog_crop.py": "a57cc58b9c9d0b79662e1d7d36363e297ec15eeab6e0d3a6cb3bb82642033e7c",
+    "matcher.py": "2312b69e020a0d3221aff474bb856781069871e86fb0218fe364515ae6f012f3",
+    "prewarm.py": "77431db8a549be785078b78f843d9c3c10fc958397c7c720f52f47cb16504c90",
     "resources.py": "c27ac55bad10d34604441f5c2b4d5c4f94e39fac26c5adf3c9d33821633be5f3",
     "screen.py": "f07a02bca7311d21c3715d91c465e4232fe976a791ac620dd41c2da9a80bc01d"
   }

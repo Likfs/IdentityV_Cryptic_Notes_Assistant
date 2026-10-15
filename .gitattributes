@@ -1,0 +1,2 @@
+# Keep byte-level template provenance stable across Git checkouts.
+src/registration/template_matching/*.py text eol=lf
