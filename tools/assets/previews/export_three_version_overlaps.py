@@ -32,7 +32,7 @@ def main():
     out = args.output.resolve()
     out.mkdir(parents=True, exist_ok=True)
     cv2.setNumThreads(4)
-    catalog = MapCatalog()
+    catalog = MapCatalog(offline=True)
     profile = catalog.profile("a_bringer_of_doom", "nightmare")
     rows = []
     sheets = []

@@ -44,7 +44,7 @@ def stage(config, output, root=ROOT):
         target = output/relative
         manifest = dict(schema_version=1, method='existing_calibration_to_clean_pixels', layouts={})
         for layout, variants in layouts.items():
-            calibration_path = root/'assets/maps'/profile/'routes/route_lhp_solo'/layout/'calibration.json'
+            calibration_path = root/'maintenance/maps'/profile/'routes/route_lhp_solo'/layout/'calibration.json'
             calibration = json.loads(calibration_path.read_text(encoding='utf-8'))
             records = manifest['layouts'][layout] = {}
             for floor, entry in variants['route_clean'].items():
@@ -68,14 +68,17 @@ def stage(config, output, root=ROOT):
                         dict(path=calibration_path.relative_to(root).as_posix(), sha256=sha(calibration_path)),
                         dict(path=entry['source_image'], sha256=sha(root/entry['source_image']))])
             print(f'Rectified {profile}/{layout}', flush=True)
-        (target/'rectification.json').write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-        manifests[profile] = (relative/'rectification.json').as_posix()
+        manifest_relative = Path('maintenance/maps')/profile/'routes/route_lhp_solo_rectified/rectification.json'
+        manifest_path = output/manifest_relative
+        manifest_path.parent.mkdir(parents=True, exist_ok=True)
+        manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
+        manifests[profile] = manifest_relative.as_posix()
     return manifests
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=ROOT/'configs/template_matching.json')
+    parser.add_argument('--config', type=Path, default=ROOT/'maintenance/configs/template_matching.json')
     parser.add_argument('--output', type=Path, required=True, help='新的暂存目录；核对后另行发布')
     args = parser.parse_args()
     stage(json.loads(args.config.read_text(encoding='utf-8')), args.output)

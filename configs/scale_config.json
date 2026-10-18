@@ -1,0 +1,1741 @@
+{
+  "maps": {
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_01/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/01/1右 - 一闪电 门_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/01/1右 - 一闪电 门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/01/1右 - 一闪电 门_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/01/1上右路   右┻┳2_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/01/1上右路   右┻┳2_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/01/1上右路   右┻┳2_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_02/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/02/2左 - 竖拐角楼梯门（09.17更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/02/2左 - 竖拐角楼梯门（09.17更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/02/2左 - 竖拐角楼梯门（09.17更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/02/2上右路   右┗┓_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/02/2上右路   右┗┓_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/02/2上右路   右┗┓_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_03/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/03/3南 - 悬空桌门（09.10更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/03/3南 - 悬空桌门（09.10更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/03/3南 - 悬空桌门（09.10更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/03/3上左右路   右┛_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/03/3上左右路   右┛_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/03/3上左右路   右┛_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_04/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/04/4右 - 短T门_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/04/4右 - 短T门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/04/4右 - 短T门_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/04/4上左路   上红┫2_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/04/4上左路   上红┫2_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/04/4上左路   上红┫2_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_05/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/05/5北 - Z1门_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/05/5北 - Z1门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/05/5北 - Z1门_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/05/5上左右路  右└┐_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/05/5上左右路  右└┐_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/05/5上左右路  右└┐_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_06/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/06/6左 - 竖1图书走廊门（09.10更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/06/6左 - 竖1图书走廊门（09.10更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/06/6左 - 竖1图书走廊门（09.10更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/06/6上左路   上┗┓_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/06/6上左路   上┗┓_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/06/6上左路   上┗┓_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_07/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/07/7右 - 仙人掌门路线图_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/07/7右 - 仙人掌门路线图_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/07/7右 - 仙人掌门路线图_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/07/7上左右路   右▟▘_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/07/7上左右路   右▟▘_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/07/7上左右路   右▟▘_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_08/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/08/8左 - 11图（09.17更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/08/8左 - 11图（09.17更新）_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/08/8左 - 11图（09.17更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/08/8上左路   上┫3_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/08/8上左路   上┫3_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/08/8上左路   上┫3_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_09/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/09/9南 - 3红门路线图_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/09/9南 - 3红门路线图_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/09/9南 - 3红门路线图_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/09/9左右路   右┛_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/09/9左右路   右┛_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/09/9左右路   右┛_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_10/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/10/10北 - 仙人掌门_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/10/10北 - 仙人掌门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/10/10北 - 仙人掌门_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/10/10左右路   右▟▘_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/10/10左右路   右▟▘_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/10/10左右路   右▟▘_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_11/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/11/11北 - 骑士门_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/11/11北 - 骑士门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/11/11北 - 骑士门_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/11/11上右路   右┻┳_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/11/11上右路   右┻┳_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/11/11上右路   右┻┳_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_12/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/12/12右 - C门路线图_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/12/12右 - C门路线图_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/12/12右 - C门路线图_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/12/12上右路   右▃▃_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/12/12上右路   右▃▃_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/12/12上右路   右▃▃_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_13/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/13/13左 - 倒T门(09.10更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/13/13左 - 倒T门(09.10更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/13/13左 - 倒T门(09.10更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/13/13上左右路   右▟▘2_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/13/13上左右路   右▟▘2_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/13/13上左右路   右▟▘2_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_14/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/14/14右 - 长Z门路线图_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/14/14右 - 长Z门路线图_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/14/14右 - 长Z门路线图_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/14/14左右路   右┛（相似图2）_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/14/14左右路   右┛（相似图2）_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/14/14左右路   右┛（相似图2）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_15/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/15/15左 - 竖L门（09.10更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/15/15左 - 竖L门（09.10更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/15/15左 - 竖L门（09.10更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/15/15左右路   右┻┳_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/15/15左右路   右┻┳_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/15/15左右路   右┻┳_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_16/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/16/16左 - 竖1图书门（09.10更新）_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/16/16左 - 竖1图书门（09.10更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/16/16左 - 竖1图书门（09.10更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/16/16左右路   右┛（相似图3）_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/16/16左右路   右┛（相似图3）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/16/16左右路   右┛（相似图3）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_17/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/17/17北 - b门_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/17/17北 - b门_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/17/17北 - b门_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/17/17上左路   上红┫_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/17/17上左路   上红┫_1st.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/17/17上左路   上红┫_b1.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_18/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/18/18南 - H门_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/18/18南 - H门_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/18/18南 - H门_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/18/18上左路   上I_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/18/18上左路   上I_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/18/18上左路   上I_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_19/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/19/19北 - 回门_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/19/19北 - 回门_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/19/19北 - 回门_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/19/19上左右路   右I_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/19/19上左右路   右I_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/19/19上左右路   右I_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_20/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/20/20左 - 竖5床房（09.17更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/20/20左 - 竖5床房（09.17更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/20/20左 - 竖5床房（09.17更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/20/20上右路   右▟▘_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/20/20上右路   右▟▘_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/20/20上右路   右▟▘_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_21/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/21/21右 - 断C门 路线图_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/21/21右 - 断C门 路线图_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/21/21右 - 断C门 路线图_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/21/21上右路   右一_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/21/21上右路   右一_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/21/21上右路   右一_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_22/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_22/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_22/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/22/22左 - 十字门（09.30更新）_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/22/22左 - 十字门（09.30更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/22/22左 - 十字门（09.30更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/22/22上左右路   右▃▃_2nd.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/22/22上左右路   右▃▃_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/22/22上左右路   右▃▃_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_23/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_23/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_23/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/23/23北 - 骑士1门（09.30更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/23/23北 - 骑士1门（09.30更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/23/23北 - 骑士1门（09.30更新）_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/23/23上左右路   右▟▘左▃▃_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/23/23上左右路   右▟▘左▃▃_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/23/23上左右路   右▟▘左▃▃_b1.png": {
+      "scale": 1.4900000000000002
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_24/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_24/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_24/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/24/24左 - z门（09.30更新）_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/24/24左 - z门（09.30更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/24/24左 - z门（09.30更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/24/24上左右路   右┛左▃▃_2nd.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/24/24上左右路   右┛左▃▃_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/24/24上左右路   右┛左▃▃_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_25/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_25/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_25/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/25/25南 - n门（09.24更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/25/25南 - n门（09.24更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/25/25南 - n门（09.24更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/25/25上左右路   右匚_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/25/25上左右路   右匚_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/25/25上左右路   右匚_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_26/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_26/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_26/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/26/26左 - 1竖图书走廊门（09.24更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/26/26左 - 1竖图书走廊门（09.24更新）_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/26/26左 - 1竖图书走廊门（09.24更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/26/26上左右路   右I左┓┓_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/26/26上左右路   右I左┓┓_1st.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/26/26上左右路   右I左┓┓_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_27/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_27/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast/layout_27/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/27/27左 - 骑士门（09.24更新）_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/27/27左 - 骑士门（09.24更新）_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_clean_single_floor/27/27左 - 骑士门（09.24更新）_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/27/27上左右路   右＞—_2nd.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/27/27上左右路   右＞—_1st.png": {
+      "scale": 1.4899999999999998
+    },
+    "assets/maps/a_bringer_of_doom/nightmare/routes/route_zhanshi_fast_clean_single_floor/27/27上左右路   右＞—_b1.png": {
+      "scale": 1.49
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_01/layout_01_2nd.png": {
+      "scale": 3.17797
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_01/layout_01_1st.png": {
+      "scale": 3.17794
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_01/2nd.png": {
+      "scale": 3.17797
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_01/1st.png": {
+      "scale": 3.17794
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_01/layout_01_2nd.png": {
+      "scale": 3.17797
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_01/layout_01_1st.png": {
+      "scale": 3.17794
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_02/layout_02_2nd.png": {
+      "scale": 3.174969
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_02/layout_02_1st.png": {
+      "scale": 3.174908
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_02/2nd.png": {
+      "scale": 3.174969
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_02/1st.png": {
+      "scale": 3.174908
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_02/layout_02_2nd.png": {
+      "scale": 3.174969
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_02/layout_02_1st.png": {
+      "scale": 3.174908
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_03/layout_03_2nd.png": {
+      "scale": 3.178006
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_03/layout_03_1st.png": {
+      "scale": 3.178096
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_03/2nd.png": {
+      "scale": 3.178006
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_03/1st.png": {
+      "scale": 3.178096
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_03/layout_03_2nd.png": {
+      "scale": 3.178006
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_03/layout_03_1st.png": {
+      "scale": 3.178096
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_04/layout_04_2nd.png": {
+      "scale": 3.177521
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_04/layout_04_1st.png": {
+      "scale": 3.177703
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_04/2nd.png": {
+      "scale": 3.177521
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_04/1st.png": {
+      "scale": 3.177703
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_04/layout_04_2nd.png": {
+      "scale": 3.177521
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_04/layout_04_1st.png": {
+      "scale": 3.177703
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_05/layout_05_2nd.png": {
+      "scale": 3.178086
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_05/layout_05_1st.png": {
+      "scale": 3.178
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_05/2nd.png": {
+      "scale": 3.178086
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_05/1st.png": {
+      "scale": 3.178
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_05/layout_05_2nd.png": {
+      "scale": 3.178086
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_05/layout_05_1st.png": {
+      "scale": 3.178
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_06/layout_06_2nd.png": {
+      "scale": 3.177711
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_06/layout_06_1st.png": {
+      "scale": 3.177685
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_06/2nd.png": {
+      "scale": 3.177711
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_06/1st.png": {
+      "scale": 3.177685
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_06/layout_06_2nd.png": {
+      "scale": 3.177711
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_06/layout_06_1st.png": {
+      "scale": 3.177685
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_07/layout_07_2nd.png": {
+      "scale": 3.173726
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_07/layout_07_1st.png": {
+      "scale": 3.173701
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_07/2nd.png": {
+      "scale": 3.173726
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_07/1st.png": {
+      "scale": 3.173701
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_07/layout_07_2nd.png": {
+      "scale": 3.173726
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_07/layout_07_1st.png": {
+      "scale": 3.173701
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_08/layout_08_2nd.png": {
+      "scale": 3.177515
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_08/layout_08_1st.png": {
+      "scale": 3.177218
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_08/2nd.png": {
+      "scale": 3.177515
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_08/1st.png": {
+      "scale": 3.177218
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_08/layout_08_2nd.png": {
+      "scale": 3.177515
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_08/layout_08_1st.png": {
+      "scale": 3.177218
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_09/layout_09_2nd.png": {
+      "scale": 3.175346
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_09/layout_09_1st.png": {
+      "scale": 3.17538
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_09/2nd.png": {
+      "scale": 3.175346
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_09/1st.png": {
+      "scale": 3.17538
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_09/layout_09_2nd.png": {
+      "scale": 3.175346
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_09/layout_09_1st.png": {
+      "scale": 3.17538
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_10/layout_10_2nd.png": {
+      "scale": 3.177965
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_10/layout_10_1st.png": {
+      "scale": 3.177926
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_10/2nd.png": {
+      "scale": 3.177965
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_10/1st.png": {
+      "scale": 3.177926
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_10/layout_10_2nd.png": {
+      "scale": 3.177965
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_10/layout_10_1st.png": {
+      "scale": 3.177926
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_11/layout_11_2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_11/layout_11_1st.png": {
+      "scale": 3.178567
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_11/2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_11/1st.png": {
+      "scale": 3.178567
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_11/layout_11_2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_11/layout_11_1st.png": {
+      "scale": 3.178567
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_12/layout_12_2nd.png": {
+      "scale": 3.176923
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_12/layout_12_1st.png": {
+      "scale": 3.176922
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_12/2nd.png": {
+      "scale": 3.176923
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_12/1st.png": {
+      "scale": 3.176922
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_12/layout_12_2nd.png": {
+      "scale": 3.176923
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_12/layout_12_1st.png": {
+      "scale": 3.176922
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_13/layout_13_2nd.png": {
+      "scale": 3.177061
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_13/layout_13_1st.png": {
+      "scale": 3.17711
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_13/2nd.png": {
+      "scale": 3.177061
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_13/1st.png": {
+      "scale": 3.17711
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_13/layout_13_2nd.png": {
+      "scale": 3.177061
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_13/layout_13_1st.png": {
+      "scale": 3.17711
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_14/layout_14_2nd.png": {
+      "scale": 3.177196
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_14/layout_14_1st.png": {
+      "scale": 3.177181
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_14/2nd.png": {
+      "scale": 3.177196
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_14/1st.png": {
+      "scale": 3.177181
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_14/layout_14_2nd.png": {
+      "scale": 3.177196
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_14/layout_14_1st.png": {
+      "scale": 3.177181
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_15/layout_15_2nd.png": {
+      "scale": 3.176772
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_15/layout_15_1st.png": {
+      "scale": 3.176804
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_15/2nd.png": {
+      "scale": 3.176772
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_15/1st.png": {
+      "scale": 3.176804
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_15/layout_15_2nd.png": {
+      "scale": 3.176772
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_15/layout_15_1st.png": {
+      "scale": 3.176804
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_16/layout_16_2nd.png": {
+      "scale": 3.175425
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_16/layout_16_1st.png": {
+      "scale": 3.175451
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_16/2nd.png": {
+      "scale": 3.175425
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_16/1st.png": {
+      "scale": 3.175451
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_16/layout_16_2nd.png": {
+      "scale": 3.175425
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_16/layout_16_1st.png": {
+      "scale": 3.175451
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_17/layout_17_2nd.png": {
+      "scale": 3.177891
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_17/layout_17_1st.png": {
+      "scale": 3.177855
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_17/2nd.png": {
+      "scale": 3.177891
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_17/1st.png": {
+      "scale": 3.177855
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_17/layout_17_2nd.png": {
+      "scale": 3.177891
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_17/layout_17_1st.png": {
+      "scale": 3.177855
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_18/layout_18_2nd.png": {
+      "scale": 3.180127
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_18/layout_18_1st.png": {
+      "scale": 3.180124
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_18/2nd.png": {
+      "scale": 3.180127
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_18/1st.png": {
+      "scale": 3.180124
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_18/layout_18_2nd.png": {
+      "scale": 3.180127
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_18/layout_18_1st.png": {
+      "scale": 3.180124
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_19/layout_19_2nd.png": {
+      "scale": 3.176447
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_19/layout_19_1st.png": {
+      "scale": 3.17645
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_19/2nd.png": {
+      "scale": 3.176447
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_19/1st.png": {
+      "scale": 3.17645
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_19/layout_19_2nd.png": {
+      "scale": 3.176447
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_19/layout_19_1st.png": {
+      "scale": 3.17645
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_20/layout_20_2nd.png": {
+      "scale": 3.17733
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_20/layout_20_1st.png": {
+      "scale": 3.177286
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_20/2nd.png": {
+      "scale": 3.17733
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_20/1st.png": {
+      "scale": 3.177286
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_20/layout_20_2nd.png": {
+      "scale": 3.17733
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_20/layout_20_1st.png": {
+      "scale": 3.177286
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_21/layout_21_2nd.png": {
+      "scale": 3.176419
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_21/layout_21_1st.png": {
+      "scale": 3.176453
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_21/2nd.png": {
+      "scale": 3.176419
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_21/1st.png": {
+      "scale": 3.176453
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_21/layout_21_2nd.png": {
+      "scale": 3.176419
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_21/layout_21_1st.png": {
+      "scale": 3.176453
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_22/layout_22_2nd.png": {
+      "scale": 3.177203
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_22/layout_22_1st.png": {
+      "scale": 3.177163
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_22/2nd.png": {
+      "scale": 3.177203
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_22/1st.png": {
+      "scale": 3.177163
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_22/layout_22_2nd.png": {
+      "scale": 3.177203
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_22/layout_22_1st.png": {
+      "scale": 3.177163
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_23/layout_23_2nd.png": {
+      "scale": 3.177621
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_23/layout_23_1st.png": {
+      "scale": 3.177604
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_23/2nd.png": {
+      "scale": 3.177621
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_23/1st.png": {
+      "scale": 3.177604
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_23/layout_23_2nd.png": {
+      "scale": 3.177621
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_23/layout_23_1st.png": {
+      "scale": 3.177604
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_25/layout_25_2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_25/layout_25_1st.png": {
+      "scale": 3.178565
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_25/2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_25/1st.png": {
+      "scale": 3.178565
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_25/layout_25_2nd.png": {
+      "scale": 3.178564
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_25/layout_25_1st.png": {
+      "scale": 3.178565
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_26/layout_26_2nd.png": {
+      "scale": 3.176943
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_26/layout_26_1st.png": {
+      "scale": 3.17692
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_26/2nd.png": {
+      "scale": 3.176943
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_26/1st.png": {
+      "scale": 3.17692
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_26/layout_26_2nd.png": {
+      "scale": 3.176943
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_26/layout_26_1st.png": {
+      "scale": 3.17692
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_27/layout_27_2nd.png": {
+      "scale": 3.177455
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_27/layout_27_1st.png": {
+      "scale": 3.177483
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_27/2nd.png": {
+      "scale": 3.177455
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_27/1st.png": {
+      "scale": 3.177483
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_27/layout_27_2nd.png": {
+      "scale": 3.177455
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_27/layout_27_1st.png": {
+      "scale": 3.177483
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_28/layout_28_2nd.png": {
+      "scale": 3.17869
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_28/layout_28_1st.png": {
+      "scale": 3.178702
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_28/2nd.png": {
+      "scale": 3.17869
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_28/1st.png": {
+      "scale": 3.178702
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_28/layout_28_2nd.png": {
+      "scale": 3.17869
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_28/layout_28_1st.png": {
+      "scale": 3.178702
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_29/layout_29_2nd.png": {
+      "scale": 3.178566
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_29/layout_29_1st.png": {
+      "scale": 3.17857
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_29/2nd.png": {
+      "scale": 3.178566
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_29/1st.png": {
+      "scale": 3.17857
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_29/layout_29_2nd.png": {
+      "scale": 3.178566
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_29/layout_29_1st.png": {
+      "scale": 3.17857
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_30/layout_30_2nd.png": {
+      "scale": 3.176463
+    },
+    "assets/maps/a_bringer_of_doom/hard/clean/layout_30/layout_30_1st.png": {
+      "scale": 3.176502
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_30/2nd.png": {
+      "scale": 3.176463
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full/layout_30/1st.png": {
+      "scale": 3.176502
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_30/layout_30_2nd.png": {
+      "scale": 3.176463
+    },
+    "assets/maps/a_bringer_of_doom/hard/routes/route_zhanshi_full_clean_single_floor/layout_30/layout_30_1st.png": {
+      "scale": 3.176502
+    }
+  }
+}

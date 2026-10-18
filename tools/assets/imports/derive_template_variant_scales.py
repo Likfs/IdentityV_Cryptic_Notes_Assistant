@@ -24,9 +24,9 @@ def derive_config(config, root=ROOT):
     """Preserve legacy floor entries; add version-specific full-original records."""
     config = json.loads(json.dumps(config))
     originals = config.setdefault('original_variants', {})
-    for path in sorted((root/'assets/maps').glob('*/*/routes/route_lhp_solo/*/calibration.json')):
+    for path in sorted((root/'maintenance/maps').glob('*/*/routes/route_lhp_solo/*/calibration.json')):
         data = json.loads(path.read_text(encoding='utf-8'))
-        profile_key = '/'.join(path.relative_to(root/'assets/maps').parts[:2])
+        profile_key = '/'.join(path.relative_to(root/'maintenance/maps').parts[:2])
         source = root/data['route']
         source_image = cv2.imdecode(np.fromfile(source, np.uint8), cv2.IMREAD_COLOR)
         if source_image is None:
@@ -96,8 +96,8 @@ def derive_config(config, root=ROOT):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=ROOT/'configs/template_matching.json')
-    parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/configs/template_matching.json')
+    parser.add_argument('--config', type=Path, default=ROOT/'maintenance/configs/template_matching.json')
+    parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/maintenance/configs/template_matching.json')
     args = parser.parse_args()
     if args.output.resolve() == args.config.resolve():
         parser.error('请先输出暂存配置，核验后再复制到正式配置')

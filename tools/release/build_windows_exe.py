@@ -42,7 +42,7 @@ def windows_version_resource() -> str:
     )
 
 
-def runtime_files() -> list[Path]:
+def maintenance_files() -> list[Path]:
     from src.registration.template_matching.resources import verify_module_provenance
     verify_module_provenance(ROOT / 'src/registration/template_matching')
     files: set[Path] = set()
@@ -54,17 +54,38 @@ def runtime_files() -> list[Path]:
             raise FileNotFoundError(f"缺少运行资源：{path}")
         files.add(path)
 
-    for name in ("map_catalog.json", "app_defaults.json", "template_matching.json"):
+    for name in ("map_catalog.json", "app_defaults.json"):
         include(Path("configs") / name)
+    include("maintenance/configs/template_matching.json")
     catalog = json.loads((ROOT / "configs/map_catalog.json").read_text(encoding="utf-8-sig"))
     for map_item in catalog["maps"]:
         for profile in map_item["difficulties"]:
             clean_root = ROOT / profile["clean_root"]
+            from src.maintenance_paths import profile_root
+            scale_file = profile_root(clean_root) / 'recognition_scales.json'
+            if scale_file.exists():
+                from src.structure_layout.scales import read_scale_overrides, derivation_files
+                for name, record in read_scale_overrides(clean_root, offline=True).items():
+                    if hashlib.sha256((clean_root/name).read_bytes()).hexdigest() != record['source_sha256']:
+                        raise ValueError(f'识别尺度底图指纹不一致：{name}')
+                include(scale_file)
+                scale_data = json.loads(scale_file.read_text(encoding='utf-8'))
+                for key in ('derivation', 'zoom_derivation'):
+                    if scale_data.get(key) is not None:
+                        for dependency in derivation_files(clean_root, scale_data[key]):
+                            include(dependency)
+            from src.structure_layout.normalized import read_normalized_index
+            from src.structure_layout.scales import read_scale_overrides
+            normalized, _ = read_normalized_index(clean_root, read_scale_overrides(clean_root, offline=True), offline=True)
+            if normalized:
+                include(clean_root.parent/'recognition/index.json')
+                for record in normalized['targets'].values():
+                    include(clean_root.parent/'recognition'/record['path'])
             layouts = sorted(p for p in clean_root.glob("layout_*") if p.is_dir())
             if not layouts:
                 raise ValueError(f"没有可发布布局：{clean_root}")
             for layout in layouts:
-                for floor in ("2nd", "1st", "b1"):
+                for floor in profile.get('floors', ("2nd", "1st", "b1")):
                     images = list(layout.glob(f"*_{floor}.png"))
                     if len(images) != 1:
                         raise ValueError(f"底图数量错误：{layout.name}/{floor}")
@@ -77,7 +98,7 @@ def runtime_files() -> list[Path]:
                     raise ValueError(f"布局缺少路线标定：{layout.name}")
                 for calibration in calibrations:
                     include(calibration)
-    config = json.loads((ROOT / "configs/template_matching.json").read_text(encoding="utf-8"))
+    config = json.loads((ROOT / "maintenance/configs/template_matching.json").read_text(encoding="utf-8"))
     for entry in config["entries"].values():
         include(entry["source_image"])
         for field, fingerprint in (("source_image", "source_sha256"),
@@ -103,7 +124,7 @@ def runtime_files() -> list[Path]:
     for profile_key, layouts in config.get('floor_variants', {}).items():
         for layout, variants in layouts.items():
             for variant in variants:
-                records, _ = sources(profile_key, layout, variant)
+                records, _ = sources(profile_key, layout, variant, require_scale=False, offline=True)
                 for record in records.values():
                     include(record['source_image'])
                     for dependency in record.get('dependencies', []):
@@ -114,6 +135,13 @@ def runtime_files() -> list[Path]:
         include(f'assets/layout_retrieval/icons/{name}.png')
     include("src/registration/template_matching/provenance.json")
     return sorted(files)
+
+
+def runtime_files() -> list[Path]:
+    from src.registration.template_matching.resources import verify_module_provenance
+    from src.runtime_resources import runtime_files as published_files
+    verify_module_provenance(ROOT / 'src/registration/template_matching')
+    return published_files(ROOT)
 
 
 def main() -> None:
@@ -131,6 +159,9 @@ def main() -> None:
     output.relative_to(ROOT / "workspace")
     if output.exists():
         parser.error(f"发行目录已存在，请选择新目录：{output}")
+    from tools.assets.imports.export_runtime_resources import generate
+    if generate() != json.loads((ROOT / "configs/runtime_resources.json").read_text(encoding="utf-8")):
+        raise ValueError("运行资源清单已过期，请先重新导出")
     files = runtime_files()
     work = ROOT / "workspace/tmp/windows_exe" / output.name
     if work.exists():

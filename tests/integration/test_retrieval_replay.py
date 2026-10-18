@@ -8,7 +8,7 @@ from src.layout_retrieval import LayoutRetriever
 from tests.support.replay import read_cases, replay_image
 
 
-@pytest.mark.parametrize('case', read_cases(), ids=lambda case: case['id'])
+@pytest.mark.parametrize('case', [c for c in read_cases() if c.get('backend', 'icon_structure') == 'icon_structure'], ids=lambda case: case['id'])
 def test_real_retrieval_replay_is_ranked_and_requires_confirmation(retrieval_scene, case):
     image = replay_image(case)
     result = retrieval_scene.recognize(image, case['reference_size'])

@@ -53,7 +53,7 @@ def import_source_variants(config, root=ROOT):
     config = json.loads(json.dumps(config))
     imported = 0
     for profile_key, layouts in config.get('original_variants', {}).items():
-        profile_root = root/'assets/maps'/profile_key
+        profile_root = root/'maintenance/maps'/profile_key
         for variant_id, reference_id in SOURCE_VARIANTS.items():
             source_root = profile_root/'sources'/variant_id
             if not source_root.is_dir():
@@ -103,7 +103,7 @@ def import_source_variants(config, root=ROOT):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=ROOT/'configs/template_matching.json')
+    parser.add_argument('--config', type=Path, default=ROOT/'maintenance/configs/template_matching.json')
     parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/configs/template_matching_source_variants.json')
     args = parser.parse_args()
     if args.config.resolve() == args.output.resolve():

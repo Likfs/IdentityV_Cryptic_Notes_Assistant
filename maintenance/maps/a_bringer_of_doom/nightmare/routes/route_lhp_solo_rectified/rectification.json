@@ -1,0 +1,4596 @@
+{
+  "schema_version": 1,
+  "method": "existing_calibration_to_clean_pixels",
+  "layouts": {
+    "layout_01": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/2nd.png",
+        "source_sha256": "ccf06a37a18f563cdc48e88d050c1804e137a65cbc409ae3bcaa2e85b4ce3b69",
+        "size": [
+          2116,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.217134098312724,
+            -0.021923643161336326,
+            -3.923929922480383
+          ],
+          [
+            0.016272054453359004,
+            2.1967913592971495,
+            -125.0628362287399
+          ],
+          [
+            2.261553591721902e-05,
+            -1.0010228978670562e-05,
+            0.9997773173918562
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/2nd.png",
+            "sha256": "6d2bce1cd7afc6d20d6dea013f473fd23054bf0d568749a1bdfd0242d5456ed9"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/calibration.json",
+            "sha256": "357852ad4c4447f9da5832bce70e72195f44606e5788b9e752b2ad6ea097b948"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_2nd.png",
+            "sha256": "a59b1e24720463192ca281873106f0d85de32bb0026976d7bbfcd1152aca1422"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/1st.png",
+        "source_sha256": "d4977d3be2f767c98c90c0b795922034d73fbf9a778ee23d741e9d6f7f4c6336",
+        "size": [
+          2176,
+          1887
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.086215296847103,
+            -0.002645918948205251,
+            75.1186704357057
+          ],
+          [
+            -0.005047175511869038,
+            2.091600793062276,
+            126.42491410269145
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/1st.png",
+            "sha256": "72ddb7c1774cece0d69fa656f3d9fae64d466bded2df2dd5dc19d826bfb74941"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/calibration.json",
+            "sha256": "357852ad4c4447f9da5832bce70e72195f44606e5788b9e752b2ad6ea097b948"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_1st.png",
+            "sha256": "91d04e00e55a9935e2136ea99c7f8828add4996555daf21b30c4b724a0bb6ff0"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_01/b1.png",
+        "source_sha256": "b6614f13207f43cd062bfb83f5eceacf992d0804190e1df1ee7fd0023e05714e",
+        "size": [
+          1516,
+          1456
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.04356139647764,
+            0.0016041175674544753,
+            -236.65346976583498
+          ],
+          [
+            5.011778463037559e-05,
+            2.03940990976347,
+            11.832104040007835
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/b1.png",
+            "sha256": "96a94569dbeb24e0bf5ccce61c8e045cc34237f80f918fd4217be56fac98f8eb"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_01/calibration.json",
+            "sha256": "357852ad4c4447f9da5832bce70e72195f44606e5788b9e752b2ad6ea097b948"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_01/layout_01_b1.png",
+            "sha256": "5eaf384ebc34f4a4b2e426b96ddb1550e6cc749ca81fa682ded95a76d53b1cb1"
+          }
+        ]
+      }
+    },
+    "layout_02": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/2nd.png",
+        "source_sha256": "d7cdb83f772d6a5b571a17de6cf71df5bf9281fddb149e7c5e50d69d1b1998da",
+        "size": [
+          2416,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.296681523579413,
+            0.003019716177973175,
+            59.513245839193345
+          ],
+          [
+            0.003169933827827086,
+            2.1134200947148005,
+            -121.81024271872909
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/2nd.png",
+            "sha256": "f46ceb3ffa92501efa0332e8c1a41b25153600803a05e88475ea86567707558f"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/calibration.json",
+            "sha256": "d3fc246579d0d642f170a9ac46abf75b4ef2a908571ae7e4be36be775a5cc29a"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_2nd.png",
+            "sha256": "7c4685c8d5a0a9d75065311adc092ebd236d5d59dec6e35872875f57d119d9c6"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/1st.png",
+        "source_sha256": "8f873ba9d299a7475f9df16aff2446de680ab412fe76afd7c45ee9a723c802d0",
+        "size": [
+          2236,
+          1827
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.085444558134409,
+            -0.006568928870105122,
+            22.97983563084844
+          ],
+          [
+            0.005935555134934685,
+            2.0775767128349725,
+            120.29902150389748
+          ],
+          [
+            -1.5502888801038335e-07,
+            -6.913065768113353e-06,
+            1.000032438705509
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/1st.png",
+            "sha256": "583d69ac5273a959fbbc92076503e6d51a4c36d4d344154c8ed3e9c362c2b5b6"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/calibration.json",
+            "sha256": "d3fc246579d0d642f170a9ac46abf75b4ef2a908571ae7e4be36be775a5cc29a"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_1st.png",
+            "sha256": "7f2520ddc8b94a55f6e405558a1341d1ddc7e2f94f16f30590fb7236022b53e6"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_02/b1.png",
+        "source_sha256": "a87bd6f2c1c3ea266b517f0d73b16b25d638182bdcb7e224ec14e70e8b35e9d6",
+        "size": [
+          1576,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.4582673401414268,
+            -0.0005113641542284816,
+            71.65126260647003
+          ],
+          [
+            -0.0032633539408967243,
+            1.7266523432817344,
+            127.67686011140631
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/b1.png",
+            "sha256": "9f7f74635c4767c4d12c44fe1477fc3e0dd4118fab4ba3ffebda7911d08b43c4"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_02/calibration.json",
+            "sha256": "d3fc246579d0d642f170a9ac46abf75b4ef2a908571ae7e4be36be775a5cc29a"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_02/layout_02_b1.png",
+            "sha256": "376c138b2708aba72ea9314e76acf23a9a03828a9513229e60d7751e33082f78"
+          }
+        ]
+      }
+    },
+    "layout_03": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/2nd.png",
+        "source_sha256": "a987292c5d03d75a726cd336616be45c6e5e77b3db4ae29507fff59db07a128e",
+        "size": [
+          2116,
+          2296
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1706584247357035,
+            0.0068253370479916305,
+            -102.37956056090565
+          ],
+          [
+            0.0005018237270525368,
+            2.640985578235072,
+            42.445983587119485
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/2nd.png",
+            "sha256": "f649ea4174d4ba5270338d8b62f715c5fc54300399a654b4a1dea3a39dc60b4a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/calibration.json",
+            "sha256": "da192fa51775d6ca43308a607c3a36fc51c4d6d138ea21bd00b0a5397b4a90cd"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_2nd.png",
+            "sha256": "6f88345e335dc3ccd78085b824b19c54340c3a8675daf662eb1dc4fb3a4ae065"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/1st.png",
+        "source_sha256": "715db7eda1415a2463012e081952b6093456cddedcdd1646108181b4acfc3c63",
+        "size": [
+          1996,
+          2127
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9086544052919907,
+            -0.0019778288444904225,
+            -9.157737249367614
+          ],
+          [
+            0.0008317932193472728,
+            2.4554028634174045,
+            125.88938967734953
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/1st.png",
+            "sha256": "51445dc9f38a288c1ebed0452124588b12a7a0d7eab705722804f06a1029cf7e"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/calibration.json",
+            "sha256": "da192fa51775d6ca43308a607c3a36fc51c4d6d138ea21bd00b0a5397b4a90cd"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_1st.png",
+            "sha256": "a6c2568c59758e8dbae4cc2e1dc762d38c18fda8e3049b4308292b60d370e155"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_03/b1.png",
+        "source_sha256": "8b83860fe9bd40d91cf00f5f1bc64865ae8b4f7ed30baa21325a4faf29e1a27e",
+        "size": [
+          1576,
+          1216
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.387560005165723,
+            0.004591376161918048,
+            80.54371881665443
+          ],
+          [
+            -0.0011049047167056725,
+            1.402475070198879,
+            109.40848843054982
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/b1.png",
+            "sha256": "b62ff926f0f042699895a966c890c3d0d9804365cc8e7a138c9fcf008f507a12"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_03/calibration.json",
+            "sha256": "da192fa51775d6ca43308a607c3a36fc51c4d6d138ea21bd00b0a5397b4a90cd"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_03/layout_03_b1.png",
+            "sha256": "ab64bd9d0874eaf6715276466e023183d1065a73c42c52008b0e0918aba45a85"
+          }
+        ]
+      }
+    },
+    "layout_04": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/2nd.png",
+        "source_sha256": "8f68d7707a03cd99a1efb998c02d06a316bd690da818057ff2d9f47f0b145983",
+        "size": [
+          1636,
+          1876
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.047719503711785,
+            -0.00036921442968200984,
+            -199.25459847558204
+          ],
+          [
+            -1.8166137665346962e-05,
+            2.0450595239443734,
+            34.093389120287995
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/2nd.png",
+            "sha256": "50b43f6c14bfdad87be06006dc3549d22586e798358acb9aff6a15faae170968"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/calibration.json",
+            "sha256": "3871189a98fb8ebfa55156da4d778e635eea043213020f2c55e415cacbebb75f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_2nd.png",
+            "sha256": "0b2b7f199732d62807e141f28ed6a3472d65b39a48328f07c61cec5886150e0c"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/1st.png",
+        "source_sha256": "1f273944eb9bc7965de1d75303ba81a65ee15a5dd361933ad79ed0605106b869",
+        "size": [
+          1756,
+          2007
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.08370251808614,
+            0.005417232751477994,
+            -176.34159005991467
+          ],
+          [
+            0.0020635678652489915,
+            2.0940762986900876,
+            125.29544368787042
+          ],
+          [
+            2.624260261885457e-06,
+            2.5518119197156865e-06,
+            0.99961378495404
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/1st.png",
+            "sha256": "50ae0a79ff4251e9f1471f2d422ff806d0109dbd3aeb2e19817bd2ddcf1ecf0e"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/calibration.json",
+            "sha256": "3871189a98fb8ebfa55156da4d778e635eea043213020f2c55e415cacbebb75f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_1st.png",
+            "sha256": "6722eb2f6d3f4f072c089b03d38cb9ad04a054873208c2f75bb434b9dbb8061d"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_04/b1.png",
+        "source_sha256": "449d9603c38be0bfd5f110c02a4f5fdf6f041f97135b831a2a885e075906a5e6",
+        "size": [
+          1756,
+          1456
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1416858690490965,
+            0.007488806730364002,
+            -116.04373156835473
+          ],
+          [
+            -0.003809343370479936,
+            2.1444376802142804,
+            -11.91194462454905
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/b1.png",
+            "sha256": "09962d7a2aa880dfa644511ee7a3ec75da41b5ad69e428ac8f1fa73f984c76d5"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_04/calibration.json",
+            "sha256": "3871189a98fb8ebfa55156da4d778e635eea043213020f2c55e415cacbebb75f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_04/layout_04_b1.png",
+            "sha256": "e435d049705acfd33a02561274b92098cc5baf37ae36b650ed29fafb2d6da4f9"
+          }
+        ]
+      }
+    },
+    "layout_05": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/2nd.png",
+        "source_sha256": "7811044d0ec9a742dfadf410fd45cfd4e6973c79b101fae2ac1e45985040715c",
+        "size": [
+          2123,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0380000337591317,
+            -0.002058458221264403,
+            66.0206151595329
+          ],
+          [
+            0.003605099966098634,
+            2.033505842548623,
+            -30.12664141112799
+          ],
+          [
+            4.181106194081684e-06,
+            -3.254961858774738e-06,
+            1.0001254484480087
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/2nd.png",
+            "sha256": "4731ac46c4cc9bf652d5bf2bf9106cc11f592e94e7537b16052b018053630503"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/calibration.json",
+            "sha256": "7475a3a6bb640e8b67db19becf31dc77d829d66042355ab91b68b3c0280fe78d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png",
+            "sha256": "0a13e253ed487690191f5c491c4fe1e92544923cfd687675033099cdc0d41720"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/1st.png",
+        "source_sha256": "42c9c21dab37414bc5ad123effda57f3ee34e2dfb17eb671943696687a29d80a",
+        "size": [
+          2116,
+          1936
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0657777320936943,
+            -0.00022573026650888315,
+            40.754197587056865
+          ],
+          [
+            -0.005472244911709198,
+            2.07169164451276,
+            123.52741103187807
+          ],
+          [
+            -1.5086955382491954e-06,
+            -2.2126182897491623e-07,
+            1.0000642208032782
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/1st.png",
+            "sha256": "a79101bb321f6e1ae9ba29e840a71f9feb86d0b6c0dfefc98b2c437b61d59611"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/calibration.json",
+            "sha256": "7475a3a6bb640e8b67db19becf31dc77d829d66042355ab91b68b3c0280fe78d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_1st.png",
+            "sha256": "a790411a4b8abc9d4ccb71355eb59586ab35587e2559421032aa7c42c951c9e5"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_05/b1.png",
+        "source_sha256": "a1ac87d548513b4ba50c10f21a6f7088c497e68ffb051cdb890cc6acee26f73f",
+        "size": [
+          1696,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.3047854191953387,
+            0.003781356258435681,
+            -329.45541102651174
+          ],
+          [
+            -0.0021589826966927636,
+            2.3065891622769232,
+            18.125631019035325
+          ],
+          [
+            -4.812978102943369e-06,
+            6.448441235433394e-06,
+            1.0006465366291066
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/b1.png",
+            "sha256": "fe0bbbfc3aa4ffc7b9362d8eb48cee966c0799df3c642b0c6a715d599fecc27f"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_05/calibration.json",
+            "sha256": "7475a3a6bb640e8b67db19becf31dc77d829d66042355ab91b68b3c0280fe78d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_b1.png",
+            "sha256": "0876e7038e6a00ba0b920d68aaf7065f43ebc3e4afd7326e1df379467ae7038c"
+          }
+        ]
+      }
+    },
+    "layout_06": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/2nd.png",
+        "source_sha256": "5be0efaaeab0eb0b40e296686e542363b0fab36e38944b93c3ddd3b7d70c02b0",
+        "size": [
+          2476,
+          1756
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            3.2860348998571776,
+            -0.008739535530144789,
+            -129.05633599484634
+          ],
+          [
+            -0.011503519425470133,
+            3.305039800335744,
+            -164.33847356982386
+          ],
+          [
+            -1.5074298342655061e-05,
+            -3.916498075634511e-06,
+            1.001530265800219
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/2nd.png",
+            "sha256": "448f36d2a49d1f5f7f8f199f197f3ebbc11e0c3aecbe8c9c351c262d5125516b"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/calibration.json",
+            "sha256": "3b54e832d7a471fb620954a26bbe9e4e660f2e2358551e9f17f09410b42f664c"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_2nd.png",
+            "sha256": "59d843a53fd9b9d413574d4a7ec5b2c9034dfdbd82489a3b16c63f95df70a788"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/1st.png",
+        "source_sha256": "32cc4721b373a7ac3f60b51f2cb9c73534287f5b541c4e04ce55ea5545f68a2e",
+        "size": [
+          2476,
+          1876
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            3.2939623779114537,
+            -0.015041382919267564,
+            -128.12510361482478
+          ],
+          [
+            -0.007351578991386493,
+            3.2034616797287048,
+            125.58138025926249
+          ],
+          [
+            -9.154163374048935e-06,
+            -1.0236264335800815e-05,
+            1.0007213845619687
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/1st.png",
+            "sha256": "47e112f0674c129e25bc54e84a4d7968fd02f61d2bca76c0e03840cb03c73da6"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/calibration.json",
+            "sha256": "3b54e832d7a471fb620954a26bbe9e4e660f2e2358551e9f17f09410b42f664c"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_1st.png",
+            "sha256": "467cb478d46029c39bb3475182a809bc2914bad0bba80a383ebfdf7020767950"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_06/b1.png",
+        "source_sha256": "8e42ee251184cff398b2ec717295e40ba288b62e9af670025913477d661a8f00",
+        "size": [
+          1456,
+          1456
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0926448635907686,
+            0.02417793905023205,
+            -145.60945549913586
+          ],
+          [
+            -0.006489119283713816,
+            2.2752608926769096,
+            126.67663188026151
+          ],
+          [
+            -1.539543938412371e-05,
+            4.8146247312300484e-05,
+            1.001966799914843
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/b1.png",
+            "sha256": "19dfb7b681a4a425c6fd84d17c567bf67dddc968d9056da8b7e90d6f2608a1be"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_06/calibration.json",
+            "sha256": "3b54e832d7a471fb620954a26bbe9e4e660f2e2358551e9f17f09410b42f664c"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_06/layout_06_b1.png",
+            "sha256": "78f425f71a2922097de045ae86149515ecf85f90e4504c7bef96169e3f256467"
+          }
+        ]
+      }
+    },
+    "layout_07": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/2nd.png",
+        "source_sha256": "b0f790a83e6269966cbb5f2dd34b944ae14134eaf17bc2b3be48eaff9a3b14c6",
+        "size": [
+          1948,
+          1996
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.2141598367436566,
+            -0.007992770247816847,
+            -157.18127661377525
+          ],
+          [
+            -0.0010136922738509387,
+            2.211817467046799,
+            -52.67652403911825
+          ],
+          [
+            1.6444215967645943e-06,
+            -2.431608327178396e-06,
+            0.999986489534165
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/2nd.png",
+            "sha256": "945c83e48b828e4ed2921a23d46aa6c1ea9d1fdb4cf257529fb4d69ad83890a8"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/calibration.json",
+            "sha256": "b438a3dbd8dd5fc35023f3e07067de3629f8001bd8965220cd9cca7038d23e20"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_2nd.png",
+            "sha256": "081792ffcdba35ccadc5474449f583a55076f60ec01d8022b09e6d83d63b10c7"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/1st.png",
+        "source_sha256": "3368f214f570d0287c1c2ab9ba4241ebbf781f5cf496104ae93f8f3e168e5a44",
+        "size": [
+          2056,
+          2007
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.147666759241354,
+            -0.0037818297110405073,
+            -71.03339688677579
+          ],
+          [
+            0.0037818297110405073,
+            2.1476667592413543,
+            44.39937399780729
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/1st.png",
+            "sha256": "70355149f309386138b33a6f9617d0874c45636fbf0a9dfea99f4870bd170a84"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/calibration.json",
+            "sha256": "b438a3dbd8dd5fc35023f3e07067de3629f8001bd8965220cd9cca7038d23e20"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_1st.png",
+            "sha256": "6e0db2cfbb553435be53804065a72b6c521fe373ff7a3564be17bfe24f32c983"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_07/b1.png",
+        "source_sha256": "15aaa151977257636d97723773bc0ee1bc2e1c41dd7bfe21eeb7ea08d1728dfb",
+        "size": [
+          1816,
+          1156
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1736929074415094,
+            0.007475957238068497,
+            -142.82742291278313
+          ],
+          [
+            -0.0008944245902395727,
+            2.1826649970824756,
+            -161.8370488305441
+          ],
+          [
+            -1.2291591416541256e-06,
+            1.7048149174100752e-05,
+            0.9978878848468822
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/b1.png",
+            "sha256": "847a7e07d891611d366d98f722880b7a8e5099fe803ed02fe6bc7cc4d80676c4"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_07/calibration.json",
+            "sha256": "b438a3dbd8dd5fc35023f3e07067de3629f8001bd8965220cd9cca7038d23e20"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_07/layout_07_b1.png",
+            "sha256": "3e5b81033b23ada4b7acb4b22190ecb6f6fc2e816e328ab3038d37daf65ee35a"
+          }
+        ]
+      }
+    },
+    "layout_08": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/2nd.png",
+        "source_sha256": "1c3d643ead33b1702fd0a9c27a3fda957582d462f31caf71ef93e7719b60d92c",
+        "size": [
+          1756,
+          1876
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.6232345533291797,
+            0.00508576986438436,
+            61.72411593048304
+          ],
+          [
+            -0.0029399478073695454,
+            2.298158031892555,
+            15.618006474809206
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/2nd.png",
+            "sha256": "deeffb6c97e482d7aa73c5d2d207238d9346bd1ba5c5d25389a9b81dded4e1c8"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/calibration.json",
+            "sha256": "f3ff9aafd1f911c0019393d7e57d79b9848e40684699da87ed33c8e6cb90ee78"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_2nd.png",
+            "sha256": "a6eadc13c27d3b1209334bf92fcbdea1f996e0f5d94d834241b1229c62edc23d"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/1st.png",
+        "source_sha256": "41b413927da6046c0b52244e693a1590f797d288993edf59d277ab23209e31ea",
+        "size": [
+          1816,
+          2007
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.6829021765675793,
+            -0.002549686364255472,
+            39.627713479890474
+          ],
+          [
+            -0.004314978922039953,
+            2.2580953861028976,
+            126.7633556075325
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/1st.png",
+            "sha256": "0bff03dddbc7b199effcba3257f4e4de55786a0864cd4343b7be1d0c9f0a6b29"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/calibration.json",
+            "sha256": "f3ff9aafd1f911c0019393d7e57d79b9848e40684699da87ed33c8e6cb90ee78"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_1st.png",
+            "sha256": "cbcf580723edd3806aefb090554081f32bee3dd051737b1bf2175db543456d78"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_08/b1.png",
+        "source_sha256": "897764e16b9a09a5d40350f74a10e43988f3a6efa3a51d0fd8b6f71f14347758",
+        "size": [
+          1576,
+          1456
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.4653264944721163,
+            -0.002897669541447712,
+            43.086119788575104
+          ],
+          [
+            0.0034625784228111546,
+            1.7266246959466183,
+            123.17274570623749
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/b1.png",
+            "sha256": "69fa34832278602c550c11a93d1926c6309ed261379c42de65be30786c08c179"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_08/calibration.json",
+            "sha256": "f3ff9aafd1f911c0019393d7e57d79b9848e40684699da87ed33c8e6cb90ee78"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_08/layout_08_b1.png",
+            "sha256": "a698ee2d5a08b15308e6abd64d086ce311455a2a817cd949910a73f958932330"
+          }
+        ]
+      }
+    },
+    "layout_09": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/2nd.png",
+        "source_sha256": "90d134a6d935c7b775bf31140a27def1911c52952f7f404a452c5581c07d0fff",
+        "size": [
+          1756,
+          1936
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9399972554270137,
+            0.00012678605848743502,
+            -81.40550487721829
+          ],
+          [
+            0.00037202654808865673,
+            1.9404782855230678,
+            -42.67285461504683
+          ],
+          [
+            2.8360227820846854e-06,
+            1.0413716581994678e-07,
+            0.9996847356542947
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/2nd.png",
+            "sha256": "206f448f040711abc21f17f0a89d1d902676cb90a1e800a1008f1c9c55a7397a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/calibration.json",
+            "sha256": "8af1cfaedbdf4acb12a1f218e005c3b0785183f72cbb7b2d1c3d715f6dc1b720"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_2nd.png",
+            "sha256": "e7d02118869af3832c00b3482b9d1f78f90273e6ffaa30f2de412cf715e5cf76"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/1st.png",
+        "source_sha256": "fdad20433a84461872b878350f137802dbe0aa8836aa2bb8c41a62dc55480ada",
+        "size": [
+          2116,
+          1887
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9327960522310288,
+            0.0017248569898228913,
+            42.89266273599196
+          ],
+          [
+            0.0008523362089330502,
+            1.9365000264558643,
+            95.81754341046968
+          ],
+          [
+            2.751121558897731e-07,
+            -2.3761808326024003e-07,
+            0.9999918343286951
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/1st.png",
+            "sha256": "389e8ea17b6b3fbef10e4e53a0d1653cb490d322b825f51f156074ad3b183d72"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/calibration.json",
+            "sha256": "8af1cfaedbdf4acb12a1f218e005c3b0785183f72cbb7b2d1c3d715f6dc1b720"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_1st.png",
+            "sha256": "5cd391377e9ce9bced0ed6f34f6de81666af2e4af1893c46f0f82a591daff6b1"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_09/b1.png",
+        "source_sha256": "5af459d0d65ea4fefa0a5ea9887407cc5cb551c1a278bd33781d950a13e8d303",
+        "size": [
+          1756,
+          1396
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.935410886467799,
+            -0.005122575509824336,
+            -189.82091857145525
+          ],
+          [
+            0.0032801573909304127,
+            1.9440640403295606,
+            -14.322036161737287
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/b1.png",
+            "sha256": "7c8e3caa83a8856a212d7d53c5e5f4257f8e755a9f081d4c5f2532541200e59a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_09/calibration.json",
+            "sha256": "8af1cfaedbdf4acb12a1f218e005c3b0785183f72cbb7b2d1c3d715f6dc1b720"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_09/layout_09_b1.png",
+            "sha256": "af6fc96d9b85b280b396661ac146f3f7fc204006f018aff1634b503306ff0e45"
+          }
+        ]
+      }
+    },
+    "layout_10": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/2nd.png",
+        "source_sha256": "f26c073c2084295be4af93986d3ac5f45013ee7e6fe40df835fd92cb556b7bde",
+        "size": [
+          2656,
+          1516
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.5092848944877706,
+            -0.0020283581469873876,
+            75.89079925508403
+          ],
+          [
+            0.0022983612423097322,
+            2.5101598067190087,
+            -177.691192572883
+          ],
+          [
+            4.5382547994015015e-06,
+            -6.09651735702817e-06,
+            1.0006476363664543
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/2nd.png",
+            "sha256": "79c0052a527dc561a7cf115f4d8dfd68df13f1964d9cb0295c06aa6b6a96f3a4"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/calibration.json",
+            "sha256": "283595c1120fffbc743bc7daeb277f75a60f954c0f02550f795913e6b6c83ae7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_2nd.png",
+            "sha256": "a6aebe0a3e3db3d1e6f744401b0b261aab68902dcf6d0cfad57e86bbaf2ad6e1"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/1st.png",
+        "source_sha256": "04a1b78c465a94f99c5d3821c40437e12c5080d22b086cb40a24542ff13f442b",
+        "size": [
+          1996,
+          2067
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0873417711988917,
+            -0.002396348739356142,
+            -17.833987868487696
+          ],
+          [
+            -0.005226997250611426,
+            2.0898405378543137,
+            127.69522644051693
+          ],
+          [
+            -4.984628146946938e-06,
+            -2.019552810930672e-06,
+            1.000348904741219
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/1st.png",
+            "sha256": "f09b025400ada437740ea1e7eed0c49cac3eb736636a57de0eda59adddc73936"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/calibration.json",
+            "sha256": "283595c1120fffbc743bc7daeb277f75a60f954c0f02550f795913e6b6c83ae7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_1st.png",
+            "sha256": "e4b75521544fce5bf8ce5373be45925f5b84397a4c277f4ea4cd15d8738ebeae"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_10/b1.png",
+        "source_sha256": "2d444d3a0ba5d908bc2a70cb0b87e03f924b235155334e436a1cc3cb5b38ff77",
+        "size": [
+          1696,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9643964645564573,
+            0.007321244669375194,
+            -111.11922254395162
+          ],
+          [
+            -0.007967664584787884,
+            1.97307709753119,
+            41.82609403815502
+          ],
+          [
+            -1.1847991904803128e-05,
+            2.2369104020737808e-06,
+            1.0013414701836778
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/b1.png",
+            "sha256": "ac28b52ef7eb27504219f01a417212a219378acd75d0dce121a2abb487d16dc4"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_10/calibration.json",
+            "sha256": "283595c1120fffbc743bc7daeb277f75a60f954c0f02550f795913e6b6c83ae7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_10/layout_10_b1.png",
+            "sha256": "517ab3b2bd2c2e4998be71db39b47ae06d2918777f7cefa9aa1a8bfaf9be7c46"
+          }
+        ]
+      }
+    },
+    "layout_11": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/2nd.png",
+        "source_sha256": "0bd8ff64ad5b2e8fa3698cdecab8154351dbed96a35e57628885fe48671f0800",
+        "size": [
+          2116,
+          1516
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1084877357706286,
+            -0.007946889663931695,
+            9.36240480603415
+          ],
+          [
+            0.005438158526546406,
+            2.1135964778028,
+            -133.5617288778997
+          ],
+          [
+            5.420847336758132e-07,
+            5.0280777681475e-06,
+            0.999347745567144
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/2nd.png",
+            "sha256": "e7f8a673825afc2ba2f29de2ee81c51330cc54335affd52d30f87376ccba13c6"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/calibration.json",
+            "sha256": "a14d2c85a870ab9fb956c345f555c852fed34ab1e22bb62591a4c9e7f1eec69d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png",
+            "sha256": "fbcee69c2417e2906c668b03e8d96a4913b00b8c30869f9f57cea3f16bca70cd"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/1st.png",
+        "source_sha256": "950065ebc776f02aba7993c668c59276ab0ad6a7ba4e43ce9c2c9f77aea4aa61",
+        "size": [
+          2176,
+          1887
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0076151696759847,
+            -0.007925089250712388,
+            125.20495437194141
+          ],
+          [
+            -0.0029188543337772734,
+            2.0075758740003584,
+            127.76801216047124
+          ],
+          [
+            -4.013131800929598e-06,
+            -2.51414623653766e-06,
+            1.0000058846482958
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/1st.png",
+            "sha256": "3e89ebaeac668110ffc9a3403b7f5d9795576265c268fbfb07c3ad314c821ee1"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/calibration.json",
+            "sha256": "a14d2c85a870ab9fb956c345f555c852fed34ab1e22bb62591a4c9e7f1eec69d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_1st.png",
+            "sha256": "28f0b6c6b57c1d7f36394c2008579f02770264534d2122655395a0655fe15a3d"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_11/b1.png",
+        "source_sha256": "d4c3d8b8d0ac2b7d29c05c59c8af08569e9999c87baa8de2faa12c2e9eb616ac",
+        "size": [
+          1516,
+          1336
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.792782150491755,
+            0.007926579096987277,
+            -88.0266898901005
+          ],
+          [
+            0.0009948619301327032,
+            1.8061878370640951,
+            67.77353296014644
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/b1.png",
+            "sha256": "983c30c43a19754f0656a42c38ba5016baf07343e2bea61b9e56dce34637f8c8"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_11/calibration.json",
+            "sha256": "a14d2c85a870ab9fb956c345f555c852fed34ab1e22bb62591a4c9e7f1eec69d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_b1.png",
+            "sha256": "534643e1c51f5a6f86a919f5c805d67c960197c98fb746c697a813b613a0165b"
+          }
+        ]
+      }
+    },
+    "layout_12": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/2nd.png",
+        "source_sha256": "aa78b608f19e57fc96ef20a44f703822c5ceb7c83c826fb3914bc8646a548994",
+        "size": [
+          2236,
+          1996
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1009104769914555,
+            0.004858058586427021,
+            106.25437324266801
+          ],
+          [
+            0.0009920453059110892,
+            2.0986142538822388,
+            64.9403372667119
+          ],
+          [
+            9.90387535096622e-07,
+            3.0018191478910294e-06,
+            0.9998996329346719
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/2nd.png",
+            "sha256": "3deee4093204de405466520aca6228e6e60c7c6cb19921abdf1cb7dfb756eb12"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/calibration.json",
+            "sha256": "e39b038acc2f89fec124e691fcf8674c7e5fa3f4250b8187f3c2c3a8b4725e34"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_2nd.png",
+            "sha256": "bde46097b9aa0cafdb7a52dc66cbf0b11af5afebf3df13b75ae7add2412727f9"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/1st.png",
+        "source_sha256": "86f67fbf72db94a6f50c01089cdffacadf1e7be01e49fdb15a831c5347a37a39",
+        "size": [
+          1936,
+          2367
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0910713254898106,
+            0.002656499027872054,
+            -63.96537663321158
+          ],
+          [
+            0.010267924161574871,
+            2.084509768934904,
+            117.63480195726513
+          ],
+          [
+            7.2892193410167435e-06,
+            1.3108136390851205e-06,
+            0.9993249487052205
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/1st.png",
+            "sha256": "cd91a695d0e7e8339099a177dd943aa95dd2923b0f6ce8af2898288f4a84b67e"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/calibration.json",
+            "sha256": "e39b038acc2f89fec124e691fcf8674c7e5fa3f4250b8187f3c2c3a8b4725e34"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_1st.png",
+            "sha256": "def5ac90a3d35419850433642c84c79c3456f4867f76f5ae150d7059dfcbe684"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_12/b1.png",
+        "source_sha256": "a57e94c45f091447c5578a78814795dc36b28701f3e41ee88838fd2ba7ee8323",
+        "size": [
+          1396,
+          1456
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.730287096576823,
+            0.0008114780242498395,
+            -221.38913279596426
+          ],
+          [
+            -0.005117375543683286,
+            1.7195319499066495,
+            -69.97595883496115
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/b1.png",
+            "sha256": "f0b802e55d6f10f339fc80aa0b8d54f16d1870638c3cd686eb15fd394d15368b"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_12/calibration.json",
+            "sha256": "e39b038acc2f89fec124e691fcf8674c7e5fa3f4250b8187f3c2c3a8b4725e34"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_12/layout_12_b1.png",
+            "sha256": "6135cb0c1e0aafdedf9c504485c9e28fa43dc2ae619eee927873aea539b93ed6"
+          }
+        ]
+      }
+    },
+    "layout_13": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/2nd.png",
+        "source_sha256": "892e8c4e21fff74776741f5600a5de4039c67e5de4b786bf37c3e8c925605755",
+        "size": [
+          1816,
+          1936
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9993603002073979,
+            -0.0038870571021580075,
+            -59.83567959169426
+          ],
+          [
+            -0.006132534549821493,
+            2.066418739938131,
+            94.83816223265222
+          ],
+          [
+            -1.6289703542285183e-06,
+            -4.1878751421699334e-06,
+            1.0002214649682022
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/2nd.png",
+            "sha256": "97ac8aa35b5ac7dee59b3d8e5c85127b55d15fd03db5bb2005fa654e220409fe"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/calibration.json",
+            "sha256": "9eff5e509e31fcf3210aaa4d212654cbb8a8d1a8b283d73afde931c31025da30"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_2nd.png",
+            "sha256": "c44dc84d51a8b0e3215b6ef0b242724c1bdc6b067fdb55b36b878467d8a17827"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/1st.png",
+        "source_sha256": "59de2f934ff872b95ffa13d0c00cc186ac087b792272e769f3668ce3177c95aa",
+        "size": [
+          2356,
+          2007
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.409934307337625,
+            -0.007789779561856031,
+            -30.458363626943353
+          ],
+          [
+            0.0016227417962231777,
+            2.409813564318286,
+            126.50664810015233
+          ],
+          [
+            2.24154287463058e-06,
+            -1.431003603889158e-06,
+            0.9998534329912879
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/1st.png",
+            "sha256": "9b95fffa90f127a3d5f682d66370c88ef3d3b3957c8d84440a3f0cd78f2c8387"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/calibration.json",
+            "sha256": "9eff5e509e31fcf3210aaa4d212654cbb8a8d1a8b283d73afde931c31025da30"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_1st.png",
+            "sha256": "bcfc898038b4ba19dd62c733a98ca7ed751fcbef380c27c7f332e407cdd3aacc"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_13/b1.png",
+        "source_sha256": "a41c4280db228543d28e879129fcd014835d1d1d9abc717c4b829baa698cf394",
+        "size": [
+          1396,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.7636172151871283,
+            0.0003425629342835602,
+            -145.44459763175433
+          ],
+          [
+            0.01159707025579226,
+            1.9388977602679465,
+            118.60703560559205
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/b1.png",
+            "sha256": "fb96c8f2c8132869c5ae86ef02027c146d04db3a92e12eac66afa4593d313df2"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_13/calibration.json",
+            "sha256": "9eff5e509e31fcf3210aaa4d212654cbb8a8d1a8b283d73afde931c31025da30"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_13/layout_13_b1.png",
+            "sha256": "2902660000a788ce93b0f0211cb4b0daed99a96ac9b05a6053637900c0743bb5"
+          }
+        ]
+      }
+    },
+    "layout_14": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/2nd.png",
+        "source_sha256": "96373ac6c8954839543ca8c743f86d620964fd8ab4a3043bc24bf98d95095495",
+        "size": [
+          2296,
+          1756
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.351610796374691,
+            0.001465523857399897,
+            32.30734134868405
+          ],
+          [
+            0.004135841764263063,
+            2.360651567547635,
+            -172.03552474034757
+          ],
+          [
+            3.092806569555497e-06,
+            3.864991802958517e-06,
+            0.9993834310902056
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/2nd.png",
+            "sha256": "61c2e4a9ab50a75250f94b113f3ee8164d9dcd5b1eeebb6b4dc7b688764107ad"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/calibration.json",
+            "sha256": "61909681d31f5aa7e318aa6e4b922b56ef394a4d68afc6cf14a1ec4f2bb79f71"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_2nd.png",
+            "sha256": "90056a9c2c8e94011544133cc02d2870d1ca93afe93ab821ed36b7d41543d8c4"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/1st.png",
+        "source_sha256": "018a72e7bcfc2425167090e045f8123af2487a019362de2f4bf88663e32efbb8",
+        "size": [
+          2416,
+          1887
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.3593258962728765,
+            0.0019185557643104398,
+            -9.41870505303308
+          ],
+          [
+            0.0042336134693024986,
+            2.3606414741041224,
+            122.5039195552074
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/1st.png",
+            "sha256": "599d5287b6d2d1733c68e271202fc554722369571beba196c79d793c9c38fa9b"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/calibration.json",
+            "sha256": "61909681d31f5aa7e318aa6e4b922b56ef394a4d68afc6cf14a1ec4f2bb79f71"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_1st.png",
+            "sha256": "bc88b31d768e40acae090fbd593b592cea28e2646e1d584ae6591990fe4e8137"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_14/b1.png",
+        "source_sha256": "984ce6182165a0ec1a3ed1f4eed099a3551bb2abb2ee08d783c07de3b83fa04c",
+        "size": [
+          1576,
+          1396
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1785059920864582,
+            0.015302908183223166,
+            -455.8041556569525
+          ],
+          [
+            -0.006773043839097051,
+            2.170135773580217,
+            2.433550482118335
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/b1.png",
+            "sha256": "13aee3ec02d15c6b3b05df663f92bf0f589c289425146ac2758d1015d308c335"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_14/calibration.json",
+            "sha256": "61909681d31f5aa7e318aa6e4b922b56ef394a4d68afc6cf14a1ec4f2bb79f71"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_14/layout_14_b1.png",
+            "sha256": "823edf9b50059689bfed126a248a4ceedb234dd5d638db10dd7c3a8b37a26bc7"
+          }
+        ]
+      }
+    },
+    "layout_15": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/2nd.png",
+        "source_sha256": "05d465b6cd2853c208f4fd32647df0b3c618db68bfb29637781ade4a21b571ac",
+        "size": [
+          2429,
+          1636
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.8929256230102878,
+            -0.005292499368115442,
+            0.5938164336926945
+          ],
+          [
+            -0.005840642237141994,
+            2.8289243533297324,
+            -162.94109702047413
+          ],
+          [
+            -1.599616961479247e-07,
+            1.4389507294990305e-06,
+            0.9998589544572065
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/2nd.png",
+            "sha256": "4b8dc299ad18fd0561aed7aa9e4df4498f275cc9e3e6d5091a94a7820d5f8b5c"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/calibration.json",
+            "sha256": "1d3b67114ca19a92bed3cfa45006bef5e36aaaa4400449323a63a670d585b59d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_2nd.png",
+            "sha256": "aef8b840a32a9fa607a1ec9647cf929a5f01cad9461ab7afc462aa0bc77d6a3e"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/1st.png",
+        "source_sha256": "39f0f111f208073351540fdeecd926af57a58f77297e58794ea01ff3c04e5a75",
+        "size": [
+          2416,
+          1647
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.851798412691386,
+            -0.007011129312214295,
+            44.63390976593604
+          ],
+          [
+            0.0023248944425550786,
+            2.629294489039366,
+            125.47523743639886
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/1st.png",
+            "sha256": "7c77098a8e15471b4937464401fab1514e973feacee0294e2f34845820d7494d"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/calibration.json",
+            "sha256": "1d3b67114ca19a92bed3cfa45006bef5e36aaaa4400449323a63a670d585b59d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_1st.png",
+            "sha256": "5214f3aba9512638390e6ac483d422c13b81980ccc84967a6d65bff7d58587d8"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_15/b1.png",
+        "source_sha256": "b7173a30d047ce76ad90c2ae4fd69f2e4c4a6e681ad82429c3de393e7e5b891a",
+        "size": [
+          1636,
+          1336
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9693298789265867,
+            -0.015662439613472506,
+            11.977010088490601
+          ],
+          [
+            0.01756076053034002,
+            1.9610197982349786,
+            115.361194634287
+          ],
+          [
+            1.5286274957931836e-05,
+            -1.0729734683172705e-05,
+            0.9991621783950152
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/b1.png",
+            "sha256": "3d731ad682ba5b2f998fee003b2047f7d4e6c368b68b505e0c96d346efc2e7af"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_15/calibration.json",
+            "sha256": "1d3b67114ca19a92bed3cfa45006bef5e36aaaa4400449323a63a670d585b59d"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_15/layout_15_b1.png",
+            "sha256": "167110c6e4b007c340c23fe6f4d1f920a11fec71237c7ce62f9a524d9dfe8963"
+          }
+        ]
+      }
+    },
+    "layout_16": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/2nd.png",
+        "source_sha256": "69574668de268f4344329239cce8768c972f6a9ba82ad54e0926f0dd996d89fc",
+        "size": [
+          1756,
+          1756
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.585430133358623,
+            0.0006493295290052657,
+            -234.80015563769365
+          ],
+          [
+            0.0027832717606985765,
+            2.9203087738592193,
+            -32.383522880395105
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/2nd.png",
+            "sha256": "8823c3120bb250bbaa53c3871f46cd4c129a0e12b3ef6c7bceb5cb4f8b049a9f"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/calibration.json",
+            "sha256": "93462381f4f45849c7177b9adc364b07a3a715bdab1fe84cc20758aaccc2ad10"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_2nd.png",
+            "sha256": "d4042f2b023fa95e1ea427c7e3a39e19c1df830455ac47be47ed122dd8943c80"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/1st.png",
+        "source_sha256": "f4735b603c307152b3e805935f0a350ebcca77b3f095844e52446272b5670fa3",
+        "size": [
+          2116,
+          1767
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.9437544754232863,
+            -0.04172190463399319,
+            -177.19513984289313
+          ],
+          [
+            0.007869194759680766,
+            2.8778092393885095,
+            121.77840366765942
+          ],
+          [
+            7.705319718236005e-06,
+            -1.5852872831350243e-05,
+            0.9992307195033875
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/1st.png",
+            "sha256": "3ae9610bb6251b10c1fc70cb848ea1e26dbdd318f8873884464d893716b26c1c"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/calibration.json",
+            "sha256": "93462381f4f45849c7177b9adc364b07a3a715bdab1fe84cc20758aaccc2ad10"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_1st.png",
+            "sha256": "24f9c6074f051f530ac647e2d3060167da8a1d291523c8f294eaf3cec652220e"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_16/b1.png",
+        "source_sha256": "448acbb81da61d9fba1611ebe20b68337298989be545f1fe9fb197ad75429002",
+        "size": [
+          1396,
+          1276
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8519448905450766,
+            0.003665585225658519,
+            -68.72508245517261
+          ],
+          [
+            0.006859225766552332,
+            1.8291814870222944,
+            122.94397434615189
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/b1.png",
+            "sha256": "69b107a32962dbfb8b730902e2781ff1060eccfad4152d6675261718236c7c56"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_16/calibration.json",
+            "sha256": "93462381f4f45849c7177b9adc364b07a3a715bdab1fe84cc20758aaccc2ad10"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_16/layout_16_b1.png",
+            "sha256": "97ee10057471882a33bd1bdd33ea7d16b38799fbf74ee7a2e0229a64e7ee3fdc"
+          }
+        ]
+      }
+    },
+    "layout_17": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/2nd.png",
+        "source_sha256": "eaea5e5d5cbaaa7a443e15f5d9186ce8cda89a27ba487803f37e041e501b5b05",
+        "size": [
+          1756,
+          1876
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8229738729430163,
+            -0.002438448948422496,
+            -85.41136790290446
+          ],
+          [
+            0.006239133575958702,
+            1.8255804664372601,
+            19.03127816316409
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/2nd.png",
+            "sha256": "912628d31b7c6456a2ea239e60ba62ae9bede73807ddc9cbadd7343164968297"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/calibration.json",
+            "sha256": "e0f7c2c1e0a5ac5e316bc725c0600b88b7f78ffc436ee10f7fbbeb567cc3effa"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_2nd.png",
+            "sha256": "fb5b826b101018638908de35701f663321db3cda2e276e842320573b0b17863b"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/1st.png",
+        "source_sha256": "141539f0b3b879f66c797ab6355e09ee538122478c91cba0ce6abc984543da97",
+        "size": [
+          1756,
+          2007
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8925266385029547,
+            -0.018602133316990798,
+            -50.848044706536385
+          ],
+          [
+            0.052727594725159525,
+            1.8400321302060827,
+            82.89674414538179
+          ],
+          [
+            4.690657039917701e-05,
+            -2.1025765642799882e-05,
+            0.9960154932901842
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/1st.png",
+            "sha256": "3ff038e9f79ba697ea9be918c727ab4a71a046ff5386c8807aad8b700ffaccc0"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/calibration.json",
+            "sha256": "e0f7c2c1e0a5ac5e316bc725c0600b88b7f78ffc436ee10f7fbbeb567cc3effa"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_1st.png",
+            "sha256": "50c1e0f74de287391d1097b57c6a2b4a404202d46622851d21f9fc59ef4cc98e"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_17/b1.png",
+        "source_sha256": "ecdf2852cbe1a173b2c6348744bbf10061ee341cf2bfdee3e1d716a10b94c64e",
+        "size": [
+          1576,
+          1396
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.5224246219988278,
+            0.0006978835850597039,
+            -53.01958282693147
+          ],
+          [
+            -0.008366051522299276,
+            1.5310813326101773,
+            62.32393658344063
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/b1.png",
+            "sha256": "4b68d6590f87beeec89a8c647972a21c60e95d69534189be6eb95c5ed61a019a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_17/calibration.json",
+            "sha256": "e0f7c2c1e0a5ac5e316bc725c0600b88b7f78ffc436ee10f7fbbeb567cc3effa"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_17/layout_17_b1.png",
+            "sha256": "e27cd5bf28fb9af66b1d232cfdd1d9039e3077595f6c30347838e2e8163adaac"
+          }
+        ]
+      }
+    },
+    "layout_18": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/2nd.png",
+        "source_sha256": "5218dce0032693b278a1eddedee0806882e42aeba10c7d769fa8788190c6bc18",
+        "size": [
+          2176,
+          1336
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0665128996020887,
+            -0.008266603098749627,
+            75.73282291132229
+          ],
+          [
+            -0.0024415836011337593,
+            1.9076707855652089,
+            -61.614143414625886
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/2nd.png",
+            "sha256": "1d64818a6723d62a1ba4c052be0baa19021a50828f6d6bb68b72b878fdbfed27"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/calibration.json",
+            "sha256": "39fe88574de04862c96719efc04dc0f9e9828ffe3d1c685100c5fb1a96a5ccbe"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_2nd.png",
+            "sha256": "14b10f9efcda9a59e1e736562315708a8570cd835029c21833a17681e9d3fc51"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/1st.png",
+        "source_sha256": "1e8b19c13d2ae0f6674418233b6d49766bca7007cf70535bca71ac8a096df85a",
+        "size": [
+          1936,
+          1827
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.7991165510997582,
+            -0.006169557127360607,
+            79.59993835178075
+          ],
+          [
+            -0.0022756788292742315,
+            1.8011239176138172,
+            126.96209159565726
+          ],
+          [
+            -2.5833564363525746e-06,
+            -4.484656275336706e-06,
+            1.000072239944888
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/1st.png",
+            "sha256": "55a0545f372f2a6a67dbdfc539980720506f1cfd51b6a655d3d3a67ec97beda6"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/calibration.json",
+            "sha256": "39fe88574de04862c96719efc04dc0f9e9828ffe3d1c685100c5fb1a96a5ccbe"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_1st.png",
+            "sha256": "fce0570d8bc9d0fd77040fde198b258b7d79ec8249f96f3ae5102f41d31b895a"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_18/b1.png",
+        "source_sha256": "7ade431449fa7ce1ea159608e910c10836b35b33b90ca9250677130d22e1ff11",
+        "size": [
+          1756,
+          1156
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.81636038522723,
+            0.003159568044550629,
+            -31.713540503255615
+          ],
+          [
+            -0.00027198921854123035,
+            1.8322846373313735,
+            -140.53675813520158
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/b1.png",
+            "sha256": "4538cdf07d86f95695a87abcf2327d14e48cf2a8d46989d3c8d9f86975a637df"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_18/calibration.json",
+            "sha256": "39fe88574de04862c96719efc04dc0f9e9828ffe3d1c685100c5fb1a96a5ccbe"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_18/layout_18_b1.png",
+            "sha256": "b26e2fa9a03cd1623c23181a5aef680825e55fd7d0a1408cfd9d04a0a0e4b9d0"
+          }
+        ]
+      }
+    },
+    "layout_19": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/2nd.png",
+        "source_sha256": "4b98f02fc76e832b5b89eb9e3bf241faf7201fa5874b9a3fefeafc47d00ddf98",
+        "size": [
+          2004,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.263300239015282,
+            0.0039460314962287526,
+            -122.70889225398803
+          ],
+          [
+            -0.0014745867159508038,
+            2.2683889921993674,
+            -116.61472973711066
+          ],
+          [
+            -1.1969471030814094e-06,
+            4.3765497876340124e-06,
+            0.9996600966429762
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/2nd.png",
+            "sha256": "765eb1e6e490726ad47da3b0b0372ca00b4e6ab4c0cd7792affd5c82ca92bc7f"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/calibration.json",
+            "sha256": "f1679357a2696d7fd769b4809fcd616ecd3653d57625533204f5627d799a8b9e"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_2nd.png",
+            "sha256": "2f72454e5c8ea13d5d9dcc180aa07cc7c1214f9cd325d28a8f08638f7894dc62"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/1st.png",
+        "source_sha256": "683038dc4e8eeb26c0626234f0602f498349949f50b8f06fb737f434fe647149",
+        "size": [
+          2116,
+          2367
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.3597438294886324,
+            -0.003332233014304626,
+            -191.0335706839936
+          ],
+          [
+            -0.014632299527414797,
+            2.676984052086368,
+            129.8993245375597
+          ],
+          [
+            -8.066131057147526e-06,
+            3.8708283764715465e-06,
+            1.0010904141386814
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/1st.png",
+            "sha256": "41bc9b643ccf8e7e9d13985050ab35117b23385da352b9b271a5330ba03d943a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/calibration.json",
+            "sha256": "f1679357a2696d7fd769b4809fcd616ecd3653d57625533204f5627d799a8b9e"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_1st.png",
+            "sha256": "fbbe0cf6414efd297584788dfb7dabf1f4e763ac224fe32f3e92c6608bbdc3c1"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_19/b1.png",
+        "source_sha256": "f1431f619d05376f46e51b434878616dea77a1104c998de3ca5176d7b1868dbe",
+        "size": [
+          1456,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1671800795062977,
+            -0.004515064275622692,
+            -318.0510390325022
+          ],
+          [
+            0.004515064275622692,
+            2.1671800795062977,
+            64.4874205459837
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/b1.png",
+            "sha256": "beb6e005c62eae2a0f06b27b719047edeea6a2acdb423ed95b2bfd23fe6f82eb"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_19/calibration.json",
+            "sha256": "f1679357a2696d7fd769b4809fcd616ecd3653d57625533204f5627d799a8b9e"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_19/layout_19_b1.png",
+            "sha256": "0ab30e648482fe58daaff3666966596d1add15d2ebec5cc6a401394bb56ceeb9"
+          }
+        ]
+      }
+    },
+    "layout_20": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/2nd.png",
+        "source_sha256": "a049e6d22d7b7325a338574e2c5252b232431a0c8438930e814da6b70db1eb56",
+        "size": [
+          2056,
+          1876
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0545294679584365,
+            0.008761412472151979,
+            -8.051572882811257
+          ],
+          [
+            0.00016541593064344702,
+            2.105247793197069,
+            44.57864579809103
+          ],
+          [
+            -1.4488479633373146e-06,
+            9.116944204891094e-06,
+            0.9997344828219694
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/2nd.png",
+            "sha256": "2b3ea8789390cba9b4738fb6913be2b6cd4d5971b890f2d6e164752504ee7d22"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/calibration.json",
+            "sha256": "93d3f259b17e0df5cc95a808ba4effef2bc94611a7b15635e0c6de701f4ca20f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_2nd.png",
+            "sha256": "7c8b9492956bd81dff45ea5305685268259135377bc4f1167522bd1b38a98397"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/1st.png",
+        "source_sha256": "006b4dba2f9d081873c87a9467650d58bb5b3f6f2000a83ad05a95c813a435d1",
+        "size": [
+          2296,
+          1827
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.2064456311779623,
+            -0.0011930457886869593,
+            2.378315352223993
+          ],
+          [
+            -0.0008178601236552784,
+            2.043890498465899,
+            127.02756224375739
+          ],
+          [
+            2.1725610690007016e-06,
+            -3.2724754606101453e-06,
+            0.9998779384372252
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/1st.png",
+            "sha256": "da15646c5e4ce8a582986abdbc41aa5f75f1dbb137ea8814fa2b7c4e55c594de"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/calibration.json",
+            "sha256": "93d3f259b17e0df5cc95a808ba4effef2bc94611a7b15635e0c6de701f4ca20f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_1st.png",
+            "sha256": "2c356b440c2704027368e588c8646b0de258749913ad075fd25d6e6398eb1bc9"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_20/b1.png",
+        "source_sha256": "bbdc8e4e230156918ec6ecc8b9eeb923367b9da98ffb1d2aed1d8972ead2a871",
+        "size": [
+          1636,
+          1336
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.6102877857053726,
+            0.005069743686173726,
+            -62.280692127643164
+          ],
+          [
+            0.0014453181628893467,
+            1.6104040045580401,
+            97.9763517301817
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/b1.png",
+            "sha256": "3a29980bd254e21cb55021952cc55bad0598051f97354b8c23070958cfe9f2a5"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_20/calibration.json",
+            "sha256": "93d3f259b17e0df5cc95a808ba4effef2bc94611a7b15635e0c6de701f4ca20f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_20/layout_20_b1.png",
+            "sha256": "b128ee84805ae170fdcf85c7a6fe11f871615e4fd9342699307cc0c0d0a521c9"
+          }
+        ]
+      }
+    },
+    "layout_21": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/2nd.png",
+        "source_sha256": "b06a3d3d91f202fca1a1ad2d267d4b30c42f889769be01de437b2e9d56e4dcf8",
+        "size": [
+          1756,
+          2056
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.2560640325132737,
+            -0.04374290526054041,
+            -189.62862922988384
+          ],
+          [
+            -0.009279981165858282,
+            2.2650826992538557,
+            35.80897676546779
+          ],
+          [
+            -1.4611885458773581e-06,
+            -3.441137511830026e-05,
+            1.001627425909281
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/2nd.png",
+            "sha256": "1d1679202b07ca2ed66d90df0c28d9634db5cdaebca7347c45da651939a47a62"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/calibration.json",
+            "sha256": "232f921a6e92d452ac41c8c150f52a805e144c77227d92d318bee43c2aab0ba7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_2nd.png",
+            "sha256": "ab7da0338fc80cd1c4f80aa23048c3c98b451d6ac0821723dac0ecfaa33554df"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/1st.png",
+        "source_sha256": "cf3905560d980810849b0877fe4374bfbd3afa400dbf3bbdcbe53a230cc22971",
+        "size": [
+          1936,
+          2067
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.02344638941486,
+            -0.006378906133328336,
+            -80.17370661735129
+          ],
+          [
+            -0.007601741294551023,
+            2.037175280195084,
+            127.30994501893915
+          ],
+          [
+            -1.8599765049189902e-05,
+            -8.388116102957035e-06,
+            1.0019196619676023
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/1st.png",
+            "sha256": "60c5d0fce09ecfb17fb520451541479906d491fcbc346b107bb9bd3c82df0da5"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/calibration.json",
+            "sha256": "232f921a6e92d452ac41c8c150f52a805e144c77227d92d318bee43c2aab0ba7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_1st.png",
+            "sha256": "57dda7708cfbe78a3991c8620926e34810d5a1cc0821c33e85f69ee97d58f798"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_21/b1.png",
+        "source_sha256": "695a960271d61f373a6f2a2651199006c197cd3a254c69b5d2f08f610c36392b",
+        "size": [
+          1336,
+          1276
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8576797538301186,
+            -0.01007827704181494,
+            -230.54889374059786
+          ],
+          [
+            0.007446018739470574,
+            1.83165926049456,
+            10.182495452242321
+          ],
+          [
+            2.1233283502145067e-05,
+            -7.27377428749887e-06,
+            0.9963566187095493
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/b1.png",
+            "sha256": "40f233e47ed03b9950accaf2ff8cbd22f6202497321c12e8f3c56347ac8a5a08"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_21/calibration.json",
+            "sha256": "232f921a6e92d452ac41c8c150f52a805e144c77227d92d318bee43c2aab0ba7"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_21/layout_21_b1.png",
+            "sha256": "720de66c886c585423db8501801401d362ae3b7eae221456fe16fb08f80efce7"
+          }
+        ]
+      }
+    },
+    "layout_22": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/2nd.png",
+        "source_sha256": "e9d53bb3c46c773c58d3417db145eb09577e2aeff9250b0e5448ffdd10bd91f0",
+        "size": [
+          1889,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8078455764315657,
+            3.305049976211582e-05,
+            58.68389126358608
+          ],
+          [
+            0.0009281196431694136,
+            1.8645371156042632,
+            -732.7977492362867
+          ],
+          [
+            4.3781682732880937e-07,
+            2.945543082814645e-06,
+            0.998623409225244
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/2nd.png",
+            "sha256": "1f4bd8d9a81b932262b4ae2e4cb670b1bbf57d4a40a6c731b69c041c49e21ad9"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/calibration.json",
+            "sha256": "2d345d5c1f02023a2638e8551ff1c22782595ff469ddcd0f56ab76af370b74a3"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_2nd.png",
+            "sha256": "143528cc2e39f4ae8f076e7e5c1c302b391e5dd9603761aac6b29eed757cce3f"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/1st.png",
+        "source_sha256": "593c0362a012046661b3c92f5d4a62dae6faae4dd3db196d23c8b9f87e30b652",
+        "size": [
+          1996,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.9504671758461338,
+            -0.005207925473037966,
+            -15.405569090541888
+          ],
+          [
+            -0.011648442295491243,
+            1.8652681320932565,
+            127.90949751606138
+          ],
+          [
+            -7.23403470215661e-06,
+            -3.947587723581215e-06,
+            1.0005338869259779
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/1st.png",
+            "sha256": "7a6c14f64fee2919b4ff70d49009761a0fb6e1bb9b02420e87f2033214c057e8"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/calibration.json",
+            "sha256": "2d345d5c1f02023a2638e8551ff1c22782595ff469ddcd0f56ab76af370b74a3"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_1st.png",
+            "sha256": "4d9a40c48405cd2eb24ee6473a328b45c2632f3a2e64c92523e612fe11939f0f"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_22/b1.png",
+        "source_sha256": "6aaa91013e40059211e8d20eeea9c66e30283bcc54154cbeeeb48f836d5fdd19",
+        "size": [
+          1396,
+          1096
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.2884858842650024,
+            -0.0037978455934434556,
+            36.97784627153273
+          ],
+          [
+            -0.010181166569906594,
+            1.3555664686849218,
+            43.13534712711794
+          ],
+          [
+            -1.2457139709951291e-05,
+            -7.760563612463853e-07,
+            1.000931322034825
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/b1.png",
+            "sha256": "1e08254f180050af9a0ef62c4b88f3c47c4a9016c2cb34fbe7f2be59e0e075c1"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_22/calibration.json",
+            "sha256": "2d345d5c1f02023a2638e8551ff1c22782595ff469ddcd0f56ab76af370b74a3"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_22/layout_22_b1.png",
+            "sha256": "c54e4c0f3f7d5555220a8437de0750b9b00a513552d0725bb9760f70b52e42b7"
+          }
+        ]
+      }
+    },
+    "layout_23": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/2nd.png",
+        "source_sha256": "49b4c518a1e6b9c8712709c3d6f59ece7adab1b5cbe82fc6266679c65702c85c",
+        "size": [
+          1889,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8456005254942662,
+            -0.0016628013493254184,
+            -4.301207827753842
+          ],
+          [
+            -0.00624508793798959,
+            2.3007958648962967,
+            -1068.7650664167736
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/2nd.png",
+            "sha256": "03806be9d206728bac3aa2c8fc67bf6dcd6daf20efe9b6e262d6f6902314c5e2"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/calibration.json",
+            "sha256": "46b5bc4e72d074e70b80fe65ffb5e222044cc867399dc83b997678611672e95f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_2nd.png",
+            "sha256": "28617ab253f2dfc3c38e93cb1de05ef507360603b3649329756748b7eee35e88"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/1st.png",
+        "source_sha256": "2c05c379b21f9cff7accffad0d61ee613f2af3dd09e632dcecfdd48ec4b7a806",
+        "size": [
+          1876,
+          2116
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8548986773625882,
+            -0.010698045196912236,
+            21.91067518240746
+          ],
+          [
+            -0.0013853357197476553,
+            2.1842990957839086,
+            127.99771912865427
+          ],
+          [
+            -2.3955870917780775e-06,
+            -8.195200325364553e-06,
+            1.0001373198770687
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/1st.png",
+            "sha256": "287c3b3f35b2ad349604e3ee9030f9ca7bb79c9ca6fd67399e1ebcc90be21694"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/calibration.json",
+            "sha256": "46b5bc4e72d074e70b80fe65ffb5e222044cc867399dc83b997678611672e95f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_1st.png",
+            "sha256": "c3b5d916bc8bbc4ff8c62c55ae9684a23d7fdf4e0b6a214445d9c49d474b5e29"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_23/b1.png",
+        "source_sha256": "0e3a3e4c66865fd829314f0f2eaabe4877439de8ae07743a0180d9d98272dd6b",
+        "size": [
+          1156,
+          1336
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.4610110516852763,
+            -0.0009526573447908164,
+            -210.03339126585007
+          ],
+          [
+            -0.011471200213017733,
+            1.7326426841391525,
+            47.7011929328969
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/b1.png",
+            "sha256": "b4f0299725eb2000ebc28aa951fc8dc686a975ae37df98837611d8568de678c1"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_23/calibration.json",
+            "sha256": "46b5bc4e72d074e70b80fe65ffb5e222044cc867399dc83b997678611672e95f"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_23/layout_23_b1.png",
+            "sha256": "b11f3d81c31e74fd8ff5f0b89eadff04563bce0af71ecc4e9c80043b44d5f1a6"
+          }
+        ]
+      }
+    },
+    "layout_24": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/2nd.png",
+        "source_sha256": "d9cfee7ace7fc52090267ad120860d8c27a42d5f87c38d1160abf846c126606b",
+        "size": [
+          2009,
+          1936
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.049816582541533,
+            -0.003622663392945304,
+            -20.962980720114643
+          ],
+          [
+            0.0008906574355186451,
+            2.140542610503013,
+            -885.08243107107
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/2nd.png",
+            "sha256": "c2e062e8d7a63a0d159ffa9991736a5a5a3dafa9e59d0a26caee5ca37f909037"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/calibration.json",
+            "sha256": "ced37e9cac02e96b931c6dcba046cfa43a1be3b364bdb241199af97a2e138f97"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_2nd.png",
+            "sha256": "e8e6061120318a9fb2fd865082a402080c2ab034ac0529795065bd64c00df91e"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/1st.png",
+        "source_sha256": "106082e8e3aadd9e4a780576c19e13761130257e6835b4f2c37540bbb7128ef0",
+        "size": [
+          2116,
+          1827
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0460050023007117,
+            -0.013097111867547428,
+            23.57026356424487
+          ],
+          [
+            -0.004923050286112041,
+            2.138202244384396,
+            119.00502700541568
+          ],
+          [
+            -4.111130906261645e-06,
+            -1.1420434369788623e-05,
+            1.000259335448813
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/1st.png",
+            "sha256": "07a6684b387cb538b62817d5bd41362bdf6ce7d0c157a70669f25708f37d13db"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/calibration.json",
+            "sha256": "ced37e9cac02e96b931c6dcba046cfa43a1be3b364bdb241199af97a2e138f97"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_1st.png",
+            "sha256": "948ad24c33e1fc41360acf1cc479f872fc891b500ab2efcd92ba036cd5c49007"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_24/b1.png",
+        "source_sha256": "df728ff04febc8b90b3a294a443b730d41d58849f25ce6de2ee67dae281d8036",
+        "size": [
+          1456,
+          1276
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.6122443752419637,
+            -0.03879418489946874,
+            -174.02856450536953
+          ],
+          [
+            0.016944622795251538,
+            1.4712612668821543,
+            93.2489650376705
+          ],
+          [
+            1.6547117420809e-05,
+            -5.806570698741902e-05,
+            0.9981374967164165
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/b1.png",
+            "sha256": "cafeedff8dec5d50c2f574d9b814604fa5dd4dd202dd22269e469c8a338268c2"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_24/calibration.json",
+            "sha256": "ced37e9cac02e96b931c6dcba046cfa43a1be3b364bdb241199af97a2e138f97"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_24/layout_24_b1.png",
+            "sha256": "f416ad15c71f2e414e03cc636e486924453786746d2593d914a2d4f616ffd165"
+          }
+        ]
+      }
+    },
+    "layout_25": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/2nd.png",
+        "source_sha256": "d6c25a526cde37d2a62337c769eb38f03e300d0c649f36e2587c858cda2671c5",
+        "size": [
+          1876,
+          1756
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.8782784045875844,
+            0.002817841199725914,
+            -5.4320248076639785
+          ],
+          [
+            0.006962234688987212,
+            1.8700473243107063,
+            115.57122296355007
+          ],
+          [
+            6.292733908059869e-06,
+            1.9426450245615733e-07,
+            0.9995517876002474
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/2nd.png",
+            "sha256": "ad40b342c4f37753ab4440ea9c51178c01b5a26595e38d78265a58f55ff854a5"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/calibration.json",
+            "sha256": "9a2e47e51c0e5bf2143962372b3a40ba3f29e4e641f6214ff66f1024b99b3a04"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_2nd.png",
+            "sha256": "511cac27656cedd1c8fd204678a46c0e727e5afc5655816baf0a53587f6902eb"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/1st.png",
+        "source_sha256": "0eaa528d4aec953756b8d6f760d54d8a4c057a053e80c9ec28f6d5f5570ef93a",
+        "size": [
+          2116,
+          1767
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.1070160146168893,
+            -0.0034701350774912466,
+            -26.09033461202762
+          ],
+          [
+            0.00014009187121044798,
+            2.1082389782179747,
+            62.57374215278651
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/1st.png",
+            "sha256": "c2752ceddf9379e580cbd5ab5ed8c40fe5fb566f835deada6bf3f001c31e6ffc"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/calibration.json",
+            "sha256": "9a2e47e51c0e5bf2143962372b3a40ba3f29e4e641f6214ff66f1024b99b3a04"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_1st.png",
+            "sha256": "121cc92f4d367fd4fb93e39376eaffea1ceb9eac3425278929eef3b268bd7ea6"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_25/b1.png",
+        "source_sha256": "328c01e961e2484bf035d9257172a6e562aaeaff130c52dec7aefcb77db1b7d0",
+        "size": [
+          1396,
+          976
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.3250966146447425,
+            0.0005558315422041913,
+            34.55937508200017
+          ],
+          [
+            -0.0005558315422041913,
+            1.3250966146447427,
+            13.52441567957112
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/b1.png",
+            "sha256": "e2508c501ed003937a1cbf271965e275f18d60e828208954df150907efd7fcb0"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_25/calibration.json",
+            "sha256": "9a2e47e51c0e5bf2143962372b3a40ba3f29e4e641f6214ff66f1024b99b3a04"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_25/layout_25_b1.png",
+            "sha256": "d86001bd9956406bad410357f97b4ad2229c4f9f0d50e1e83b854706024214b7"
+          }
+        ]
+      }
+    },
+    "layout_26": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/2nd.png",
+        "source_sha256": "88730bba583e7ac4749762cbbaf6238d85f61b905809672bf20a8a8352c33210",
+        "size": [
+          1936,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.021722636647497,
+            0.000873375974194245,
+            -17.42267400591514
+          ],
+          [
+            0.00042940143381096766,
+            2.086553024179668,
+            51.130603217266014
+          ],
+          [
+            3.492447832878464e-07,
+            5.66859577871007e-07,
+            0.9999540094198361
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/2nd.png",
+            "sha256": "7122bde7b4a129cec27960981715287f30c6ce8ebfe7e751559c2e1885542897"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/calibration.json",
+            "sha256": "2b320ff4227d54c378e3606912ef615879628a8d85289c658a7b3ad4643fe2e6"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_2nd.png",
+            "sha256": "2e21c314a343f43b4d2f4cf8ddd52e8a5f7eef61eb9ad72ab27e8616136e410c"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/1st.png",
+        "source_sha256": "3ec3e1596d0b4b14a54772eaaffd1cf17c4500cf528f3f71025b83842f7e61b6",
+        "size": [
+          1756,
+          1827
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.6823530704904153,
+            -0.003484663453781255,
+            37.584385549477815
+          ],
+          [
+            0.0005898664702632089,
+            1.8891978286890152,
+            126.86921366698792
+          ],
+          [
+            8.502486488961668e-07,
+            -3.250825157131378e-06,
+            0.9999561948426658
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/1st.png",
+            "sha256": "eb27df20aafa42678c853d6c9f58a79c39495969925fe824a8b647c03456fa8a"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/calibration.json",
+            "sha256": "2b320ff4227d54c378e3606912ef615879628a8d85289c658a7b3ad4643fe2e6"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_1st.png",
+            "sha256": "f444a82b851e2936c5374e8bc82238587c79a010a551ef603e6b2553135aa862"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_26/b1.png",
+        "source_sha256": "2accfaad70b3f214268f2c349c8ed47a11b87159c0ad143df48ede3f4b5bf623",
+        "size": [
+          1336,
+          1036
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.1611968555335905,
+            0.015241980633614687,
+            42.020444394765036
+          ],
+          [
+            -0.029132428169126492,
+            1.244933705288754,
+            75.7056009397862
+          ],
+          [
+            -3.243891916097932e-05,
+            2.5689605129423533e-05,
+            1.001260007825432
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/b1.png",
+            "sha256": "132ea74d9637708463e3aae0ab1ccb9f6a2391659dc004f48998574ec2e0e237"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_26/calibration.json",
+            "sha256": "2b320ff4227d54c378e3606912ef615879628a8d85289c658a7b3ad4643fe2e6"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_26/layout_26_b1.png",
+            "sha256": "89406b54e5f8502fd5ef14fc78639ab852063b22ba94dca14e34c09b832b792c"
+          }
+        ]
+      }
+    },
+    "layout_27": {
+      "2nd": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/2nd.png",
+        "source_sha256": "e17bb6c47a7ee0e7633903ce4b2d0940359271d450825f0e1974472c2f611c27",
+        "size": [
+          2116,
+          1816
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.0905860783234442,
+            0.004155009748003953,
+            10.747012147608359
+          ],
+          [
+            0.0011453449994081914,
+            2.3353977855970367,
+            -176.41157099269878
+          ],
+          [
+            -6.89546806852366e-07,
+            2.3325248769251316e-06,
+            0.9997345222145938
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/2nd.png",
+            "sha256": "e5d5ab916a73c9a2ce65523cb5b16cfd9db83ecdf9d680442123ad07ed116183"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/calibration.json",
+            "sha256": "99161ef08b04cb35099968114f60ea627aa45b459d7c74738d2964daebbf4772"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_2nd.png",
+            "sha256": "552c01ba9a2eacea77baad97d84df2e75954738618a266e5bb3f8d27649efc9a"
+          }
+        ]
+      },
+      "1st": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/1st.png",
+        "source_sha256": "84f8a61171a0ad175a7e7c002e8157e31da0296e4ff20b579857b83d52af72fd",
+        "size": [
+          2056,
+          1947
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            2.124786609984198,
+            -0.008725975406708678,
+            -38.492799926839126
+          ],
+          [
+            0.0010674842031437785,
+            2.2994453229665712,
+            125.38015085475925
+          ],
+          [
+            2.0466601228071155e-06,
+            -8.365830650561676e-06,
+            0.9998488469063391
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/1st.png",
+            "sha256": "5026f1333e1c5666971e3ef5dd0f1af102a24976761eb226a9b87ed710434357"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/calibration.json",
+            "sha256": "99161ef08b04cb35099968114f60ea627aa45b459d7c74738d2964daebbf4772"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_1st.png",
+            "sha256": "0ae8835856d7258784a418c307bbb9a75957b688634b92b78eb2beac6454f4b4"
+          }
+        ]
+      },
+      "b1": {
+        "source_image": "assets/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo_rectified/layout_27/b1.png",
+        "source_sha256": "5b03c3574b6289e9feaa6de702225cf43442c68fe0e254c19a40ec0a86e69ff9",
+        "size": [
+          1216,
+          1576
+        ],
+        "clean_to_source": [
+          [
+            1.0,
+            0.0,
+            128.0
+          ],
+          [
+            0.0,
+            1.0,
+            128.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "original_to_source": [
+          [
+            1.4499369980127437,
+            0.0024747621003849566,
+            -153.72919831805837
+          ],
+          [
+            -0.0024158352265348268,
+            1.7336184798801153,
+            128.29422676182548
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        "dependencies": [
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/b1.png",
+            "sha256": "c569eade8ff0e151c5f0957c894daf863ea9d0bd60350cdd7624dd0ab5cadd8b"
+          },
+          {
+            "path": "maintenance/maps/a_bringer_of_doom/nightmare/routes/route_lhp_solo/layout_27/calibration.json",
+            "sha256": "99161ef08b04cb35099968114f60ea627aa45b459d7c74738d2964daebbf4772"
+          },
+          {
+            "path": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_27/layout_27_b1.png",
+            "sha256": "efedf0186c232e95f69df8a9efb2da1e7b356539c084c3641543da0dd2203fc2"
+          }
+        ]
+      }
+    }
+  }
+}

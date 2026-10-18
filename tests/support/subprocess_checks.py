@@ -6,7 +6,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def run_probe(python, mode, output):
+def run_probe(python, mode, output, *, pending_profiles=(), ready_floors=None):
     completed = subprocess.run([str(python), '-B', str(ROOT/'tests/support/runtime_probe.py'),
         '--root', str(ROOT), '--mode', mode, '--output', str(output)],
         cwd=output.parent, capture_output=True, encoding='utf-8', timeout=120)
@@ -18,7 +18,19 @@ def run_probe(python, mode, output):
         for profile in payload['profiles']:
             assert 'model_exists' not in profile and not profile['review']
             assert profile['layouts'] == profile['icon_structure_layouts']
-            assert all(not variant['errors'] for variant in profile['template_originals'].values())
+            for variant in profile['template_originals'].values():
+                if profile['difficulty'] in pending_profiles:
+                    ready = (ready_floors or {}).get(profile['difficulty'], {})
+                    assert variant['resource_layouts'] == profile['layouts']
+                    assert len(variant['pending_scales']) == profile['layouts']
+                    assert all(floors == [f for f in ('2nd', '1st') if f not in ready.get(layout, [])]
+                               for layout, floors in variant['pending_scales'].items())
+                    assert variant['fixed_candidates'] == sum(map(len, ready.values()))
+                    assert variant['partial_layouts'] == len(ready)
+                    assert variant['errors'] == [f"{layout}: 屏幕尺度待标定（{'、'.join(floors)}）"
+                                                 for layout, floors in variant['pending_scales'].items()]
+                else:
+                    assert not variant['errors']
     elif mode == 'project':
         assert payload['accepted'] and payload['layout'] == 'layout_05'
         assert payload['variant'] == 'route_lhp_solo'

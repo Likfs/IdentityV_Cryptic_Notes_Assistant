@@ -58,3 +58,9 @@ def isolated_runtime_outputs(tmp_path, monkeypatch):
     matcher = sys.modules.get('src.registration.template_matching.matcher')
     if matcher:
         monkeypatch.setattr(matcher, 'TEMPLATE_DS', matcher.TEMPLATE_DS)
+    floors = sys.modules.get('src.registration.template_matching.floors')
+    if floors:
+        monkeypatch.setattr(floors, '_fixed_session', None)
+    yield
+    if floors:
+        floors._close_fixed_session()

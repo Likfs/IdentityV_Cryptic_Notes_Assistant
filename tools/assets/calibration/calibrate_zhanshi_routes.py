@@ -14,16 +14,18 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 from tools.common.calibration_assets import (  # noqa: E402
-    route_asset_root, layout_numbers, CLEAN_ROOT, FLOORS, OUTPUT_ROOT, floor_template,
+    route_asset_root, calibration_root, layout_numbers, CLEAN_ROOT, FLOORS, OUTPUT_ROOT, floor_template,
     leading_number, project_relative,
 )
 from tools.common.paths import asset_output
+from src.maintenance_paths import profile_root
 from tools.common.route_calibration import estimate_template_to_route  # noqa: E402
 from tools.assets.image_io import imread_unicode, imwrite_unicode  # noqa: E402
 
 ASSET_ROOT = route_asset_root()
+CALIBRATION_ROOT = calibration_root()
 VARIANT = "route_zhanshi_fast"
-SOURCE_ROOT = CLEAN_ROOT.parent / 'sources/route_zhanshi_fast'
+SOURCE_ROOT = profile_root(CLEAN_ROOT) / 'sources/route_zhanshi_fast'
 
 
 def montage_structure(image: np.ndarray) -> np.ndarray:
@@ -174,7 +176,7 @@ def write_assets(payload: dict) -> None:
         own_distance = cv2.distanceTransform(255-masks[floor], cv2.DIST_L2, 3)
         # Keep numbers placed outside room walls as well as entrance labels.
         ownership = own_distance <= 120
-        for other in FLOORS:
+        for other in payload["floors"]:
             if other == floor:
                 continue
             other_mask = cv2.warpPerspective(masks[other], transforms[floor] @ np.linalg.inv(transforms[other]),
@@ -201,29 +203,43 @@ def write_assets(payload: dict) -> None:
         imwrite_unicode(ROOT / item["alignment_preview"], preview)
 
 
-def calibrate(layout: str, source: Path) -> dict:
+def calibrate(layout: str, source: Path, *, clean_root=CLEAN_ROOT, floors=FLOORS,
+              asset_root=None, metadata_root=None, output_root=OUTPUT_ROOT, variant=VARIANT, working_max_size=None) -> dict:
     original = imread_unicode(source)
     size = (1536, round(original.shape[0] * 1536 / original.shape[1]))
     route = cv2.resize(original, size, interpolation=cv2.INTER_AREA)
     structure = montage_structure(route)
-    report_dir = OUTPUT_ROOT / layout / VARIANT
-    asset_dir = ASSET_ROOT / VARIANT / layout
+    report_dir = output_root / layout / variant
+    asset_dir = (ASSET_ROOT if asset_root is None else asset_root) / variant / layout
+    metadata_dir = (CALIBRATION_ROOT if metadata_root is None else metadata_root) / variant / layout
+    metadata_dir.mkdir(parents=True, exist_ok=True)
     report_dir.mkdir(parents=True, exist_ok=True)
     asset_dir.mkdir(parents=True, exist_ok=True)
     payload = {
         "layout": layout, "layout_number": int(layout.split("_")[-1]),
-        "variant_id": VARIANT, "display_name": "展十速刷路线图",
+        "variant_id": variant, "display_name": "展十全图路线" if variant == 'route_zhanshi_full' else "展十速刷路线图",
         "route": project_relative(source), "source_sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "route_size": [original.shape[1], original.shape[0]],
         "calibration_size": list(size), "floors": {},
     }
-    for floor in FLOORS:
+    for floor in floors:
         started = time.perf_counter()
-        template_path = floor_template(CLEAN_ROOT / layout, floor)
+        template_path = floor_template(clean_root / layout, floor)
         template = imread_unicode(template_path)
         height, width = template.shape[:2]
         reference = np.uint8(cv2.cvtColor(template, cv2.COLOR_BGR2GRAY) > 48) * 255
-        h, diagnostics, quality = locate_floor(template, route, structure)
+        working = template
+        if working_max_size is not None and max(height, width) > working_max_size:
+            ratio = working_max_size / max(height, width)
+            working = cv2.resize(template, (round(width*ratio), round(height*ratio)), interpolation=cv2.INTER_AREA)
+        h, diagnostics, quality = locate_floor(working, route, structure)
+        if working is not template:
+            h = h @ np.diag([working.shape[1]/width, working.shape[0]/height, 1.])
+            h, warped, refinement = refine_silhouette(h, reference, structure)
+            diagnostics.update(refinement, working_size=list(working.shape[1::-1]))
+            envelope = cv2.dilate(reference, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (121, 121)))
+            warped[envelope == 0] = 0
+            quality = alignment_quality(reference, warped)
         envelope = cv2.dilate(reference, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (121, 121)))
         passed = quality_passes(quality, diagnostics)
         status = "PASS" if passed else "REVIEW"
@@ -234,7 +250,7 @@ def calibrate(layout: str, source: Path) -> dict:
         alpha = np.where((envelope > 0) & (color.max(axis=2) > 35), 255, 0).astype(np.uint8)
         color[alpha == 0] = 0
         asset_path = asset_dir / f"{floor}.png"
-        mask_path = asset_dir / f"{floor}_structure.png"
+        mask_path = metadata_dir / f"{floor}_structure.png"
         if not passed:
             asset_path.unlink(missing_ok=True)
             mask_path.unlink(missing_ok=True)
@@ -256,18 +272,19 @@ def calibrate(layout: str, source: Path) -> dict:
         }
         print(layout, floor, status, quality, flush=True)
     write_assets(payload)
-    (asset_dir / "calibration.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
+    (metadata_dir / "calibration.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2)+"\n", encoding="utf-8")
     return payload
 
 
 def main() -> None:
-    global ASSET_ROOT
+    global ASSET_ROOT, CALIBRATION_ROOT
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--publish", action="store_true", help="明确将结果写入正式资产目录")
     parser.add_argument("--layouts", nargs="+", type=int, help="省略时读取当前底图目录中的全部布局")
     parser.add_argument("--render-only", action="store_true", help="Rebuild floor isolation from unchanged source and saved matrices")
     args = parser.parse_args()
     ASSET_ROOT = route_asset_root(publish=args.publish)
+    CALIBRATION_ROOT = calibration_root(publish=args.publish)
     if args.layouts is None:
         args.layouts = layout_numbers(CLEAN_ROOT)
     cv2.setNumThreads(4)
@@ -279,8 +296,8 @@ def main() -> None:
         if len(matches) != 1:
             raise ValueError(f"Layout {number}: expected one montage, found {len(matches)}")
         if args.render_only:
-            path = ASSET_ROOT / VARIANT / f"layout_{number:02d}" / "calibration.json"
-            source_path = CLEAN_ROOT.parent / "routes" / VARIANT / f"layout_{number:02d}" / "calibration.json"
+            path = CALIBRATION_ROOT / VARIANT / f"layout_{number:02d}" / "calibration.json"
+            source_path = profile_root(CLEAN_ROOT) / "routes" / VARIANT / f"layout_{number:02d}" / "calibration.json"
             payload = json.loads(source_path.read_text(encoding="utf-8"))
             for item in payload["floors"].values():
                 for key in ("asset", "structure_mask"):

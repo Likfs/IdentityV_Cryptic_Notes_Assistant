@@ -26,6 +26,27 @@ def test_both_recognizers_always_require_human_confirmation(window,monkeypatch,b
     assert window.locked_layout=='layout_27' and len(prompts)==1
 
 
+def test_confirming_large_zoom_locks_only_layout_and_requires_new_projection(window, monkeypatch):
+    from src.layout_retrieval import LayoutCandidate,LayoutRetrievalResult
+    window.difficulty_var.set('困难');window._profile_changed()
+    retrieval=LayoutRetrievalResult(backend='pure_structure',timings_ms={'total':1},candidates=[
+        LayoutCandidate(1,'layout_26','layout_26/layout_26_1st.png','hash',.88,.95,0,0,'候选',
+            {'floor':'1st','scale':1.308,'recognition_zoom':'50_percent'})])
+    result=process_screenshot(np.zeros((80,80,3),np.uint8),catalog=window.catalog,profile=window.profile,
+        opacity=.5,recognize_only=True,layout_retriever=SimpleNamespace(recognize=lambda *a:retrieval))
+    result.session_id=window.session_id
+    prompts=[];statuses=[]
+    monkeypatch.setattr(app.messagebox,'confirm_layout',lambda items,*a,**kw:(prompts.append(items) or 'layout_26'))
+    monkeypatch.setattr(window,'_set_status',lambda text,*a:statuses.append(text))
+    monkeypatch.setattr(window,'request_work',lambda *a,**kw:pytest.fail('Recognition must not project a large-zoom capture'))
+    window._pending_confirmation=(window.map_generation,result,window.session_id,window.profile.key)
+    window._confirm_recognition(window.map_generation,result)
+    assert window.locked_layout=='layout_26'
+    assert prompts[0][0]['recognition_zoom']=='50_percent'
+    assert '缩到最小' in statuses[-1]
+    assert result.registration is None and result.layer is None
+
+
 def test_switch_discards_candidates_retires_index_and_saves_choice(window,monkeypatch):
     window.apply_settings({**window.settings,'layout_recognition_backend':'pure_structure'},save=False)
     first=window._layout_retriever();closed=threading.Event()
@@ -46,7 +67,7 @@ def test_switch_discards_candidates_retires_index_and_saves_choice(window,monkey
     assert window.last_result is None
 
 
-def test_capture_worker_routes_selected_recognizer(window,monkeypatch):
+def test_capture_worker_routes_selected_recognizer(window,monkeypatch,tmp_path):
     from tests.support.app_fakes import InlineThread
     from src.capture.region import CaptureRegion
     window.settings['layout_recognition_backend']='pure_structure'
@@ -78,3 +99,12 @@ def test_capture_worker_routes_selected_recognizer(window,monkeypatch):
     assert event[0]=='work' and event[-1] is None
     assert event[-2].layout_recognition_backend=='pure_structure'
     assert not event[-2].decision['accepted']
+    import json
+    reports = list((tmp_path/'diagnostics').glob('*/result.json'))
+    assert len(reports) == 1
+    saved = json.loads(reports[0].read_text(encoding='utf-8'))
+    assert saved['work_mode'] == 'recognize'
+    assert saved['layout_selection_source'] == 'retrieval_candidate_requires_confirmation'
+    assert len(saved['layout_retrieval']['candidates']) == 2
+    assert not saved['decision']['accepted']
+    assert (reports[0].parent/'01_screenshot.png').is_file()

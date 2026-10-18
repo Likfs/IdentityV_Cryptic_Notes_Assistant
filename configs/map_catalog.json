@@ -9,7 +9,7 @@
           "id": "nightmare",
           "name": "噩梦",
           "clean_root": "assets/maps/a_bringer_of_doom/nightmare/clean",
-          "calibration_root": "assets/maps/a_bringer_of_doom/nightmare/routes",
+          "calibration_root": "maintenance/maps/a_bringer_of_doom/nightmare/routes",
           "entrance_root": "assets/maps/a_bringer_of_doom/nightmare/entrance",
           "asset_versions": [
             {
@@ -22,13 +22,42 @@
               "id": "route_lhp_solo",
               "name": "凉哈皮单人速刷路线图",
               "kind": "route",
-              "source_root": "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
+              "source_root": "maintenance/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
             },
             {
               "id": "route_zhanshi_fast",
               "name": "展十速刷路线图",
               "kind": "route",
-              "source_root": "assets/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast"
+              "source_root": "maintenance/maps/a_bringer_of_doom/nightmare/sources/route_zhanshi_fast"
+            }
+          ]
+        },
+        {
+          "id": "hard",
+          "name": "困难",
+          "floors": [
+            "2nd",
+            "1st"
+          ],
+          "template_versions": [
+            "route_zhanshi_full",
+            "route_zhanshi_full_clean",
+            "route_clean"
+          ],
+          "clean_root": "assets/maps/a_bringer_of_doom/hard/clean",
+          "calibration_root": "maintenance/maps/a_bringer_of_doom/hard/routes",
+          "asset_versions": [
+            {
+              "id": "route_clean",
+              "name": "原版干净底图",
+              "kind": "clean",
+              "source_root": "assets/maps/a_bringer_of_doom/hard/clean"
+            },
+            {
+              "id": "route_zhanshi_full",
+              "name": "展十全图路线",
+              "kind": "route",
+              "source_root": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full"
             }
           ]
         }

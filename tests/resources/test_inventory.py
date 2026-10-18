@@ -21,7 +21,7 @@ def test_calibration_asset_references_are_portable_and_exist():
         check(json.loads(path.read_text(encoding='utf-8')))
 
 
-def test_all_production_originals_are_verified_and_in_release_manifest():
+def test_all_production_originals_are_verified_and_retained_for_maintenance():
     catalog = MapCatalog()
     profile = catalog.profile('a_bringer_of_doom', 'nightmare')
     layouts = catalog.layouts(profile)
@@ -34,8 +34,8 @@ def test_all_production_originals_are_verified_and_in_release_manifest():
     assert summary['route_lhp_solo_clean']['fixed_candidates'] == len(layouts)*3
     assert summary['route_zhanshi_fast_clean']['fixed_candidates'] == len(layouts)*3
     assert all(not item['errors'] for item in summary.values())
-    from tools.release.build_windows_exe import runtime_files, ROOT
-    manifest = set(runtime_files())
+    from tools.release.build_windows_exe import maintenance_files, ROOT
+    manifest = set(maintenance_files())
     for layout in layouts:
         entry, source, _ = direct._source(profile.key, layout, 'route_lhp_solo')
         assert source.resolve() in manifest
@@ -53,10 +53,10 @@ def test_all_production_originals_are_verified_and_in_release_manifest():
 def test_every_single_floor_source_is_shipped():
     from tools.release.build_windows_exe import runtime_files
     manifest = set(runtime_files())
-    config = json.loads((PROJECT_ROOT/'configs/template_matching.json').read_text(encoding='utf-8'))
+    config = json.loads((PROJECT_ROOT/'maintenance/configs/template_matching.json').read_text(encoding='utf-8'))
     for profile, layouts in config['floor_variants'].items():
         for layout, variants in layouts.items():
             for version in variants:
-                entries, _ = direct.floors.sources(profile, layout, version)
-                assert set(entries) == {'2nd', '1st', 'b1'}
+                entries, _ = direct.floors.sources(profile, layout, version, require_scale=False)
+                assert set(entries) == set(MapCatalog().profile(*profile.split('/')).floors)
                 assert all((PROJECT_ROOT/e['source_image']).resolve() in manifest for e in entries.values())

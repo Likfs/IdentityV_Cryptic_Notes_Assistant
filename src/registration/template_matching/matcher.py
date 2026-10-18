@@ -19,6 +19,15 @@ PERF_MODES = (
     {'name': 'TURBO', 'algo': 'template', 'ds': 0.1},
 )
 _map_cache = {}
+# Extra retained float masks only; large templates fall back to request-local masks.
+FLOAT_MASK_CACHE_BYTES = 64 * 1024 * 1024
+
+
+def _float_masks(map_bw):
+    white = (map_bw > 0).astype(np.float32)
+    black = (map_bw == 0).astype(np.float32)
+    white.flags.writeable = black.flags.writeable = False
+    return white, black
 
 
 def read_image(path):
@@ -51,7 +60,7 @@ def _crop_map(map_bw, ds):
 
 
 def prepare_map(map_path, ds, *, map_threshold=TEMPLATE_MAP_THRESH, search_region=None,
-                map_image=None, image_fingerprint=None):
+                map_image=None, image_fingerprint=None, include_masks=False):
     """Prepare the same cached binary map for prewarming and live matching."""
     region = tuple(search_region) if search_region is not None else None
     if map_image is not None and not image_fingerprint:
@@ -75,9 +84,18 @@ def prepare_map(map_path, ds, *, map_threshold=TEMPLATE_MAP_THRESH, search_regio
         map_bw, map_left, map_top = _crop_map(map_bw, ds)
         map_left += region_left * ds
         map_top += region_top * ds
-        _map_cache[key] = (map_bw, map_left, map_top)
-        cached = _map_cache[key]
-    return cached
+        cached = (map_bw, map_left, map_top)
+        retained = sum(value[3].nbytes + value[4].nbytes
+                       for cache_key, value in _map_cache.items()
+                       if cache_key[0] == 'template' and len(value) == 5)
+        if retained + map_bw.size * 8 <= FLOAT_MASK_CACHE_BYTES:
+            cached += _float_masks(map_bw)
+        # Float masks share the existing key, source invalidation and eviction.
+        # The coordinator/prewarmer populates this cache before floor workers run.
+        _map_cache[key] = cached
+    if include_masks:
+        return cached if len(cached) == 5 else (*cached, *_float_masks(cached[0]))
+    return cached[:3]
 
 
 class ScreenshotPreparation:
@@ -122,10 +140,9 @@ def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH,
         raise ValueError('固定尺度必须为有限正数')
     ds = TEMPLATE_DS
     inv_ds = 1.0 / ds
-    map_bw, map_left, map_top = prepare_map(map_path, ds, map_threshold=map_threshold,
-        search_region=search_region, map_image=map_image, image_fingerprint=image_fingerprint)
-    map_white = (map_bw > 0).astype(np.float32)
-    map_black = (map_bw == 0).astype(np.float32)
+    _, map_left, map_top, map_white, map_black = prepare_map(
+        map_path, ds, map_threshold=map_threshold, search_region=search_region,
+        map_image=map_image, image_fingerprint=image_fingerprint, include_masks=True)
     prepared = ScreenshotPreparation(game) if prepared is None else prepared
     if prepared.game is not game:
         raise ValueError('截图预处理不属于本次截图')
@@ -134,18 +151,42 @@ def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH,
     if game_white.shape[0] > map_white.shape[0] or game_white.shape[1] > map_white.shape[1]:
         raise ValueError('固定尺度下截图可见区域大于原图搜索区域')
     # FFT roundoff can produce tiny negative counts, especially on uniform backgrounds.
-    ww = np.clip(cv2.matchTemplate(map_white, game_white, cv2.TM_CCORR), 0., white_count)
-    bb = np.clip(cv2.matchTemplate(map_black, game_black, cv2.TM_CCORR), 0., black_count)
-    wb = np.maximum(white_count - ww, 0.0)
-    local_map_white = np.maximum(ww + np.maximum(black_count - bb, 0.0), 0.0)
-    local_map_black = wb + bb
-    white_norm = np.sqrt(white_count * local_map_white)
-    black_norm = np.sqrt(black_count * local_map_black)
+    ww = cv2.matchTemplate(map_white, game_white, cv2.TM_CCORR)
+    np.clip(ww, 0., white_count, out=ww)
+    bb = cv2.matchTemplate(map_black, game_black, cv2.TM_CCORR)
+    np.clip(bb, 0., black_count, out=bb)
+    wb = np.empty_like(ww)
+    np.subtract(white_count, ww, out=wb)
+    np.maximum(wb, 0.0, out=wb)
+    local_map_white = np.empty_like(ww)
+    np.subtract(black_count, bb, out=local_map_white)
+    np.maximum(local_map_white, 0.0, out=local_map_white)
+    np.add(ww, local_map_white, out=local_map_white)
+    np.maximum(local_map_white, 0.0, out=local_map_white)
+    local_map_black = np.empty_like(ww)
+    np.add(wb, bb, out=local_map_black)
+    white_norm = np.empty_like(ww)
+    np.multiply(white_count, local_map_white, out=white_norm)
+    np.sqrt(white_norm, out=white_norm)
+    # Reuse dead arrays within this floor only; cached inputs remain read-only.
+    black_norm = local_map_white
+    np.multiply(black_count, local_map_black, out=black_norm)
+    np.sqrt(black_norm, out=black_norm)
     white_norm[white_norm <= 0] = 1.0
     black_norm[black_norm <= 0] = 1.0
-    response = (TEMPLATE_WW*(ww/white_norm) + TEMPLATE_BB*(bb/black_norm)
-                + TEMPLATE_WB*(wb/np.sqrt(white_count*local_map_black + 1e-12)))
-    _, score, _, location = cv2.minMaxLoc(response)
+    # Preserve the original float32 ufunc order, including each rounding step.
+    np.divide(ww, white_norm, out=ww)
+    np.multiply(TEMPLATE_WW, ww, out=ww)
+    np.divide(bb, black_norm, out=bb)
+    np.multiply(TEMPLATE_BB, bb, out=bb)
+    np.add(ww, bb, out=ww)
+    np.multiply(white_count, local_map_black, out=local_map_black)
+    np.add(local_map_black, 1e-12, out=local_map_black)
+    np.sqrt(local_map_black, out=local_map_black)
+    np.divide(wb, local_map_black, out=wb)
+    np.multiply(TEMPLATE_WB, wb, out=wb)
+    np.add(ww, wb, out=ww)
+    _, score, _, location = cv2.minMaxLoc(ww)
     return {'location': (int((location[0]+map_left-game_left)*inv_ds),
                          int((location[1]+map_top-game_top)*inv_ds)),
             'scale': scale, 'score': score, 'size': (scaled_width, scaled_height)}

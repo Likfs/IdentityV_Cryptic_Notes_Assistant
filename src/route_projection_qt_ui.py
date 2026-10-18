@@ -85,7 +85,7 @@ class EntrancePreview(QLabel):
         self.source = QPixmap(str(path)) if path is not None else QPixmap()
         self.setStyleSheet(f"background: {BG}; color: {MUTED}; border: none; border-radius: 6px;")
         if self.source.isNull():
-            self.setText("入口图片暂不可用\n可取消后重新识别")
+            self.setText("入口图片暂不可用\n请核对布局编号；不确定时取消")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -230,9 +230,12 @@ class LayoutConfirmationDialog(QDialog):
             score.setAlignment(Qt.AlignmentFlag.AlignCenter)
             row.addWidget(score)
             card_body.addWidget(row_widget)
-            preview = EntrancePreview(entrance_root / f"{layout}.png" if entrance_root else None)
+            preview = EntrancePreview(item.get('preview_path') or (entrance_root / f"{layout}.png" if entrance_root else None))
             preview.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
             card_body.addWidget(preview, 1)
+            if item.get('preview_path'):
+                floor_name = {'1st': '一楼', '2nd': '二楼', 'b1': '地下室'}.get(item.get('preview_floor'), '对应楼层')
+                card_body.addWidget(QLabel(f'入口图待补，当前展示{floor_name}底图（匹配候选）'))
             def update(checked, *, choice=layout, indicator=radio, badge=score):
                 indicator.setChecked(checked)
                 badge.setStyleSheet(f"background: {'#254d78' if checked else CARD_2}; "
@@ -252,7 +255,12 @@ class LayoutConfirmationDialog(QDialog):
         self.confirmation_required = QCheckBox('布局识别需要人工确认')
         self.confirmation_required.setToolTip('请核对入口图片后确认布局；匹配分数不是正确概率。')
         self.confirmation_required.setEnabled(False)
-        description.setText('请核对入口图片后确认布局。匹配分数不是正确概率。')
+        description.setText(('入口图待补，请对照候选楼层底图和布局编号确认。' if any(c.get('preview_path') for c in candidates)
+                             else '请核对入口图片后确认布局。') + '匹配分数不是正确概率。'
+                            + ('当前包含 50% 缩放候选；确认后请缩到最小再配准。'
+                               if any(c.get('recognition_zoom') == '50_percent' for c in candidates) else '')
+                            + ('两项分数接近，当前局部结构可能无法区分；可取消并多探索后重试。'
+                               if len(candidates)>1 and abs(candidates[0]['score']-candidates[1]['score']) < .02 else ''))
         footer.addWidget(self.confirmation_required)
         if width >= 850:
             footer.addStretch(1)
@@ -806,8 +814,14 @@ class SettingsPage(QWidget):
         self._update_recognition_controls()
 
     def _update_recognition_controls(self):
+        if self.app.profile.key == 'a_bringer_of_doom/hard':
+            self.recognition_note.setText(
+                ('困难支持最小或 50% 缩放识别，CPU 比较各层底图。' if self.layout_recognition_combo.currentData() == 'pure_structure'
+                 else '困难支持最小或 50% 缩放的二楼图标与结构识别。')
+                + '确认布局后请缩到最小再配准；识别尺度不会用于投影。匹配分数不是正确概率。')
+            return
         self.recognition_note.setText(
-            '请将游戏地图缩到最小再识别；CPU 搜索三层底图，不自动适配其他缩放。请核对候选并人工确认，分数不是正确概率。'
+            '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。请核对候选并人工确认，分数不是正确概率。'
             if self.layout_recognition_combo.currentData() == 'pure_structure' else
             '请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。')
 

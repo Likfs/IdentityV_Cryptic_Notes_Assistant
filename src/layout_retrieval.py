@@ -15,12 +15,13 @@ from src.paths import PROJECT_ROOT, CACHE_ROOT
 from src.recognition_control import check_cancelled, recognition_lock
 
 RESOURCE_ROOT = PROJECT_ROOT / 'assets/layout_retrieval'
-BACKEND_LABELS = {'pure_structure': '纯结构识别（最小缩放·CPU）', 'icon_structure': '图标与结构匹配'}
+BACKEND_LABELS = {'pure_structure': '纯结构识别（固定缩放·CPU）', 'icon_structure': '图标与结构匹配'}
 
 def normalize_recognition_backend(value):
     return value if isinstance(value, str) and value in BACKEND_LABELS else 'pure_structure'
 PARAMETERS = {
-    'algorithm_version': 'fixed_direction_icon_structure_layout_v1',
+    'algorithm_version': 'fixed_direction_icon_structure_layout_v2',
+    'scale_policy': 'per_source_override_or_legacy_search',
     'rotation_degrees': [0], 'scale_min': .30, 'scale_max': 1.40,
     'scale_step': .005, 'target_wall_resize': .6, 'wall_distance_sigma': 1.6,
     'wall_weight': .8, 'floor_weight': .2, 'geometry_min': .60,
@@ -85,14 +86,19 @@ class LayoutRetrievalResult:
             'best_label': self.candidates[0].layout, 'score': self.candidates[0].score,
             'margin': self.margin or 0., 'score_is_probability': False,
             'ranking': [{'layout': item.layout, 'score': item.score,
+                         'candidate_floor': item.details.get('floor', '2nd'),
+                         'recognition_zoom': item.details.get('recognition_zoom'),
                          'evidence_status': item.evidence_status} for item in self.candidates],
         }
 
 
-def create_layout_retriever(backend, clean_root, **kwargs):
+def create_layout_retriever(backend, clean_root, *, floors=('2nd', '1st', 'b1'), **kwargs):
     if backend == 'pure_structure':
         from .structure_layout import PureStructureRetriever
-        return PureStructureRetriever(clean_root, **kwargs)
+        # Published recognition-image profiles (currently hard) are fixed for
+        # this retriever's lifetime. Offline callers can request live checking.
+        kwargs.setdefault('fixed_resources', (Path(clean_root).parent/'recognition').is_dir())
+        return PureStructureRetriever(clean_root, floors=floors, **kwargs)
     if backend == 'icon_structure':
         return LayoutRetriever(clean_root, **kwargs)
     raise ValueError('未知的布局识别方法')
@@ -213,7 +219,7 @@ def reliable_query(icon):
 
 def anchor_fit(query, target, qi, ti):
     # Direction is fixed in live play. Mirrored glyph templates do not rotate the map.
-    scales = np.arange(.30, 1.401, .005, dtype=np.float32)
+    scales = np.array(target['scales'], dtype=np.float32) if target.get('scales') else np.arange(.30, 1.401, .005, dtype=np.float32)
     scores, count = np.zeros(len(scales), np.float32), 0
     for (xx, yy), wall in zip(query['walls'], target['walls']):
         if not len(xx):
@@ -252,11 +258,11 @@ def anchor_fit(query, target, qi, ti):
     return best
 
 
-def fallback_templates(image, box, *, cancelled=None):
+def fallback_templates(image, box, *, cancelled=None, scales=None):
     x0, y0, x1, y1 = box
     edges = wall_edges(image, True)[:, y0:y1, x0:x1]
     templates = []
-    for scale in np.arange(.19, .811, .015):
+    for scale in ([s*.6 for s in scales] if scales else np.arange(.19, .811, .015)):
         check_cancelled(cancelled)
         channels = [cv2.resize(ch.astype(np.float32), None, fx=float(scale), fy=float(scale),
                                interpolation=cv2.INTER_AREA) for ch in edges]
@@ -330,6 +336,7 @@ class LayoutRetriever:
         self._references = []
 
     def prepare(self, *, cancelled=None):
+        from src.structure_layout.scales import read_scale_overrides
         with recognition_lock(self._lock, cancelled):
             paths = sorted(self.clean_root.glob('layout_*/layout_*_2nd.png'))
             if any(p.name != f'{p.parent.name}_2nd.png' for p in paths):
@@ -338,7 +345,13 @@ class LayoutRetriever:
             if not paths or any(not p.is_file() for p in icons):
                 raise ValueError('新算法识别资源不完整，缺少候选底图或图标模板')
             digests = {p: hashlib.sha256(p.read_bytes()).hexdigest() for p in paths + icons}
+            overrides = read_scale_overrides(self.clean_root)
+            for path in paths:
+                record = overrides.get(path.relative_to(self.clean_root).as_posix())
+                if record and record['source_sha256'] != digests[path]:
+                    raise ValueError(f'识别尺度对应底图已改变，请重新核对：{path.name}')
             fingerprint = hashlib.sha256((PARAMETERS['algorithm_version'] + cv2.__version__ +
+                json.dumps(overrides, sort_keys=True) +
                 ''.join(p.relative_to(self.clean_root).as_posix() + digests[p] for p in paths) +
                 ''.join(p.name + digests[p] for p in icons)).encode('utf-8')).hexdigest()
             if fingerprint == self._fingerprint:
@@ -363,6 +376,8 @@ class LayoutRetriever:
                 cache[key] = icon
                 targets.append(dict(image=image, walls=target_maps(image), floors=floor_masks(image),
                                     icon=icon, layout=path.parent.name,
+                                    scales=tuple(overrides.get(path.relative_to(self.clean_root).as_posix(), {}).get('scales', [])),
+                                    scale_modes=overrides.get(path.relative_to(self.clean_root).as_posix(), {}).get('scale_modes', {}),
                                     path=path.relative_to(self.clean_root).as_posix(),
                                     sha256=digests[path]))
             # A cache write failure must not prevent recognition of valid resources.
@@ -375,6 +390,7 @@ class LayoutRetriever:
                 pass
             check_cancelled(cancelled)
             self._references, self._targets, self._fingerprint = references, targets, fingerprint
+            self._scale_overrides = overrides
             return fingerprint
 
     def recognize(self, screenshot_bgr, reference_size=(1180, 1050), *, cancelled=None):
@@ -399,18 +415,24 @@ class LayoutRetriever:
                 result.timings_ms['index_prepare'] = (time.perf_counter() - preparation) * 1000
                 search = time.perf_counter()
                 qi = detect_query(image, self._references[0])
-                templates = None
+                templates = {}
                 candidates = []
                 for target in self._targets:
                     check_cancelled(cancelled)
                     if reliable_query(qi) and target['icon']['confidence'] >= .77:
                         fit = anchor_fit(query, target, qi, target['icon'])
                     else:
-                        if templates is None:
-                            templates = fallback_templates(image, query['box'], cancelled=cancelled)
-                        fit = fallback_fit(templates, query['box'], target['image'], target, qi, self._references, cancelled=cancelled)
+                        scales = target.get('scales', ())
+                        if scales not in templates:
+                            templates[scales] = fallback_templates(image, query['box'], cancelled=cancelled, scales=scales)
+                        fit = fallback_fit(templates[scales], query['box'], target['image'], target, qi, self._references, cancelled=cancelled)
                     if fit is not None and np.isfinite(fit['score']):
+                        from src.structure_layout.scales import matched_scale_mode
+                        fit['recognition_zoom'] = matched_scale_mode(target['scale_modes'], fit['scale'])
                         candidates.append((target, fit))
+                from src.structure_layout.scales import read_scale_overrides
+                if read_scale_overrides(self.clean_root) != self._scale_overrides:
+                    raise ValueError('识别期间尺度配置已改变，请重新识别')
                 candidates.sort(key=lambda item: (-item[1]['score'], item[0]['path']))
                 result.candidates = [LayoutCandidate(
                     rank=i + 1, layout=target['layout'], path=target['path'],

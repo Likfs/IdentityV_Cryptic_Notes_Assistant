@@ -4,14 +4,21 @@
 
 ## 当前正式范围
 
-- 正式支持 CPU 最小缩放纯结构识别、图标与结构识别＋定尺度模板匹配。CNN、CPU/GPU 多尺度结构配准、采集训练和旧评测已移除，用户已删除 `retired_features/` 归档目录；不得从正式程序重新导入旧功能。曾经提交的旧文件和规则可从 Git 历史查阅，不能假定未提交的本机资料仍有备份。
+- 正式支持 CPU 固定缩放纯结构识别、图标与结构识别＋定尺度模板匹配。CNN、CPU/GPU 多尺度结构配准、采集训练和旧评测已移除，用户已删除 `retired_features/` 归档目录；不得从正式程序重新导入旧功能。曾经提交的旧文件和规则可从 Git 历史查阅，不能假定未提交的本机资料仍有备份。
 - 正式入口 `python -m src`，由 Qt 应用调用 `src/projection_workflow.py`；识别由 `src/layout_retrieval.py` 创建，纯结构实现位于 `src/structure_layout/`，单层配准用 `src/registration/template_matching/direct.py`，共用资源校验位于 `resources.py`；旧楼层适配器已移除。
-- 纯结构识别默认 CPU 最多8线程，只搜索两个最小档尺度，读取所有三层底图，不精修、不接入GPU或自动尺度；图标识别仍读取二楼底图。两者固定 0°，必须人工确认布局；匹配分数不是正确概率。不训练或加载模型，不依赖 torch/CUDA。
-- 模板读取保存尺度候选，坐标为 `single_floor_source_image`、`floor` 为胜出候选 `2nd`／`1st`／`b1`，矩阵为 `original_to_screen`／`screenshot_to_original`。不独立识别楼层按钮或 mylocation，自动比较三张单层图，不执行连续尺度搜索或旧结构验收；最高分候选直接显示且保留核对提示。
-- 五个模板版本为 `route_zhanshi_fast`、`route_lhp_solo`、`route_clean`、`route_lhp_solo_clean`、`route_zhanshi_fast_clean`，偏好在 `template_route_versions`。正式尺度和单层图片在 `floor_variants`；原版底图三层独立读取，不拼接。不同源图必须重新截图匹配，不复用矩阵。
-- 当前布局从资源目录动态读取，不硬编码数量。三层 ID 保持 `2nd`、`1st`、`b1`，布局 `layout_XX`；`route_01` 只作历史别名。资源完整不等于实机对齐。
+- 纯结构识别默认 CPU 最多8线程，每张底图只搜索一至两个已配置的固定尺度（未单独标定时沿用原两个最小档值）；困难识别支持最小与 50% 两档，模板配准仍仅使用最小尺度。读取当前难度各布局的全部有效楼层底图，不精修、不接入GPU或自动尺度；图标识别仍读取二楼底图。两者固定 0°，必须人工确认布局；匹配分数不是正确概率。不训练或加载模型，不依赖 torch/CUDA。
+- 模板读取保存尺度候选，坐标为 `single_floor_source_image`、`floor` 为胜出候选 `2nd`／`1st`／`b1`，矩阵为 `original_to_screen`／`screenshot_to_original`。不独立识别楼层按钮或 mylocation，自动比较已保存有效尺度的单层图，不执行连续尺度搜索或旧结构验收；最高分候选直接显示且保留核对提示。
+- 噩梦五个模板版本为 `route_zhanshi_fast`、`route_lhp_solo`、`route_clean`、`route_lhp_solo_clean`、`route_zhanshi_fast_clean`，偏好在 `template_route_versions`。正式配准尺度在 `scale_config.json`，图片归属在 `runtime_resources.json`，读取后适配为内部 `floor_variants`；原版底图各层独立读取，不拼接。不同源图必须重新截图匹配，不复用矩阵。
+- 当前布局从资源目录动态读取，不硬编码数量。有效楼层由难度 profile 的 `floors` 声明：噩梦为 `2nd`、`1st`、`b1`，困难只有 `2nd`、`1st`，不能为困难补空白地下室。布局 `layout_XX`；`route_01` 只作历史别名。资源完整不等于实机对齐。
+- 困难使用 `route_zhanshi_full`（展十全图路线）、`route_zhanshi_full_clean`（展十全图路线底图版）与 `route_clean`，不冒用噩梦速刷版本；各难度的显示版本由 `template_versions` 声明。困难 24 号暂缺两层底图，保留缺号及原图。入口图和实机截图后补；以候选对应楼层的底图辅助人工确认，不能跳过确认。未核对屏幕尺度的单层记录使用 `scale_status: pending`、`saved_scale: null`，资源仍核对指纹，仅匹配已有尺度的楼层，全部 pending 时投影明确拒绝，不套用噩梦尺度。
+
+- 困难 `layout_05/1st` 的用户标注截图提供直接尺度 `3.178`；其余 57 张底图经公共结构比例及多路径一致性核对后独立推算，保存为 `derived_geometry`。离线识别配置 `recognition_scales.json` 与模板维护记录绑定 `sources/screen_scale_calibration.json` 及全部参与底图指纹，导出时完整审核；正式程序读取 `configs/runtime_resources.json` 中的固定尺度与实际图片指纹。变更素材须重新推算，不能只更新哈希。两种识别均读取对应底图固定尺度，图标模式仍只读二楼。固定截图和素材推算不代表所有楼层、其他缩放档或实时游戏操作已验收；16:50～16:51 的截图由用户确认为无可靠布局标签，不把目录中的选中布局当真值。
 
 ## 修改边界
+
+- 困难纯结构识别使用 `recognition/index.json` 绑定的约 47.2% 等比例小图，共用最小 `1.50` 与 50% 约 `0.61762837` 两个尺度；原 `recognition_scales.json` 保留逐原图几何依据及图标识别尺度。小图墙线过滤长度按缩图比例换算，粗采样固定 30.8%（精确值 `0.30792678925763023`，用户已确认），不增加精修。原图、确认框和最小缩放模板配准不缩图。源素材／尺度变更后须重新生成完整小图，发布时从原图重算像素核对；不能只更新哈希或复用旧小图。小图坐标与原图坐标明确区分，识别姿态不能传入配准。
+
+- 困难识别额外支持 50% 固定档，`recognition_scales.json` 的 `scale_modes` 与 `zoom_derivation` 绑定配对截图和最小尺度推算证据。配准仍只用最小尺度；F8 确认只传布局，用户缩到最小后重新截图配准。当前两组截图仅证明跨缩放候选一致性，不是所有布局两层的实机真值。
 
 - 开工先检查相关文件和 `git status --short`，保留未提交、未跟踪和用户删除状态。不重置工作区、不覆盖无关改动。
 - 优先限定 src、tools、tests、configs 搜索；不默认遍历训练数据、归档、报告和虚拟环境。
@@ -21,7 +28,10 @@
 
 ## 资源和归档
 
-- 正式素材位于 `assets/maps/<map>/<difficulty>/`：clean、entrance、sources、routes。标定 JSON 和底图仍是模板尺度指纹依赖；配置引用的分层 PNG 为正式运行资源，其他分层文件保留作离线维护，不随意删除。
+- 模板配准按用户确认的固定资源策略运行：配置与难度楼层声明在进程首次使用时固定，各布局/版本首次加载时校验发布配置与实际运行图片并保存压缩字节快照；后续配准及缓存淘汰后的解码只用已验证快照，修改素材/尺度/模板配置后重启生效。原图像素、保存尺度和匹配算法保持不变；不得恢复逐帧全量磁盘校验。`--check` 和离线维护接口仍检查磁盘当前内容，初次校验失败不得发布半批快照。临时快照由进程自动清理，不随发行包分发。
+- 困难纯结构识别由 `create_layout_retriever` 为识别小图 profile 启用 `fixed_resources`：首次准备完整核验并构建内存索引，发布前复核文件与底图目录链接，成功后不再逐请求读取资源。素材／尺度修改后重启生效；关闭识别器释放索引，重新创建时完整核验。直接创建 `PureStructureRetriever` 默认保留逐请求核验，供离线维护；工厂也可显式 `fixed_resources=False`。`--check` 保持检查磁盘，不得把初次失败或取消的半批索引固定下来。不改变噩梦、图标识别、两档尺度或配准。
+
+- 正式素材位于 `assets/maps/<map>/<difficulty>/`：clean、entrance、recognition 和配置引用的 routes 单层 PNG。标定 JSON、制作原图、结构蒙版、校正前图片和标定截图集中在 `maintenance/maps/<map>/<difficulty>/`；完整模板维护配置在 `maintenance/configs/`。完整依赖由导出工具审核，正式运行不依赖 maintenance。维护工具默认暂存 assets 与 maintenance 两棵目录；保留历史工具指纹和几何证据，不能随意删除。
 - 正式资源路径保存为项目相对路径。修改底图、原图、标定或尺度必须核对对应关系及缓存失效，不能只更新哈希绕过几何检查。
 - 资产工具按 calibration、imports、previews 分类，复用 `tools/common/route_calibration.py`、`calibration_assets.py` 和 `layered_assets.py`；默认写 workspace/asset_build。只有明确更新正式资产任务才发布。
 - 定尺度 matcher 中 find_best_scale 只供离线尺度核对，不能接入实时流程。不要将离线素材标定的 SIFT／RANSAC 等与实时配准混淆。
@@ -46,5 +56,12 @@
 - 图像回放来源/指纹/标签依据记录在 tests/fixtures/retrieval/cases.json。底图裁剪合成样例可验证已知布局，缺少人工标签的游戏截图不能断言识别准确率；不恢复多尺度拒绝门槛。
 - 使用说明维护 README，逐文件职责维护 项目目录与文件说明.md，新增素材流程维护 新增布局教程.md。文档中的目录、命令和链接必须与当前项目一致，不承诺已删除归档仍可用。
 - 模板模块 `provenance.json` 覆盖当前目录全部 Python 源码；修改该模块后同步代码指纹并检查构建拒绝陈旧指纹。它不能代替素材几何校验。
-- 版本统一读取 src/version.py（当前 1.1）。构建入口 tools/release/build_windows_exe.py，输出 workspace/releases/windows_<时间>/IdentityVRouteAssistant；完整文件夹分发。排除归档、模型、训练包、个人状态和未引用的旧分层 PNG；包含 floor_variants 引用的单层图片；保留实际原图与标定依赖。旧产物不自动改写。
+- 版本统一读取 src/version.py（当前 1.1）。构建入口 tools/release/build_windows_exe.py，输出 workspace/releases/windows_<时间>/IdentityVRouteAssistant；完整文件夹分发。排除归档、模型、训练包、个人状态和未引用的旧分层 PNG；包含 floor_variants 引用的单层图片；只打包实际运行图片与发布清单；完整制作原图和标定依赖保留离线，构建前审核。旧产物不自动改写。
 - 交付写清修改、迁移位置、实际验证和未验证限制；不得把历史测试数量、模型准确率或旧性能写成保证。
+
+## 运行资源发布契约
+
+- `configs/scale_config.json` 是配准尺度表，`maps[图片路径].scale` 每图仅一个固定值；`configs/runtime_resources.json`（schema_version 2）保存自动生成的图片分组／无尺度元数据及独立识别两档配置。运行读取后适配为原匹配记录，数值不取整、候选顺序和像素处理不变，X、Y 仍由截图匹配。`maintenance/configs/template_matching.json`、逐难度 `recognition_scales.json` 及详细制作记录保留作离线输入。维护后使用 `tools/assets/imports/export_runtime_resources.py --publish` 成对发布，重启生效；不得手工只改运行清单指纹。
+- 导出完整验证依赖和参考记录、从原图重算识别小图逐像素核对，并拒绝导出期间输入变化。正式包只保存实际图片及尺度/状态摘要；不自动回退到离线资料修补损坏的已发布包。
+- `python -m src --check` 检查当前运行包；导出工具 `--check` 审核完整离线资料并比较生成结果。发布 EXE 前必须执行完整审核。维护资料保留原位，不删除或搬到临时目录。
+- 运行格式变化允许配置/来源记录指纹改变；尺度、所有候选数值、坐标、双向矩阵及投影像素必须回放一致。无离线资料的独立运行目录验收不能称作新的 EXE 构建或实机验收。

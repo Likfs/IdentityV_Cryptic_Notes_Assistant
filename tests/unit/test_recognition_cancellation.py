@@ -40,12 +40,13 @@ def test_parallel_search_cancels_obsolete_targets_without_changing_completed_ord
     calls=[];cancel=Event()
     def target(item,**kwargs):
         search.check_cancelled(kwargs['cancelled'])
-        calls.append(item);cancel.set()
+        calls.append(item['id']);cancel.set()
         search.check_cancelled(kwargs['cancelled'])
     monkeypatch.setattr(search,'search_target',target)
     with ThreadPoolExecutor(max_workers=1) as executor:
         with pytest.raises(RecognitionCancelled):
-            search.search(image,list(range(40)),executor,cancelled=cancel.is_set)
+            search.search(image,[{'id':i, 'scales':search.MINIMUM_SCALES} for i in range(40)],
+                          executor,cancelled=cancel.is_set)
     assert calls==[0]
 
 

@@ -12,6 +12,12 @@ from pathlib import Path
 from src.registration.template_matching import direct
 from src.capture.map_keys import GlobalMapKeys
 from src.capture.mouse_pan import MousePanHook
+from src import projection_workflow
+
+
+@pytest.fixture(autouse=True)
+def isolated_diagnostics(tmp_path, monkeypatch):
+    monkeypatch.setattr(projection_workflow, 'RUN_ROOT', tmp_path/'diagnostics')
 
 
 @pytest.fixture(autouse=True)

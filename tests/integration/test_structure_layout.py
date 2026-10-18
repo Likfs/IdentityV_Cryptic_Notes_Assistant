@@ -59,6 +59,20 @@ def test_extra_wall_only_penalizes_visible_region():
     assert fog['extra_local_penalty'] == 0
 
 
+def test_two_floor_index_never_loads_a_basement(tmp_path):
+    directory = tmp_path/'layout_01'
+    directory.mkdir()
+    for floor in ('2nd', '1st'):
+        cv2.imencode('.png', scene())[1].tofile(directory/f'layout_01_{floor}.png')
+    (directory/'layout_01_b1.png').write_bytes(b'not a supported floor for this profile')
+    retriever = create_layout_retriever('pure_structure', tmp_path, floors=('2nd', '1st'))
+    try:
+        retriever.prepare()
+        assert {t['floor'] for t in retriever._targets} == {'2nd', '1st'}
+    finally:
+        retriever.close()
+
+
 def test_structure_import_has_no_optional_accelerator_or_gui(tmp_path):
     import subprocess
     from src.paths import PROJECT_ROOT
@@ -73,3 +87,63 @@ assert not PARAMETERS['pose_refinement'] and PARAMETERS['execution_backend']=='c
 '''
     result = subprocess.run([sys.executable,'-B','-c',code],cwd=PROJECT_ROOT,capture_output=True,text=True)
     assert result.returncode == 0, result.stderr
+
+
+def test_per_source_scales_are_isolated_and_invalidate_index(tmp_path):
+    import hashlib
+    import json
+    import pytest
+    root = tmp_path/'clean'
+    image = scene()
+    for layout, scale in [('layout_05', 3.18), ('layout_06', 1.49)]:
+        path = root/layout/f'{layout}_1st.png'
+        path.parent.mkdir(parents=True)
+        cv2.imencode('.png', cv2.resize(image, None, fx=scale, fy=scale))[1].tofile(path)
+    path = root/'layout_05/layout_05_1st.png'
+    record = dict(source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), scales=[3.18])
+    config = tmp_path/'recognition_scales.json'
+    def save():
+        config.write_text(json.dumps(dict(schema_version=1, targets={'layout_05/layout_05_1st.png':record})))
+    save()
+    retriever = PureStructureRetriever(root, floors=('1st',))
+    try:
+        result = retriever.recognize(image, (280, 240))
+        by_layout = {c.layout:c for c in result.candidates}
+        assert by_layout['layout_05'].details['scale'] == 3.18
+        assert by_layout['layout_06'].details['scale'] in MINIMUM_SCALES
+        first = result.resource_fingerprint
+        record['scales'] = [3.17]
+        save()
+        assert retriever.prepare() != first
+        path.write_bytes(path.read_bytes()+b'changed')
+        with pytest.raises(ValueError, match='底图已改变'):
+            retriever.prepare()
+    finally:
+        retriever.close()
+
+
+def test_scale_change_during_search_cannot_publish_old_candidates(tmp_path, monkeypatch):
+    import hashlib
+    import json
+    import src.structure_layout.retriever as module
+    root = tmp_path/'clean'
+    path = root/'layout_05/layout_05_1st.png'
+    path.parent.mkdir(parents=True)
+    cv2.imencode('.png', scene())[1].tofile(path)
+    config = tmp_path/'recognition_scales.json'
+    record = dict(source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), scales=[1.])
+    def save():
+        config.write_text(json.dumps(dict(schema_version=1, targets={'layout_05/layout_05_1st.png':record})))
+    save()
+    def changed(*args, **kwargs):
+        record['scales'] = [1.1]
+        save()
+        return {'floor_candidates': []}
+    monkeypatch.setattr(module, 'search', changed)
+    retriever = PureStructureRetriever(root, floors=('1st',))
+    try:
+        result = retriever.recognize(scene(), (280,240))
+        assert not result.candidates and not result.accepted
+        assert '尺度配置已改变' in result.reasons[0]
+    finally:
+        retriever.close()

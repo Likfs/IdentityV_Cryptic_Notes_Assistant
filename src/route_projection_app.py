@@ -346,9 +346,9 @@ class RouteProjectionApp(QWidget):
         form.addWidget(self.difficulty_combo)
         form.addWidget(self._heading("楼层"))
         self.floor_combo = QComboBox()
-        for floor in FLOORS:
+        for floor in self.profile.floors:
             self.floor_combo.addItem(FLOOR_NAMES[floor], floor)
-        self.floor_combo.setCurrentIndex(FLOORS.index(self.settings["floor"]))
+        self.floor_combo.setCurrentIndex(self.floor_combo.findData(self.settings["floor"]))
         form.addWidget(self.floor_combo)
         form.addWidget(self._heading("布局识别"))
         self.layout_combo = QComboBox()
@@ -751,6 +751,8 @@ class RouteProjectionApp(QWidget):
         self.layout_combo.addItems([AUTO, *self.catalog.layouts(self.profile)])
         self.layout_combo.blockSignals(False)
         self.settings["map_id"], self.settings["difficulty_id"] = self.profile.map_id, self.profile.difficulty_id
+        if self.settings['floor'] not in self.profile.floors:
+            self.settings['floor'] = self.profile.floors[0]
         save_settings(self.settings, self.settings_path)
         self._update_assets()
 
@@ -776,10 +778,12 @@ class RouteProjectionApp(QWidget):
                     "确认手动选择布局",
                     f"是否使用手动选择的布局 {selected}？\n\n"
                     "确认后将以此布局进行后续配准，请先确认它与游戏中的实际布局一致。\n"
-                    "如不确定，请取消并按 F8 自动识别。",
+                    "如不确定，请取消并按 F8 自动识别。" +
+                    ("\n入口图待补，当前展示二楼底图。" if not self.profile.entrance_root else ""),
                     parent=self,
                     entrance_path=(self.profile.entrance_root / f'{selected}.png'
-                                   if self.profile.entrance_root else None))
+                                   if self.profile.entrance_root else
+                                   self.catalog.clean_template(self.profile, selected, self.profile.floors[0])))
             finally:
                 self._manual_layout_confirmation = False
             if self.closed:
@@ -813,14 +817,22 @@ class RouteProjectionApp(QWidget):
             except (OSError, ValueError, KeyError):
                 choices = []
             preferred = selected_template_variant(self.settings, self.profile.key)
+            choices = [v for v in choices if v in self.profile.template_versions]
+            if preferred not in self.profile.template_versions or (choices and preferred not in choices):
+                preferred = next((v for v in self.profile.template_versions if v in choices), self.profile.template_versions[0])
+                self.settings.setdefault('template_route_versions', {})[self.profile.key] = preferred
             for variant_id in dict.fromkeys([*choices, preferred]):
                 self.route_combo.addItem(TEMPLATE_VERSION_NAMES[variant_id], variant_id)
             self.route_combo.setCurrentIndex(self.route_combo.findData(preferred))
             self.asset_var.set(f'{layout} / {TEMPLATE_VERSION_NAMES[preferred]} · 单层图片 · 自动匹配楼层')
             self.route_combo.setEnabled(True)
             self.floor_combo.setEnabled(False)
-            for index, floor in enumerate(FLOORS):
-                self.floor_combo.setItemText(index, '自动匹配')
+            self.floor_combo.blockSignals(True)
+            self.floor_combo.clear()
+            for floor in self.profile.floors:
+                self.floor_combo.addItem(f'自动比较 {len(self.profile.floors)} 层', floor)
+            self.floor_combo.setCurrentIndex(self.floor_combo.findData(self.settings['floor']))
+            self.floor_combo.blockSignals(False)
             self.route_combo.blockSignals(False)
             self._refresh_template()
             self._refresh_route_preview()
@@ -846,6 +858,7 @@ class RouteProjectionApp(QWidget):
         key = (self.profile.key, backend)
         if key not in cache:
             cache[key] = create_layout_retriever(backend, self.profile.clean_root,
+                floors=self.profile.floors,
                 cache_root=CACHE_ROOT / 'layout_retrieval' / self.profile.map_id / self.profile.difficulty_id / backend)
         return cache[key]
 
@@ -911,7 +924,7 @@ class RouteProjectionApp(QWidget):
         self.map_state.key_was_down = map_key_down(settings["map_key"])
         self.map_state.escape_was_down = escape_key_down()
         self.floor_combo.blockSignals(True)
-        self.floor_combo.setCurrentIndex(FLOORS.index(settings["floor"]))
+        self.floor_combo.setCurrentIndex(self.floor_combo.findData(settings["floor"]))
         self.floor_combo.blockSignals(False)
         self._refresh_status()
         self.roi_label.configure(text=f"游戏地图区域  {', '.join(map(str, settings['capture_roi']))}")
@@ -1082,7 +1095,7 @@ class RouteProjectionApp(QWidget):
             self.hide_overlay()
             self.reference_context = None
             RouteProjectionApp._map_toast(self, "正在配准路线", f"已锁定 {fixed_layout}，" +
-                ("正在分别匹配三层图片…"), success=True)
+                ("正在分别匹配各层图片…"), success=True)
         generation = self.map_generation
         session_id = self.session_id
         profile = self.profile
@@ -1125,7 +1138,7 @@ class RouteProjectionApp(QWidget):
                 bridge = getattr(self, '_work_bridge', None)
                 if bridge is not None:
                     bridge.ready.emit(('work_progress', work_id, session_id, generation,
-                        '正在识别布局…' if mode == 'recognize' else '正在配准路线，自动比较三层图片…'))
+                        '正在识别布局…' if mode == 'recognize' else '正在配准路线，自动比较各层图片…'))
                 result = process_screenshot(
                     screenshot, catalog=self.catalog, profile=profile,
                     layout_override=fixed_layout, opacity=opacity,
@@ -1167,7 +1180,8 @@ class RouteProjectionApp(QWidget):
                         self._work_bridge.ready.emit(('preview', generation, session_id, ready_result, result))
                 else:
                     self.results.put(('recognition_work', work_id, event) if mode == 'recognize' else event)
-                if mode == "project":
+                if mode in ("project", "recognize"):
+                    check_cancelled(cancel.is_set)
                     try:
                         saved = save_workflow_result(result)
                         self.results.put(("saved", result, str(saved), None))
@@ -1374,7 +1388,7 @@ class RouteProjectionApp(QWidget):
             self.roi_label.configure(text=f"本次游戏截图  {roi[0]}, {roi[1]} · {roi[2]}×{roi[3]}")
             self._set_preview(result.screenshot, f"本次截图 · {datetime.now():%H:%M:%S} · {result.screenshot.shape[1]}×{result.screenshot.shape[0]}")
             self._update_ranking(result)
-            self.path_var.set(f"诊断文件：{result.run_directory or '识别未写入文件'}")
+            self.path_var.set(f"诊断文件：{result.run_directory or '后台保存中…'}")
             if mode == "recognize":
                 session_id = getattr(result, "session_id", getattr(self, "session_id", None))
                 profile_key = getattr(result, "profile_key", getattr(getattr(self, "profile", None), "key", None))
@@ -1464,6 +1478,15 @@ class RouteProjectionApp(QWidget):
         candidates = sorted(decision.get("ranking") or [
             {"layout": result.selected_layout, "score": decision["score"]}
         ], key=lambda item: item['score'], reverse=True)[:2]
+        if not self.profile.entrance_root and getattr(self.profile, 'clean_root', None):
+            previews = []
+            for item in candidates:
+                floor = item.get('candidate_floor', '2nd')
+                if floor not in self.profile.floors:
+                    floor = self.profile.floors[0]
+                previews.append(dict(item, preview_floor=floor,
+                    preview_path=self.profile.clean_root/item['layout']/f"{item['layout']}_{floor}.png"))
+            candidates = previews
         selected_layout = messagebox.confirm_layout(
             candidates,
             self.profile.entrance_root if getattr(self, "profile", None) else None,
@@ -1479,14 +1502,15 @@ class RouteProjectionApp(QWidget):
             self.layout_var.set(selected_layout)
             self._update_assets()
             self.decision_label.configure(text=f"已确认锁定 {selected_layout}", fg=ACCENT)
-            self._set_status(f"布局已锁定：{selected_layout}；探索门口后按地图键投影", ACCENT)
+            self._set_status(f"布局已锁定：{selected_layout}；请将地图缩到最小后按地图键配准", ACCENT)
             self._log(f"F8 识别并确认锁定：{selected_layout}")
         else:
             self.layout_var.set(self.locked_layout or AUTO)
             self._update_assets()
             self.decision_label.configure(text=(f"仍锁定 {self.locked_layout}" if self.locked_layout else
                                                 "识别结果未确认，布局尚未锁定"), fg=AMBER)
-            self._set_status("已取消锁定；可再次按 F8 识别", MUTED)
+            self._set_status((f"本次识别未确认，仍锁定 {self.locked_layout}；若已换局请复位地图" if self.locked_layout
+                              else "本次识别未确认，布局尚未锁定；可再次按 F8 识别"), MUTED)
 
     def hide_overlay(self) -> None:
         if hasattr(self, '_motion'):

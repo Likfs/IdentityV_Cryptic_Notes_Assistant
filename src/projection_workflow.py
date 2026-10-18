@@ -48,6 +48,9 @@ class WorkflowResult:
         return {
             "created_at": datetime.now().isoformat(timespec="seconds"),
             "profile": self.profile_key,
+            "work_mode": "recognize" if self.layout_retrieval is not None else "project",
+            "layout_selection_source": ("retrieval_candidate_requires_confirmation"
+                                        if self.layout_retrieval is not None else "selected_layout_not_ground_truth"),
             "session_id": self.session_id,
             "projection_preview_pending": self.projection_preview_pending,
             "preview_error": self.preview_error,
@@ -146,7 +149,8 @@ def process_screenshot(
     if recognize_only or layout_override is None:
         if not recognize_only:
             raise ValueError('请先识别并确认布局，再进行配准投影')
-        retriever = layout_retriever or create_layout_retriever(layout_recognition_backend, profile.clean_root)
+        retriever = layout_retriever or create_layout_retriever(layout_recognition_backend, profile.clean_root,
+            floors=getattr(profile, 'floors', ('2nd', '1st', 'b1')))
         try:
             retrieval = retriever.recognize(screenshot_bgr, recognition_reference_size,
                 **({'cancelled': recognition_cancelled} if recognition_cancelled is not None else {}))

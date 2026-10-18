@@ -19,7 +19,7 @@ from tools.common.layered_assets import load_route_overlay_asset, project_route_
 
 
 CLEAN_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/clean"
-CALIBRATION_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/routes"
+CALIBRATION_ROOT = PROJECT_ROOT / "maintenance/maps/a_bringer_of_doom/nightmare/routes"
 FLOORS = ("b1", "1st", "2nd")
 
 

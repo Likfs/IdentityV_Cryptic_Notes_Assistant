@@ -2,22 +2,24 @@
 import cv2,numpy as np
 from .search import sample
 from src.layout_retrieval import wall_edges
+from .features import scaled_length
 
 PARAMETERS=dict(tolerance_screen_px=2.0,error_ramp_px=4.0,cell_screen_px=32,
  min_cell_length_px=12,tail_cells=3,missing_weight=.15,extra_weight=.15,
  visibility_value_min=75,visibility_erode=3,raw_gradient_ratio=1.5,
  feature_raw_distance_max_px=1.5,distance_quantization=4)
 
-def raw_edges(image):
+def raw_edges(image,pixel_scale=1.):
  gray=cv2.cvtColor(image,cv2.COLOR_BGR2GRAY);edge=cv2.Canny(gray,25,65)>0
  h,s,v=cv2.split(cv2.cvtColor(image,cv2.COLOR_BGR2HSV))
- ignore=cv2.dilate((((h<35)|(h>170))&(s>120)&(v>110)).astype(np.uint8),np.ones((9,9),np.uint8))>0
+ size=scaled_length(9,pixel_scale,odd=True)
+ ignore=cv2.dilate((((h<35)|(h>170))&(s>120)&(v>110)).astype(np.uint8),np.ones((size,size),np.uint8))>0
  edge[ignore]=False
  gx=np.abs(cv2.Sobel(gray,cv2.CV_32F,1,0));gy=np.abs(cv2.Sobel(gray,cv2.CV_32F,0,1))
  return np.stack([edge&(gx>=1.5*gy),edge&(gy>=1.5*gx)]).astype(np.uint8)
 
-def raw_distances(image,quantized=False):
- ds=[cv2.distanceTransform(1-ch,cv2.DIST_L2,5) for ch in raw_edges(image)]
+def raw_distances(image,quantized=False,pixel_scale=1.):
+ ds=[cv2.distanceTransform(1-ch,cv2.DIST_L2,5) for ch in raw_edges(image,pixel_scale)]
  return [np.minimum(np.rint(d*4),255).astype(np.uint8) for d in ds] if quantized else ds
 
 def evidence(image, edges=None):
@@ -70,8 +72,8 @@ def review(t,c,q,box):
   local_penalty=.15*(missing+extra),missing_cells=mc,extra_cells=ec,review_query_points=len(mp),review_target_visible_length=float(ew.sum()))
  return result
 
-def attach_raw(t,image):
- t['rawdist']=raw_distances(image,True);t['reliable_points']=[]
+def attach_raw(t,image,pixel_scale=1.):
+ t['rawdist']=raw_distances(image,True,pixel_scale);t['reliable_points']=[]
  for p,d in zip(t['points'],t['rawdist']):
-  keep=sample(d,p).astype(np.float32)/4<=1.5;t['reliable_points'].append(p[keep])
+  keep=sample(d,p).astype(np.float32)/4<=1.5*pixel_scale;t['reliable_points'].append(p[keep])
  return t

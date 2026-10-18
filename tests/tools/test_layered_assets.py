@@ -39,7 +39,7 @@ def test_route_version_is_selected_per_map_and_difficulty(tmp_path) -> None:
 
 
 def test_three_complete_asset_sets_load_without_changing_default():
-    catalog = MapCatalog()
+    catalog = MapCatalog(offline=True)
     profile = next(iter(catalog.profiles.values()))
     saved = {"unrelated/profile": {"layout_01": "untouched"}}
     assert catalog.selected_variant(profile, "layout_01", saved).variant_id == "route_lhp_solo"
@@ -86,7 +86,7 @@ def test_clean_bgra_background_is_transparent_and_existing_alpha_is_preserved(tm
 
 
 def test_saved_route_alias_selects_canonical_version_and_relocated_assets():
-    catalog = MapCatalog()
+    catalog = MapCatalog(offline=True)
     profile = next(iter(catalog.profiles.values()))
     saved = {profile.key: {layout: 'route_01' for layout in catalog.layouts(profile)}}
     for layout in catalog.layouts(profile):

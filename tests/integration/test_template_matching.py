@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 from src import projection_workflow as workflow
 from src.registration.template_matching import direct, matcher, floors
+from tests.support.frozen_resources import restart_template_resources
 
 
 def write_image(path, image):
@@ -53,8 +54,8 @@ def originals(tmp_path, monkeypatch):
         for i, floor in enumerate(floors.FLOORS)}
     config['floor_variants'] = {'map/diff': {'layout_01': {
         variant: json.loads(json.dumps(floor_records)) for variant in ('route_lhp_solo', 'route_clean')}}}
-    (tmp_path/'configs').mkdir()
-    config_path = tmp_path/'configs/template_matching.json'
+    (tmp_path/'maintenance/configs').mkdir(parents=True)
+    config_path = tmp_path/'maintenance/configs/template_matching.json'
     config_path.write_text(json.dumps(config), encoding='utf-8')
     yield config, config_path, path, screenshots
     direct._images.clear()
@@ -232,7 +233,7 @@ def test_only_saved_candidates_are_compared_and_highest_score_is_displayed(origi
     np.testing.assert_allclose(result.screenshot_to_original, [[1.5, 0, 11], [0, 1.5, 23], [0, 0, 1]])
 
 
-def test_scale_edit_during_matching_cannot_publish_a_mixed_configuration(originals, monkeypatch):
+def test_scale_edit_during_matching_keeps_fixed_configuration_until_restart(originals, monkeypatch):
     config, path, _, screenshots = originals
     def match(*args, **kwargs):
         config['floor_variants']['map/diff']['layout_01']['route_lhp_solo']['2nd']['saved_scale'] = 1.1
@@ -241,28 +242,34 @@ def test_scale_edit_during_matching_cannot_publish_a_mixed_configuration(origina
     monkeypatch.setattr(matcher, '_match_template', match)
     result, _, layer, _, _ = direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5,
                                                     variant_id='route_lhp_solo')
-    assert not result.accepted and layer is None
-    assert '配置已改变' in result.rejection_reasons[0]
+    assert result.accepted and layer is not None
+    assert [a['saved_scale'] for a in result.validation['fixed_candidates']] == [1., 1.5, 2.]
+    restart_template_resources()
+    fresh = direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')[0]
+    assert fresh.accepted
+    assert fresh.validation['fixed_candidates'][0]['saved_scale'] == 1.1
 
 
-def test_projection_reads_config_only_at_request_boundaries(originals, monkeypatch):
-    """Three candidate loads must share one verified configuration snapshot."""
+def test_projection_reads_config_only_once_per_process(originals, monkeypatch):
+    """All requests and candidate loads share the fixed process configuration."""
     _, path, _, screenshots = originals
     reads = []
-    read_text = type(path).read_text
+    open_file = type(path).open
     def counted(file, *args, **kwargs):
         if file == path:
             reads.append(file)
-        return read_text(file, *args, **kwargs)
-    monkeypatch.setattr(type(path), 'read_text', counted)
+        return open_file(file, *args, **kwargs)
+    monkeypatch.setattr(type(path), 'open', counted)
     result, _, layer, _, _ = direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5,
                                                     variant_id='route_lhp_solo')
     assert result.accepted and layer is not None
     assert len(result.validation['fixed_candidates']) == 3
-    assert len(reads) == 2
+    assert len(reads) == 1
+    assert direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')[0].accepted
+    assert len(reads) == 1
 
 
-def test_dependency_edit_during_matching_rejects_even_with_unchanged_stat(originals, monkeypatch):
+def test_same_stat_dependency_edit_keeps_snapshot_but_is_rejected_on_restart(originals, monkeypatch):
     import os
     config, path, source, screenshots = originals
     dependency = source.parent/'calibration.json'
@@ -279,5 +286,184 @@ def test_dependency_edit_during_matching_rejects_even_with_unchanged_stat(origin
     monkeypatch.setattr(matcher, '_match_template', match)
     result, _, layer, _, _ = direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5,
                                                     variant_id='route_lhp_solo')
-    assert not result.accepted and layer is None
-    assert '资源已改变' in result.rejection_reasons[0]
+    assert result.accepted and layer is not None
+    restart_template_resources()
+    fresh, _, layer, _, _ = direct.project_original(screenshots[0][0], 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+    assert not fresh.accepted and layer is None
+    assert '资源已改变' in fresh.rejection_reasons[0]
+
+
+@pytest.mark.parametrize('floor_index', [0, 1])
+def test_two_floor_profile_recovers_pose_without_a_basement(originals, monkeypatch, floor_index):
+    config, path, _, screenshots = originals
+    catalog = dict(schema_version=1, maps=[dict(id='map', name='地图', difficulties=[dict(
+        id='diff', name='困难', clean_root='clean', calibration_root='routes',
+        floors=['2nd', '1st'], template_versions=['route_zhanshi_full', 'route_clean'])])])
+    (path.parents[2]/'configs').mkdir(exist_ok=True)
+    (path.parents[2]/'configs/map_catalog.json').write_text(json.dumps(catalog), encoding='utf-8')
+    records = config['floor_variants']['map/diff']['layout_01']['route_clean']
+    del records['b1']
+    config['floor_variants']['map/diff']['layout_01'] = {'route_zhanshi_full': records}
+    config['perf_mode'] = 0
+    path.write_text(json.dumps(config))
+    shot, scale, origin = screenshots[floor_index]
+    monkeypatch.setattr(matcher, 'find_best_scale', lambda *a: pytest.fail('实时流程不得搜索尺度'))
+    result, _, layer, _, _ = direct.project_original(shot, 'map/diff', 'layout_01', .6, variant_id='route_zhanshi_full')
+    assert result.accepted, result.rejection_reasons
+    assert result.validation['template']['candidate_floor'] == ('2nd', '1st')[floor_index]
+    assert [a['candidate_floor'] for a in result.validation['fixed_candidates']] == ['2nd', '1st']
+    np.testing.assert_allclose(result.screenshot_to_original, [[scale, 0, origin[0]], [0, scale, 55], [0, 0, 1]], atol=1)
+    assert layer is not None
+
+
+@pytest.mark.parametrize('mutation', ['scale', 'capture', 'invalid_config', 'dependency', 'image', 'deleted_image'])
+def test_external_writer_cannot_change_fixed_projection_until_restart(originals, monkeypatch, mutation):
+    """Current bytes stay pinned; restarting reloads and checks the edited resources."""
+    import os
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    config, path, source, screenshots = originals
+    dependency = source.parent/'evidence.json'
+    dependency.write_bytes(b'{"scale":1}')
+    entries = config['floor_variants']['map/diff']['layout_01']['route_lhp_solo']
+    for entry in entries.values():
+        entry['dependencies'] = [dict(path=dependency.name, sha256=hashlib.sha256(dependency.read_bytes()).hexdigest())]
+    path.write_text(json.dumps(config))
+    shot = screenshots[0][0]
+    # Populate caches so a stale cache hit, not merely an initial read, is exercised.
+    before, _, before_layer, before_preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+    assert before.accepted
+    ready, changed = Event(), Event()
+    def write():
+        assert ready.wait(10), 'Match did not reach mutation barrier'
+        try:
+            if mutation in ('scale', 'capture', 'invalid_config'):
+                stamp = path.stat()
+                if mutation == 'scale':
+                    entries['2nd']['saved_scale'] = 1.1
+                elif mutation == 'capture':
+                    config['capture'] = dict(screen_name='changed')
+                payload = json.dumps(config).encode('utf-8') if mutation != 'invalid_config' else b'{broken'
+                if mutation == 'scale':
+                    assert len(payload) == stamp.st_size
+                replacement = path.with_suffix('.replacement')
+                replacement.write_bytes(payload)
+                os.utime(replacement, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+                replacement.replace(path)
+            elif mutation == 'dependency':
+                stamp = dependency.stat()
+                dependency.write_bytes(b'{"scale":2}')
+                os.utime(dependency, ns=(stamp.st_atime_ns, stamp.st_mtime_ns))
+            elif mutation == 'image':
+                image = source.parent/'2nd.png'
+                stamp = image.stat()
+                image.write_bytes(b'changed')
+                os.utime(image, ns=(stamp.st_atime_ns, stamp.st_mtime_ns+1_000_000_000))
+            else:
+                (source.parent/'2nd.png').unlink()
+        finally:
+            changed.set()
+    match = matcher._match_template
+    first = True
+    def paused(*args, **kwargs):
+        nonlocal first
+        answer = match(*args, **kwargs)
+        if first:
+            first = False
+            ready.set()
+            assert changed.wait(10), 'External write did not finish'
+        return answer
+    monkeypatch.setattr(matcher, '_match_template', paused)
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        writer = executor.submit(write)
+        result, _, layer, preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+        writer.result(timeout=10)
+    assert result.accepted and result.validation == before.validation
+    np.testing.assert_array_equal(result.screenshot_to_original, before.screenshot_to_original)
+    np.testing.assert_array_equal(layer, before_layer)
+    np.testing.assert_array_equal(preview, before_preview)
+    # Re-decoding after eviction must still use the frozen bytes, not the edited files.
+    floors._images.clear()
+    matcher._map_cache.clear()
+    again, _, layer, preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+    assert again.accepted and again.validation == before.validation
+    np.testing.assert_array_equal(layer, before_layer)
+    np.testing.assert_array_equal(preview, before_preview)
+    restart_template_resources()
+    fresh = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')[0]
+    if mutation in ('scale', 'capture'):
+        assert fresh.accepted
+        if mutation == 'scale':
+            assert fresh.validation['fixed_candidates'][0]['saved_scale'] == 1.1
+        else:
+            assert floors.fixed_session().config['capture']['screen_name'] == 'changed'
+    else:
+        assert not fresh.accepted and fresh.rejection_reasons
+
+
+@pytest.mark.parametrize('outside', [False, True])
+def test_directory_retarget_keeps_fixed_projection_and_is_checked_on_restart(originals, monkeypatch, tmp_path_factory, outside):
+    import shutil
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Event
+    from tests.support.directory_links import create_directory_link, remove_directory_link
+    config, path, source, screenshots = originals
+    root = source.parent
+    first = root/'first'
+    first.mkdir()
+    second = tmp_path_factory.mktemp('external_source') if outside else root/'second'
+    second.mkdir(exist_ok=True)
+    for floor in floors.FLOORS:
+        for directory in (first, second):
+            shutil.copy2(root/f'{floor}.png', directory/f'{floor}.png')
+    if not outside:
+        (second/'2nd.png').write_bytes(b'changed')
+    entries = config['floor_variants']['map/diff']['layout_01']['route_lhp_solo']
+    for floor, entry in entries.items():
+        entry['source_image'] = f'linked/{floor}.png'
+    path.write_text(json.dumps(config))
+    link = root/'linked'
+    create_directory_link(link, first)
+    ready, changed = Event(), Event()
+    def retarget():
+        assert ready.wait(10)
+        try:
+            remove_directory_link(link, root=root)
+            create_directory_link(link, second)
+        finally:
+            changed.set()
+    try:
+        shot = screenshots[0][0]
+        before, _, before_layer, before_preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+        assert before.accepted
+        match = matcher._match_template
+        first_call = True
+        def paused(*args, **kwargs):
+            nonlocal first_call
+            answer = match(*args, **kwargs)
+            if first_call:
+                first_call = False
+                ready.set()
+                assert changed.wait(10)
+            return answer
+        monkeypatch.setattr(matcher, '_match_template', paused)
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            writer = executor.submit(retarget)
+            result, _, layer, preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+            writer.result(timeout=10)
+        assert result.accepted and result.validation == before.validation
+        np.testing.assert_array_equal(layer, before_layer)
+        np.testing.assert_array_equal(preview, before_preview)
+        (first/'2nd.png').write_bytes(b'replaced original target')
+        floors._images.clear()
+        matcher._map_cache.clear()
+        again, _, layer, preview, _ = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')
+        assert again.accepted and again.validation == before.validation
+        np.testing.assert_array_equal(layer, before_layer)
+        np.testing.assert_array_equal(preview, before_preview)
+        restart_template_resources()
+        fresh = direct.project_original(shot, 'map/diff', 'layout_01', .5, variant_id='route_lhp_solo')[0]
+        assert not fresh.accepted and fresh.rejection_reasons
+    finally:
+        remove_directory_link(link, root=root)
+    assert (first/'2nd.png').exists() and (second/'2nd.png').exists()

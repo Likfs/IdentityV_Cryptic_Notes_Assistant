@@ -1,0 +1,877 @@
+{
+  "profile": "a_bringer_of_doom/hard",
+  "floors": [
+    "2nd",
+    "1st"
+  ],
+  "scope": "offline_source_to_clean_and_screen_scale_transfer",
+  "screen_scale_status": "all_existing_58_floors_configured",
+  "ingame_alignment_verified": false,
+  "rows": [
+    {
+      "number": 1,
+      "layout": "layout_01",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/1右路  右丨   右下十▃▃.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9622528395604839,
+            "iou": 0.9379079111993194,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9802919640241119,
+            "iou": 0.9529114719032725,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "4e7a979279beaec56222c9a85c41d0317e689414d65976e261ab8776058d587c"
+    },
+    {
+      "number": 2,
+      "layout": "layout_02",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/2右路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9717041426994364,
+            "iou": 0.9480121387127376,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9750324727584438,
+            "iou": 0.9494423518881043,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "95cb0cb9ccabee89ce68411be17144f7b53b2b862f275a1a2da2d0536c24bc5d"
+    },
+    {
+      "number": 3,
+      "layout": "layout_03",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/3斜左下路右路 右┣.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9662408059332889,
+            "iou": 0.9484269907520971,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9720310964364985,
+            "iou": 0.9477957751999083,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "0921321835213c5db6a37d114387598accbd7540f5315863ec8a6d5f35259f38"
+    },
+    {
+      "number": 4,
+      "layout": "layout_04",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/4上路右路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9781731540913048,
+            "iou": 0.9600419624828738,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9765321550034382,
+            "iou": 0.9520089032954929,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "03b12af490b8cb62fc42681e41f276a0697499f131dd1083c2a577986653a27a"
+    },
+    {
+      "number": 5,
+      "layout": "layout_05",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/5上路下路 下▃▃.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9880339108958587,
+            "iou": 0.9648499902022235,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9838882534756607,
+            "iou": 0.9648449429259502,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "ef24b05814708975e3864d3088f68c9e8caff14e6ba5a479bd18ce9f6d574d18"
+    },
+    {
+      "number": 6,
+      "layout": "layout_06",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/6左路右路上路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9765157738805944,
+            "iou": 0.9606867729811047,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.974288646804647,
+            "iou": 0.9490581591624093,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "f4088f4f7592a5354c60f40771dccf36d96f7dd6bf82528ce9b0b80b0da3c572"
+    },
+    {
+      "number": 7,
+      "layout": "layout_07",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/7下路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9650789516541186,
+            "iou": 0.9516442802987019,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9774246430976102,
+            "iou": 0.954107248741148,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "e09f2be2dc0b7acf2be03ae965000a01323a7f7907e07d789e98dc93546361e0"
+    },
+    {
+      "number": 8,
+      "layout": "layout_08",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/8侧门在下   左路右路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9844149090690996,
+            "iou": 0.9582674892488637,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.980000961997675,
+            "iou": 0.9525008385646226,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "a25b2ec05530802517eb9bf19771e931913742ef171b4bd7d5e09c12dc656fc1"
+    },
+    {
+      "number": 9,
+      "layout": "layout_09",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/9上路下路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9816082624357952,
+            "iou": 0.965219417340966,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9638659352621155,
+            "iou": 0.9381387871303778,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "734e6f0ef43c8cdaf4728ecece4b812c8bc000902669ee48a802b274ecc38d0a"
+    },
+    {
+      "number": 10,
+      "layout": "layout_10",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/10右路  右丨   右下┣.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9645947117045204,
+            "iou": 0.9379897285969986,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9801117107196623,
+            "iou": 0.9567776785048603,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "ad8521350e6b7dbf9fc17c4eb377e85d820c9b6566157366cceb6f14df5b5162"
+    },
+    {
+      "number": 11,
+      "layout": "layout_11",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/11右路2 右▌（左下楼梯间，右红房间）.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9794660559872509,
+            "iou": 0.9398999460753116,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9767305515999815,
+            "iou": 0.9517332101354794,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "898687201fdb512312a2b92f66df92d17ac663ad7dc593d8ce0475bb52fc1f39"
+    },
+    {
+      "number": 12,
+      "layout": "layout_12",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/12侧门在上   左路右路下路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9662444498950807,
+            "iou": 0.9338461436141153,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9781466560559372,
+            "iou": 0.9375571957067761,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "71ebf4775fde8642e103d11bad2ce720962024142b07a52ec69450b9dc3a3113"
+    },
+    {
+      "number": 13,
+      "layout": "layout_13",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/13左路右路下路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9732541364842591,
+            "iou": 0.9336265318627451,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9798643040707352,
+            "iou": 0.9519905474540145,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "e3f5c164400a64470ec83dcd82af6d2fa43480f6c440ba32d6409436a93d0e56"
+    },
+    {
+      "number": 14,
+      "layout": "layout_14",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/14侧门在中.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9754849498437724,
+            "iou": 0.9434171415942781,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9762588031196383,
+            "iou": 0.9491630959366774,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "ec7d6e57a99bd24b50e8d604d461d02318a75b5832e14f24e4b41523aa36fe96"
+    },
+    {
+      "number": 15,
+      "layout": "layout_15",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/15侧门在上.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9673078331557069,
+            "iou": 0.9384178438641961,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.975253097355902,
+            "iou": 0.9546583513866502,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "0130cc2a0ea8bf46ca0da6b3f801a90d0722f68a3148629d34087b1cedc51298"
+    },
+    {
+      "number": 16,
+      "layout": "layout_16",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/16右路4 右凹.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9752129676295617,
+            "iou": 0.9498992800587011,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9793470793537312,
+            "iou": 0.9468186540344755,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "249d51edc9b8f0c3084fa330797dd6c534c22979f8102b99f7d4fe7328302d67"
+    },
+    {
+      "number": 17,
+      "layout": "layout_17",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/17左路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9840961723851692,
+            "iou": 0.9640861488135924,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.987459135834806,
+            "iou": 0.9648720152136833,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "15739db4207ebd0bc5c2d24677ecf3fb4e4e95a04aa9e9498a643552822d3cd6"
+    },
+    {
+      "number": 18,
+      "layout": "layout_18",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/18左路右路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9572491591979093,
+            "iou": 0.9190060406446636,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9853928200455971,
+            "iou": 0.9627279811508711,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "36d949fc83c278a25ed65efa7342c78976f6887c051792b55514f439ea545104"
+    },
+    {
+      "number": 19,
+      "layout": "layout_19",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/19右路 右丨   右下楼梯.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9801695010403835,
+            "iou": 0.9402294084978645,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9885828447459116,
+            "iou": 0.9465636262158397,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "c3e14ea0a2c43439d1b1ba36f64b114b89e99149b82bbb21ba1a407829b84eaa"
+    },
+    {
+      "number": 20,
+      "layout": "layout_20",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/20侧门在右.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9797425920707068,
+            "iou": 0.9437454238084659,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.975432203849385,
+            "iou": 0.9529372537337685,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "baae19ac0cab90825d206fcfa700028c3216c9b36b045d277ebd150e99bce2c3"
+    },
+    {
+      "number": 21,
+      "layout": "layout_21",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/21下路左路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9734428485291376,
+            "iou": 0.9466159172922599,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.979270651550468,
+            "iou": 0.954354050032768,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "099691eda87d600126b07fee984def245799ec7ddd8636c7e70d23fdbac2626e"
+    },
+    {
+      "number": 22,
+      "layout": "layout_22",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/22左路上路.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9574819723153619,
+            "iou": 0.9237883223902662,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.976808977993367,
+            "iou": 0.9423687845354014,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "c8777abc8952d4967ebab33929de78a5d188a9c15c3c9276e66bdfff62b62b57"
+    },
+    {
+      "number": 23,
+      "layout": "layout_23",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/23右路3 右▃▃.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.973203222263214,
+            "iou": 0.9452375020971768,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9682075469195354,
+            "iou": 0.9478707640388245,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "a85a161730e9a6cfcd107c244977c450855e0b59f476ac0f7098bb1b759dbe7e"
+    },
+    {
+      "number": 24,
+      "layout": "layout_24",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/24下路.jpg",
+      "source_count": 1,
+      "missing_floors": [
+        "2nd",
+        "1st"
+      ],
+      "ready": false,
+      "status": "MISSING_INPUT",
+      "source_sha256": "e09f2be2dc0b7acf2be03ae965000a01323a7f7907e07d789e98dc93546361e0"
+    },
+    {
+      "number": 25,
+      "layout": "layout_25",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/25右路 右丨   右下十丨.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9815326561684725,
+            "iou": 0.9397082180259322,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9878031563564114,
+            "iou": 0.9685184493527393,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "15101c2f9a4b08eedf9a2d51056be4237bf4b244f79624bed4419064300b09da"
+    },
+    {
+      "number": 26,
+      "layout": "layout_26",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/26右路 右▍.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9662742780195397,
+            "iou": 0.9455515296844376,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9822315425854133,
+            "iou": 0.9501540095237864,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "68580997187d6a2f37dc00b0a70c5d6feda3153fc3fa415900f73c9142b18a89"
+    },
+    {
+      "number": 27,
+      "layout": "layout_27",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/27斜左下路右路 右■.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.978216777277357,
+            "iou": 0.9396206279440834,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9706533032260624,
+            "iou": 0.9481936206641944,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "d11093e7f3454e5a310a12623095bcf46d6adee7671875e221c0c0c31b513619"
+    },
+    {
+      "number": 28,
+      "layout": "layout_28",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/28上路下路 下┓.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9751195777897792,
+            "iou": 0.9543997915973583,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.981800567538076,
+            "iou": 0.957137033224932,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "042dd8aa881071678724e8037463698cc6f2bd233c588dda82ae7c52be4ab341"
+    },
+    {
+      "number": 29,
+      "layout": "layout_29",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/29下路2.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9822479081444793,
+            "iou": 0.9434117270824247,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9879546005544854,
+            "iou": 0.9560964632094896,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "547fb8d48ca42e731a533827bf37e5332571e9786b83514316ad8ed62d0f195d"
+    },
+    {
+      "number": 30,
+      "layout": "layout_30",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/route_zhanshi_full/30左路右路2.jpg",
+      "source_count": 1,
+      "missing_floors": [],
+      "ready": true,
+      "floors": {
+        "2nd": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9797283730238113,
+            "iou": 0.9488850316549899,
+            "distance_p95_px": 0.0
+          }
+        },
+        "1st": {
+          "status": "PASS",
+          "quality": {
+            "coverage": 0.9834926644495172,
+            "iou": 0.9605621646946221,
+            "distance_p95_px": 0.0
+          }
+        }
+      },
+      "status": "PASS",
+      "source_sha256": "ffabab983590b7a0ed4807e6c942b7d518b85b708d735fe8ca89f20291fef825"
+    }
+  ],
+  "verification": {
+    "date": "2026-10-17",
+    "pytest_passed": 337,
+    "release_tests_deselected": 6,
+    "nightmare_template_errors": 0,
+    "hard_resource_layouts_per_version": 29,
+    "hard_pending_scale_layouts_per_version": 29,
+    "nightmare_fixed_screenshot_projection_accepted": true,
+    "hard_pending_scale_projection_exit_code": 2,
+    "recognition_index_targets": {
+      "pure_structure": 58,
+      "icon_structure": 29
+    },
+    "new_exe_built": false
+  },
+  "screen_scale_validation": {
+    "layout_05": {
+      "1st": {
+        "scale": 3.178,
+        "scope": "labelled_capture_offline_replay",
+        "recognition_top1": "layout_05",
+        "versions": [
+          "route_clean",
+          "route_zhanshi_full"
+        ],
+        "pytest_passed": 341,
+        "release_tests_deselected": 6,
+        "report": "workspace/reports/hard_layout05_fix_20261017/verification.json"
+      },
+      "2nd": {
+        "status": "pending"
+      }
+    }
+  },
+  "screen_scale_evidence": "sources/screen_scale_calibration.json",
+  "direct_capture_verified_floors": [
+    "layout_05/1st"
+  ],
+  "derived_geometry_floor_count": 57,
+  "unlabelled_capture_note": "16:50-16:51 screenshots: user uncertain; selected layout_18 is not ground truth"
+}

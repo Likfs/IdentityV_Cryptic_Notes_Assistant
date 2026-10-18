@@ -9,11 +9,48 @@ import cv2
 import numpy as np
 from src.layout_retrieval import wall_edges
 from src.recognition_control import check_cancelled
+from .correlation import CorrelationWorkspace
 
 R=.3
 SIGMA=3.0
 PENALTY=.5
 MINIMUM_SCALES=(1.46666667,1.51666667)
+RESPONSE_CACHE_POLICY=dict(version='fixed_float32_v1', max_bytes=1536*1024*1024)
+
+
+def response_maps(target, scale):
+    """Read immutable fixed responses, or use the original uncached expression."""
+    if 'response_maps' in target:
+        return target['response_maps'][scale]
+    ratio=target.get('coarse_resize', R)
+    return [np.exp(-.5*(d/(SIGMA*scale*ratio))**2) for d in target['dist']]
+
+
+def prepare_response_cache(targets, *, cancelled=None, max_bytes=None):
+    """Cache a private, unpublished normalized index within a fixed byte budget.
+
+    Responses retain the original float32 expression and operation order. The
+    replaced coarse distances are no longer needed; full-resolution distances
+    used for pose scoring remain untouched. Cancellation discards this private
+    index at the caller, without publishing a partially prepared snapshot.
+    """
+    check_cancelled(cancelled)
+    if max_bytes is None:
+        max_bytes=RESPONSE_CACHE_POLICY['max_bytes']
+    required=sum(sum(d.nbytes for d in t['dist'])*len(t['scales']) for t in targets)
+    if required > max_bytes:
+        return False
+    for target in targets:
+        maps={}
+        for scale in target['scales']:
+            check_cancelled(cancelled)
+            maps[scale]=response_maps(target, scale)
+            for field in maps[scale]:
+                field.setflags(write=False)
+        target['response_maps']=maps
+        del target['dist']
+    check_cancelled(cancelled)
+    return True
 
 def visible_interior(im, edges=None):
     """Conservative observed floor interiors, never template-dependent."""
@@ -106,19 +143,20 @@ def merge(candidates):
         if c['layout'] not in best or c['score']>best[c['layout']]['score']:best[c['layout']]=c
     return sorted(best.values(),key=lambda c:(-c['score'],c['layout']))
 
-def search_target(t, *, templates, qpoints, negative, box, query_geometry, cancelled=None):
+def search_target(t, *, templates, qpoints, negative, box, query_geometry, cancelled=None, workspace=None):
     """One independent floor; retain scale and seed order exactly."""
     bestfair=None;bestcombined=None
+    if workspace is None:workspace=CorrelationWorkspace()
+    ratio=t.get('coarse_resize', R)
     for s,chs,neg,total in templates:
+        if s not in t.get('scales', MINIMUM_SCALES):continue
         check_cancelled(cancelled)
         if chs[0].shape[0]>=t['low'].shape[0] or chs[0].shape[1]>=t['low'].shape[1]:continue
-        maps=[np.exp(-.5*(d/(SIGMA*s*R))**2) for d in t['dist']]
-        support=sum(cv2.matchTemplate(m,ch,cv2.TM_CCORR) for m,ch in zip(maps,chs))/total
-        # Preserve the screen-length normalization and float operation order.
-        extra=np.maximum(0,cv2.matchTemplate(t['low'],neg,cv2.TM_CCORR))*s/total
+        maps=response_maps(t,s)
+        support,extra=workspace.correlate(maps,t['low'],chs,neg,s,total)
         for mode,field in [('fair',support),('combined',support-PENALTY*extra)]:
             _,score,_,loc=cv2.minMaxLoc(field)
-            c=dict(layout=t['layout'],floor=t['floor'],score=float(score),scale=s,x=loc[0]/R,y=loc[1]/R,wall_support=float(support[loc[1],loc[0]]),extra_wall_ratio=float(extra[loc[1],loc[0]]))
+            c=dict(layout=t['layout'],floor=t['floor'],score=float(score),scale=s,x=loc[0]/ratio,y=loc[1]/ratio,wall_support=float(support[loc[1],loc[0]]),extra_wall_ratio=float(extra[loc[1],loc[0]]))
             if mode=='fair' and (bestfair is None or score>bestfair['score']):bestfair=c
             if mode=='combined' and (bestcombined is None or score>bestcombined['score']):bestcombined=c
     if bestfair is None:return None
@@ -144,15 +182,22 @@ def search(im, targets, executor=None, *, cancelled=None):
     for ch in edges:
         yy,xx=np.where(ch>0);qpoints.append(np.column_stack((xx,yy)).astype(np.float32))
     templates=[]
-    for s in MINIMUM_SCALES:
+    ratios={t.get('coarse_resize',R) for t in targets}
+    if len(ratios)>1:
+        raise ValueError('同一识别索引不能混用不同的粗采样比例')
+    ratio=next(iter(ratios),R)
+    # Build each fixed scale once, then restrict each source to its own records.
+    scales = dict.fromkeys(s for t in targets for s in t.get('scales', MINIMUM_SCALES))
+    for s in scales:
         check_cancelled(cancelled)
-        chs=[cv2.resize(ch.astype(np.float32),None,fx=s*R,fy=s*R,interpolation=cv2.INTER_AREA) for ch in crop]
+        chs=[cv2.resize(ch.astype(np.float32),None,fx=s*ratio,fy=s*ratio,interpolation=cv2.INTER_AREA) for ch in crop]
         neg=cv2.resize(free,(chs[0].shape[1],chs[0].shape[0]),interpolation=cv2.INTER_AREA)
         templates.append((s,chs,neg,sum(ch.sum() for ch in chs)))
     origin=np.array(box[:2],np.float32)
     geometry=(origin,[p-origin for p in qpoints],sum(len(p) for p in qpoints))
+    workspace=CorrelationWorkspace()
     task=partial(search_target,templates=templates,qpoints=qpoints,negative=negative,
-                 box=box,query_geometry=geometry, cancelled=cancelled)
+                 box=box,query_geometry=geometry, cancelled=cancelled,workspace=workspace)
     # Consume futures in input order, preserving same-score floor/seed ties.
     futures=[] if executor is None else [executor.submit(task,t) for t in targets]
     results=map(task,targets) if executor is None else (f.result() for f in futures)

@@ -15,9 +15,13 @@ FLOOR_NAMES = {"2nd": "2 楼", "1st": "1 楼", "b1": "地下室"}
 VERSION_NAMES = {"route_clean": "原版干净底图", "route_lhp_solo": "凉哈皮单人速刷路线图", "route_zhanshi_fast": "展十速刷路线图"}
 TEMPLATE_VERSION_NAMES = {key: VERSION_NAMES[key] for key in ('route_zhanshi_fast', 'route_lhp_solo', 'route_clean')}
 TEMPLATE_VERSION_NAMES.update({
+    'route_zhanshi_full': '展十全图路线',
+    'route_zhanshi_full_clean': '展十全图路线底图版',
     'route_lhp_solo_clean': '凉哈皮单人速刷路线图底图版',
     'route_zhanshi_fast_clean': '展十速刷路线图底图版',
 })
+DEFAULT_TEMPLATE_VERSIONS = ('route_zhanshi_fast', 'route_lhp_solo', 'route_clean',
+                             'route_lhp_solo_clean', 'route_zhanshi_fast_clean')
 
 
 def selected_template_variant(settings: dict, profile_key: str) -> str:
@@ -51,6 +55,8 @@ class DifficultyProfile:
     calibration_root: Path
     asset_versions: tuple[dict, ...] = ()
     entrance_root: Path | None = None
+    floors: tuple[str, ...] = FLOORS
+    template_versions: tuple[str, ...] = DEFAULT_TEMPLATE_VERSIONS
 
     @property
     def key(self) -> str:
@@ -62,7 +68,7 @@ class RouteVariant:
     layout: str
     variant_id: str
     source_name: str
-    calibration_path: Path
+    calibration_path: Path | None
     floor_status: dict[str, str]
     display_name: str = ""
     asset_kind: str = "route"
@@ -73,8 +79,9 @@ class RouteVariant:
 
 
 class MapCatalog:
-    def __init__(self, path: Path = DEFAULT_CATALOG_PATH) -> None:
+    def __init__(self, path: Path = DEFAULT_CATALOG_PATH, *, offline=False) -> None:
         self.path = path.resolve()
+        self.offline = offline
         raw = json.loads(self.path.read_text(encoding="utf-8-sig"))
         if raw.get("schema_version") != 1 or not isinstance(raw.get("maps"), list):
             raise ValueError("地图目录配置格式不正确")
@@ -86,6 +93,13 @@ class MapCatalog:
                 raise ValueError(f"地图 ID 重复：{map_id}")
             self.map_names[map_id] = str(map_item["name"])
             for difficulty in map_item["difficulties"]:
+                floors = tuple(difficulty.get('floors', FLOORS))
+                if not floors or len(set(floors)) != len(floors) or any(f not in FLOORS for f in floors):
+                    raise ValueError('地图难度的楼层配置无效')
+                versions = tuple(difficulty.get('template_versions',
+                                 DEFAULT_TEMPLATE_VERSIONS))
+                if not versions or len(set(versions)) != len(versions) or any(v not in TEMPLATE_VERSION_NAMES for v in versions):
+                    raise ValueError('地图难度的模板版本配置无效')
                 difficulty_id = str(difficulty["id"])
                 key = (map_id, difficulty_id)
                 if key in self.profiles:
@@ -99,6 +113,7 @@ class MapCatalog:
                     calibration_root=self._resolve(difficulty["calibration_root"]),
                     asset_versions=tuple(difficulty.get("asset_versions", [])),
                     entrance_root=self._resolve(difficulty["entrance_root"]) if difficulty.get("entrance_root") else None,
+                    floors=floors, template_versions=versions,
                 )
         if not self.profiles:
             raise ValueError("地图目录中没有可用的地图难度")
@@ -121,6 +136,12 @@ class MapCatalog:
         return sorted(path.name for path in profile.clean_root.glob("layout_*") if path.is_dir())
 
     def variants(self, profile: DifficultyProfile, layout: str) -> list[RouteVariant]:
+        from src.runtime_resources import read_bundle
+        bundle = (read_bundle(PROJECT_ROOT) if not self.offline
+                  and self.path == (PROJECT_ROOT/'configs/map_catalog.json').resolve() else None)
+        if bundle is not None:
+            return [RouteVariant(layout=layout, calibration_path=None, **record)
+                    for record in bundle['route_status'].get(profile.key, {}).get(layout, [])]
         variants = []
         for path in sorted(profile.calibration_root.glob(f"route_*/{layout}/calibration.json")):
             payload = json.loads(path.read_text(encoding="utf-8"))
@@ -132,7 +153,7 @@ class MapCatalog:
                     variant_id=str(payload["variant_id"]),
                     source_name=Path(payload["route"]).name,
                     calibration_path=path,
-                    floor_status={floor: str(payload["floors"][floor]["status"]) for floor in FLOORS},
+                    floor_status={floor: str(payload["floors"][floor]["status"]) for floor in profile.floors},
                     display_name=next((v["name"] for v in profile.asset_versions if v["id"] == payload["variant_id"]),
                                       VERSION_NAMES.get(payload["variant_id"], str(payload.get("display_name", "")))),
                     asset_kind=str(payload.get("asset_kind", "route")),
@@ -151,6 +172,8 @@ class MapCatalog:
 
 
     def clean_template(self, profile: DifficultyProfile, layout: str, floor: str) -> Path:
+        if floor not in profile.floors:
+            raise ValueError(f'{profile.difficulty_name}不包含楼层：{floor}')
         matches = list((profile.clean_root / layout).glob(f"*_{floor}.png"))
         if len(matches) != 1:
             raise RuntimeError(f"{profile.map_name}/{profile.difficulty_name}/{layout}/{floor} 干净底图数量为 {len(matches)}")
@@ -228,8 +251,9 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
     used_keys = {settings[name] for name in ("map_key", "recognize_hotkey", "project_hotkey")}
     if settings["reference_hotkey"] not in ACTION_KEYS or settings["reference_hotkey"] in used_keys:
         settings["reference_hotkey"] = next(key for key in ("H", "J", "K", "L") if key not in used_keys)
-    if settings["floor"] not in FLOORS:
-        settings["floor"] = "2nd"
+    profile = catalog.profile(settings['map_id'], settings['difficulty_id'])
+    if settings["floor"] not in profile.floors:
+        settings["floor"] = profile.floors[0]
     settings["opacity"] = min(1.0, max(0.0, float(settings["opacity"])))
     settings["reference_opacity"] = min(1.0, max(0.0, float(settings["reference_opacity"])))
     roi = settings["capture_roi"]
@@ -256,6 +280,8 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
     settings['template_route_versions'] = {
         key: value for key, value in preferences.items() if value in TEMPLATE_VERSION_NAMES
     } if isinstance(preferences, dict) else {}
+    if selected_template_variant(settings, profile.key) not in profile.template_versions:
+        settings['template_route_versions'][profile.key] = profile.template_versions[0]
     return settings
 
 

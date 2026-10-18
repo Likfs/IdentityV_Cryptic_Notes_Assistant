@@ -79,6 +79,407 @@
       "expected_strong_evidence": false,
       "label_provenance": "Historical offline projection input; no independently verified recognition label or alignment ground truth",
       "sha256": "077e47c0b5a10186cade84637e140edfd4fd7a8beb44774f64ce29446ff0a67c"
+    },
+    {
+      "id": "hard_layout05_1st_game",
+      "kind": "labelled_game_capture",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "tests/fixtures/retrieval/hard_layout05_1st.png",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "expected_top1": "layout_05",
+      "expected_floor": "1st",
+      "label_provenance": "User confirmed layout_05 on 2026-10-17; 1st floor inferred and visually checked against floor geometry. Calibration replay, not an independent accuracy sample.",
+      "sha256": "a68f1f4c419a288c154223c252307398d21eaf88250cfc7213570e4e85cc7388"
+    },
+    {
+      "id": "hard_zoom_minimum_1",
+      "kind": "unlabelled_game_capture",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/minimum_01.png",
+      "sha256": "862e3b77d1400fbab261e13ac1b1ee262379ac9c33277daae97912a1a5cc4f00",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "zoom_pair": 1,
+      "zoom_mode": "minimum",
+      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+    },
+    {
+      "id": "hard_zoom_50_percent_1",
+      "kind": "unlabelled_game_capture",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/50_percent_01.png",
+      "sha256": "d8ffd7c537db797f7d038977fddfdd81aee03c99dba9c70c09cc38c10bbca958",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "zoom_pair": 1,
+      "zoom_mode": "50_percent",
+      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+    },
+    {
+      "id": "hard_zoom_minimum_2",
+      "kind": "unlabelled_game_capture",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/minimum_02.png",
+      "sha256": "7a0ea655e44d5a9893bd824dcefa49b234222417938c7dd2fab2f706dfb54182",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "zoom_pair": 2,
+      "zoom_mode": "minimum",
+      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+    },
+    {
+      "id": "hard_zoom_50_percent_2",
+      "kind": "unlabelled_game_capture",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/50_percent_02.png",
+      "sha256": "1b530684875f14f0feb5e1ec8495227dbbb54fbb0cd3e60b903e99391b298a34",
+      "reference_size": [
+        1180,
+        1050
+      ],
+      "zoom_pair": 2,
+      "zoom_mode": "50_percent",
+      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
     }
-  ]
+  ],
+  "normalization_audit": {
+    "report": "workspace/reports/hard_normalized_20261017/交付报告.md",
+    "purpose": "Offline comparison only; runtime captures are not packaged or required by the test suite. No independent layout labels.",
+    "inputs": [
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172220_853261_layout_07_1st/01_screenshot.png",
+        "sha256": "f497066577bcf90e1a4399c73dd73f2ef7713b009ae0b37bff6b5cb6b74f96f1",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172330_368084_layout_07_2nd/01_screenshot.png",
+        "sha256": "dd5169f2a58fb46a93ad91ffcd825153e47272ad95c1e3d51721a6c18040a1e5",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172441_483907_layout_07_2nd/01_screenshot.png",
+        "sha256": "9b9a03c6620ea551e571b79670d4d0bc80bb2828799da734e38c0195cdd17799",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172534_100124_layout_07_1st/01_screenshot.png",
+        "sha256": "38b8e1ac5b23a11ce76e376faa31522a74544522f00141758a8886458ab80573",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172724_238978_layout_07_1st/01_screenshot.png",
+        "sha256": "8da52a79bda6235daa94b4c2db40427f8f5438e3120c5fe52c60b5be6d2f8439",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172725_588510_layout_07_2nd/01_screenshot.png",
+        "sha256": "bd845f11e0d0316abff0dce09ceaee5b4a73b31d04da81ca27ce320c96001191",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172730_814087_layout_27_1st/01_screenshot.png",
+        "sha256": "b489c1520305dd8f6fc01badff6b87a1ae28e77a3d5f2c9cfc79255a75318f25",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172734_714096_layout_27_1st/01_screenshot.png",
+        "sha256": "27f91fcf70467f3fff1e8dd1e6e312f7ba3cf5633d08c2efa45a4a5fb5f6979e",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172741_643751_layout_27_2nd/01_screenshot.png",
+        "sha256": "81a362b57ffcf6a0e8f212e3508f142c7335a428fd740d46e3115c685d593e14",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172747_019135_layout_27_2nd/01_screenshot.png",
+        "sha256": "8569062f969d32c07d1b84f93ad6a54fc4f0d03b111ca54b58d27f593efc40f6",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172748_823879_layout_27_2nd/01_screenshot.png",
+        "sha256": "917cff77bcab3bbe2a2a264c63619ccbcc7316c36727c02327919e0ae768b02d",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172754_300220_layout_27_1st/01_screenshot.png",
+        "sha256": "53c64d2984fe101e636b28790008c46ea2cc9c7ca9724d3aceba7ec757c6039c",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172758_955197_layout_03_1st/01_screenshot.png",
+        "sha256": "5a16535e84de59c18dcab22104bd7961e5796b5f81d72da3440e0720f97e7a3f",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172849_627808_layout_03_2nd/01_screenshot.png",
+        "sha256": "5ae20f80cfb76e92f49ec0d10fcdf5834b6ff36fab27a09c4bfc16e66364acb0",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_172944_069994_layout_03_2nd/01_screenshot.png",
+        "sha256": "e3b86f601074f7368f517186d472f872b495d396d6a1767cf24ca6820940d1a0",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_173127_627985_layout_03_1st/01_screenshot.png",
+        "sha256": "1696f5eb7d803c07d0e12f85e4af8bb431562772f0111d9fac1f1eb9ede8ee84",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_173129_602395_layout_03_2nd/01_screenshot.png",
+        "sha256": "769d4504bf5a15ad891c6ffbbe4d50816d2c8165fbc55fda8078771df92a8126",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_173244_848451_layout_03_1st/01_screenshot.png",
+        "sha256": "d0c6a504c315414032842e78bb9f104ed47b8f204814ef514b224c535600960d",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_173516_096597_layout_03_1st/01_screenshot.png",
+        "sha256": "1f32ef50bcebbea8ba75e6605e148e54e6dc67876718d14a5f1edf47ffb40eaf",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_173517_075742_layout_03_2nd/01_screenshot.png",
+        "sha256": "64aae5db76737d54e52107834854ae23b70f4d2d9f5e2f835dc973a6e73766ce",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180516_851504_layout_21_2nd/01_screenshot.png",
+        "sha256": "51a0e26d9a7c3c63f145ae6da6d7dfef07925904f79d3d005811c522ba3232c5",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180521_057323_layout_21_2nd/01_screenshot.png",
+        "sha256": "1b816e1f25f6a6ace06b8eacbaaca80098df8b46aa229fa6f020ecc45207e06d",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180544_752610_layout_21_2nd/01_screenshot.png",
+        "sha256": "ae079b1c89e8af807b8a357acd8c9872d5bb5063db204e6c3ff43ffddc892e7c",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180549_906218_layout_06_1st/01_screenshot.png",
+        "sha256": "d485fa6912dff9a66e5e678d7745aab03a29d7177d2971be57097b14cc85b5d8",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180733_348093_layout_06_2nd/01_screenshot.png",
+        "sha256": "1a3b1bf0016322a3224824e437b6e9f3ec5cddfa1883a40da13283dad3bc4a13",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_180933_301327_layout_06_2nd/01_screenshot.png",
+        "sha256": "0b6173319ee32724cd1fcc3f35cc7a3554fd3f12e8aa608a0892716416d0a440",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_181126_273466_layout_06_1st/01_screenshot.png",
+        "sha256": "de568b6d28e7ed5aa67f10ab7463660992f469a1d04884368324f03e876c828b",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_181205_720254_layout_06_2nd/01_screenshot.png",
+        "sha256": "18af9e497ef78bc7ff5c481b5c22d9b92c45a4a8b3d431e74edf48b2c32c04d0",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_181249_031780_layout_06_1st/01_screenshot.png",
+        "sha256": "38c6c9bee2eb77e9cadb610ee784763b7898a2a032a2df01e8ec69c877284fbb",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_181433_696322_layout_06_1st/01_screenshot.png",
+        "sha256": "e13496ebff4bf774750cb12ee98d2f0915294ae3f39854430c4136e83554f0d2",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_165047_983162_layout_18_unknown/01_screenshot.png",
+        "sha256": "577fcbfa5b1f8ac602ff9b087231ab0a06a371ed7b4307618107939e2b558f58",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      },
+      {
+        "source": "runtime/diagnostics/route_projection/app_runs/20261017_165841_905494_layout_18_unknown/01_screenshot.png",
+        "sha256": "fb6fbb53bfc4d9c84f7fee64a25f9f6cfb0e6fffe961361dbf8c6611c68754ad",
+        "kind": "unlabelled_game_capture",
+        "reference_size": [
+          1180,
+          1050
+        ],
+        "label_provenance": "User uncertain; saved selected layout is not ground truth"
+      }
+    ]
+  }
 }

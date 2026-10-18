@@ -10,7 +10,7 @@ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('--source',type=Path,required=True,help='包含 scale_config.json、config.json 和 images 的导入目录')
-    parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/configs/template_matching.json', help='审核后再发布到正式配置')
+    parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/maintenance/configs/template_matching.json', help='审核后再发布到正式配置')
     args=parser.parse_args()
     args.output.parent.mkdir(parents=True,exist_ok=True)
     scales=json.loads((args.source/'scale_config.json').read_text(encoding='utf-8'))['maps']
@@ -19,7 +19,7 @@ def main():
     for path in (args.source/'images').rglob('*'):
         if path.is_file():images.setdefault(sha(path),[]).append(path)
     entries={}
-    for calibration in sorted((ROOT/'assets/maps').glob('*/*/routes/route_zhanshi_fast/*/calibration.json')):
+    for calibration in sorted((ROOT/'maintenance/maps').glob('*/*/routes/route_zhanshi_fast/*/calibration.json')):
         data=json.loads(calibration.read_text(encoding='utf-8'));source=ROOT/data['route']
         matches=images.get(sha(source),[])
         if len(matches)!=1:raise ValueError(f'{data["layout"]}: source image missing or ambiguous')

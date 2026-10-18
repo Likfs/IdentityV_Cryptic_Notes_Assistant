@@ -16,7 +16,7 @@ def write_image(path, image):
 
 @pytest.fixture
 def sources(tmp_path, monkeypatch):
-    root = tmp_path/'assets/maps/map/diff'
+    root = tmp_path/'maintenance/maps/map/diff'
     image = np.random.default_rng(94).integers(0, 256, (660, 320), dtype=np.uint8)
     image[:5, :5] = 0
     regions = {floor: [0, i*220, 320, 220] for i, floor in enumerate(('2nd', '1st', 'b1'))}
@@ -46,8 +46,8 @@ def sources(tmp_path, monkeypatch):
 
 
 def save_config(root, config):
-    path = root/'configs/template_matching.json'
-    path.parent.mkdir(exist_ok=True)
+    path = root/'maintenance/configs/template_matching.json'
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(config))
 
 
@@ -89,7 +89,7 @@ def test_new_source_and_color_alpha_have_distinct_caches(sources):
     root, old, image, _ = sources
     replacement = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
     replacement[1, 1] = (255, 0, 0)
-    write_image(root/'assets/maps/map/diff/sources/route_lhp_solo_clean/1.png', replacement)
+    write_image(root/'maintenance/maps/map/diff/sources/route_lhp_solo_clean/1.png', replacement)
     config, _ = import_source_variants(old, root)
     save_config(root, config)
     direct.load_original('map/diff', 'layout_01', 'route_lhp_solo')
@@ -130,7 +130,7 @@ def test_geometry_rejects_shifted_or_resized_replacement(sources):
 
 def test_missing_replacement_fails_without_partial_import(sources):
     root, old, _, _ = sources
-    (root/'assets/maps/map/diff/sources/route_zhanshi_fast_clean/1.png').unlink()
+    (root/'maintenance/maps/map/diff/sources/route_zhanshi_fast_clean/1.png').unlink()
     with pytest.raises(ValueError, match='缺少与原图同名'):
         import_source_variants(old, root)
     assert len(old['original_variants']['map/diff']['layout_01']) == 2

@@ -29,14 +29,14 @@ def read(path):
     return image
 
 
-def verify_padded_clean(clean, target):
-    """Check the supplied 128px-border convention geometrically, including clipped margins."""
+def verify_padded_clean(clean, target, *, border=128):
+    """Verify the declared border geometrically, including clipped blank margins."""
     h, w = target.shape[:2]
     ch, cw = clean.shape[:2]
     if h < ch or w < cw:
         raise ValueError('单层图片不能容纳干净底图，须重新标定')
     canvas = np.zeros_like(target)
-    x, y = w-cw-128, h-ch-128
+    x, y = w-cw-border, h-ch-border
     if min(x, y) < 0:
         raise ValueError('单层图片边距无法解释，须重新标定')
     th, tw = min(ch, h-y), min(cw, w-x)
@@ -93,16 +93,19 @@ def clean_scale_overrides(config, clean_scales):
 def import_floors(config, root=ROOT, overrides=None, clean_scales=None):
     config = copy.deepcopy(config)
     previous = config.get('floor_variants', {})
-    result = {}
+    # Profiles imported directly as single-floor assets have no legacy montage
+    # records. Rebuilding nightmare floors must not remove those profiles.
+    result = copy.deepcopy(previous)
     overrides = dict(overrides or {})
     clean_scales = clean_scales or {}
     if set(overrides) & set(clean_scales):
         raise ValueError('同一楼层不能同时指定参考尺度和干净底图尺度')
     overrides.update(clean_scale_overrides(config, clean_scales))
     for profile, layouts in config['original_variants'].items():
-        result[profile] = {}
+        result.setdefault(profile, {})
         base = root / 'assets/maps' / profile
-        rectified_path = base / 'routes/route_lhp_solo_rectified/rectification.json'
+        offline = root/'maintenance/maps'/profile
+        rectified_path = offline / 'routes/route_lhp_solo_rectified/rectification.json'
         rectified = json.loads(rectified_path.read_text(encoding='utf-8')) if rectified_path.exists() else None
         for layout, variants in layouts.items():
             out = result[profile][layout] = {}
@@ -110,7 +113,7 @@ def import_floors(config, root=ROOT, overrides=None, clean_scales=None):
             lhp_records = {c['floor']: c for c in variants['route_lhp_solo']['candidates']}
             calibrations = {}
             for version in ('route_zhanshi_fast', 'route_lhp_solo'):
-                path = base / 'routes' / version / layout / 'calibration.json'
+                path = offline / 'routes' / version / layout / 'calibration.json'
                 calibrations[version] = (path, json.loads(path.read_text(encoding='utf-8')))
             for variant in variants:
                 records = out[variant] = {}
@@ -204,7 +207,7 @@ def import_floors(config, root=ROOT, overrides=None, clean_scales=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--config', type=Path, default=ROOT/'configs/template_matching.json')
+    parser.add_argument('--config', type=Path, default=ROOT/'maintenance/configs/template_matching.json')
     parser.add_argument('--output', type=Path, default=ROOT/'workspace/asset_build/configs/template_matching_floors.json')
     parser.add_argument('--reference-scale', action='append', default=[], metavar='PROFILE:LAYOUT:FLOOR=SCALE')
     parser.add_argument('--clean-scale', action='append', default=[], metavar='PROFILE:LAYOUT:FLOOR=SCALE',

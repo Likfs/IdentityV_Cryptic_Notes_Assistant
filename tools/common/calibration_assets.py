@@ -4,6 +4,7 @@ import re
 from src.paths import PROJECT_ROOT
 from src.app_catalog import FLOORS
 from tools.common.paths import asset_output
+from src.maintenance_paths import profile_root
 
 CLEAN_ROOT = PROJECT_ROOT / 'assets/maps/a_bringer_of_doom/nightmare/clean'
 OUTPUT_ROOT = PROJECT_ROOT / 'workspace/reports/route_asset_calibration'
@@ -11,6 +12,10 @@ OUTPUT_ROOT = PROJECT_ROOT / 'workspace/reports/route_asset_calibration'
 
 def route_asset_root(*, publish=False):
     return asset_output(CLEAN_ROOT.parent / 'routes', publish=publish)
+
+
+def calibration_root(*, publish=False):
+    return asset_output(profile_root(CLEAN_ROOT) / 'routes', publish=publish)
 
 
 def layout_numbers(clean_root=CLEAN_ROOT):

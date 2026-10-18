@@ -78,7 +78,11 @@ def test_calibration_commands_resolve_output_from_explicit_arguments(tmp_path, m
     stage, official = tmp_path / 'stage', tmp_path / 'official'
     monkeypatch.setattr(module, 'CLEAN_ROOT', clean)
     monkeypatch.setattr(module, 'ASSET_ROOT', stage)
-    monkeypatch.setattr(module, 'route_asset_root', lambda *, publish=False: official if publish else stage)
+    output_helper = 'calibration_root' if command == 'calibrate_route_assets_batch' else 'route_asset_root'
+    monkeypatch.setattr(module, output_helper, lambda *, publish=False: official if publish else stage)
+    if command == 'calibrate_zhanshi_routes':
+        monkeypatch.setattr(module, 'calibration_root', lambda *, publish=False:
+                            (official if publish else stage)/'metadata')
     monkeypatch.setattr(sys, 'argv', [command] + (['--publish'] if publish else []))
     outputs = []
 
@@ -95,3 +99,5 @@ def test_calibration_commands_resolve_output_from_explicit_arguments(tmp_path, m
         monkeypatch.setattr(module, 'calibrate', calibrated)
     module.main()
     assert outputs == [official if publish else stage]
+    if command == 'calibrate_zhanshi_routes':
+        assert module.CALIBRATION_ROOT == (official if publish else stage)/'metadata'

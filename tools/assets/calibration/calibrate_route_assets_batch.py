@@ -19,10 +19,10 @@ from tools.assets.image_io import imread_unicode, imwrite_unicode  # noqa: E402
 from tools.common.route_calibration import estimate_template_to_route  # noqa: E402
 
 
-from tools.common.calibration_assets import (CLEAN_ROOT, OUTPUT_ROOT, FLOORS, route_asset_root,
+from tools.common.calibration_assets import (CLEAN_ROOT, OUTPUT_ROOT, FLOORS, calibration_root,
                                              project_relative, leading_number, floor_template)
-ROUTE_ROOT = PROJECT_ROOT / "assets/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
-ASSET_ROOT = route_asset_root()
+ROUTE_ROOT = PROJECT_ROOT / "maintenance/maps/a_bringer_of_doom/nightmare/sources/route_lhp_solo"
+ASSET_ROOT = calibration_root()
 
 
 SEARCH_RATIOS = {
@@ -325,7 +325,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="批量制作路线资产，默认输出到 workspace/asset_build")
     parser.add_argument("--publish", action="store_true", help="明确将结果写入正式资产目录")
     args = parser.parse_args()
-    ASSET_ROOT = route_asset_root(publish=args.publish)
+    ASSET_ROOT = calibration_root(publish=args.publish)
     route_files = sorted((path for path in ROUTE_ROOT.iterdir() if path.is_file()), key=lambda path: path.name)
     layout_dirs = sorted((path for path in CLEAN_ROOT.iterdir() if path.is_dir()), key=lambda path: path.name)
     payloads = []

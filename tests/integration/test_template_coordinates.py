@@ -39,8 +39,8 @@ def test_source_lookup_has_no_clean_or_floor_calibration_dependency(tmp_path,mon
     cv2.imencode('.png',np.full((32,32,3),90,np.uint8))[1].tofile(str(source))
     entry=dict(layout='layout_16',source_image='original.png',
                source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),saved_scale=1.4)
-    (tmp_path/'configs').mkdir()
-    config=tmp_path/'configs/template_matching.json'
+    (tmp_path/'maintenance/configs').mkdir(parents=True)
+    config=tmp_path/'maintenance/configs/template_matching.json'
     config.write_text(json.dumps({'entries':{'assets/maps/test/nightmare/clean/layout_16/missing.png':entry},'perf_mode':2}))
     assert direct.load_original('test/nightmare','layout_16')[1]==source
     source.write_bytes(b'replaced')

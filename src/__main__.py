@@ -59,22 +59,32 @@ def main() -> None:
     parser.add_argument("--check", action="store_true", help="检查地图、难度与模板资源")
     parser.add_argument("--project-once", type=Path, help="使用本地截图运行一次配准投影")
     parser.add_argument("--layout", help="指定布局，例如 layout_05；必须指定已人工确认的布局")
-    parser.add_argument("--route-version", help="显示版本：route_clean / route_lhp_solo / route_zhanshi_fast；模板模式另支持 route_lhp_solo_clean / route_zhanshi_fast_clean")
+    parser.add_argument('--map', dest='map_id', help='地图 ID，例如 a_bringer_of_doom')
+    parser.add_argument('--difficulty', help='难度 ID，例如 nightmare / hard')
+    parser.add_argument("--route-version", help="显示版本：route_clean / route_lhp_solo / route_zhanshi_fast / route_lhp_solo_clean / route_zhanshi_fast_clean；困难另支持 route_zhanshi_full / route_zhanshi_full_clean")
     parser.add_argument("--output", type=Path, help="一次性运行的诊断输出目录")
     parser.add_argument("--registration-backend", choices=("template",),
                         help="配准方式：template 定尺度模板匹配")
     parser.add_argument("--smoke", action="store_true", help="启动窗口并在 2 秒后关闭，用于界面烟雾检查")
     args = parser.parse_args()
+    from src.runtime_resources import read_bundle, runtime_files
+    if read_bundle() is None:
+        parser.error('缺少运行资源清单，请重新导出或安装完整运行包')
     catalog = MapCatalog()
     settings = load_settings(catalog)
+    if args.map_id or args.difficulty:
+        selected = catalog.profile(args.map_id or settings['map_id'], args.difficulty or settings['difficulty_id'])
+        settings['map_id'], settings['difficulty_id'] = selected.map_id, selected.difficulty_id
     profile = catalog.profile(settings["map_id"], settings["difficulty_id"])
 
     if args.check:
+        runtime_files()
         from src.registration.template_matching.direct import check_original_resources
+        from src.structure_layout.scales import check_scale_overrides
         summary = []
         for item in catalog.profiles.values():
             layouts = catalog.layouts(item)
-            status = {floor: 0 for floor in FLOOR_NAMES}
+            status = {floor: 0 for floor in item.floors}
             review = []
             versions = {}
             for layout in layouts:
@@ -98,8 +108,9 @@ def main() -> None:
             summary.append({
                 "map": item.map_name, "difficulty": item.difficulty_name,
                 "layouts": len(layouts),
+                "recognition_scales": check_scale_overrides(item.clean_root),
                 "pure_structure_floors": sum((item.clean_root / layout / f'{layout}_{floor}.png').is_file()
-                                             for layout in layouts for floor in ('2nd', '1st', 'b1')),
+                                             for layout in layouts for floor in item.floors),
                 "icon_structure_layouts": sum((item.clean_root / layout / f'{layout}_2nd.png').is_file() for layout in layouts),
                 "pass_floors": status, "review": review,
                 "versions": versions,
@@ -121,6 +132,8 @@ def main() -> None:
         from src.app_catalog import selected_template_variant, TEMPLATE_VERSION_NAMES
         backend = args.registration_backend or settings['registration_backend']
         template_variant = selected_template_variant(settings, profile.key)
+        if template_variant not in profile.template_versions:
+            template_variant = profile.template_versions[0]
         recognition_backend = settings.get('layout_recognition_backend', 'icon_structure')
         if args.layout is None:
             parser.error('布局识别需要人工确认，请通过 --layout 指定已确认的布局后离线投影')
