@@ -49,8 +49,9 @@ def test_reference_and_late_preview_follow_selected_original(window, monkeypatch
     assert window.last_result is None
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: seen.append(a))
-    window.reference_override = True
-    window._apply_reference_ready(window.map_generation, [0, 0, 1180, 1050], 'b1', window.profile.key, window.locked_layout)
+    window.floor_combo.setCurrentIndex(window.floor_combo.findData('b1'))
+    window.reference_visible = True
+    window._refresh_reference_map()
     wait_for(lambda: bool(seen))
     assert seen and '凉哈皮' in seen[-1][2]
     assert seen[-1][0].shape == direct.floors.load(window.profile.key, window.locked_layout, 'route_lhp_solo', 'b1')[3].shape

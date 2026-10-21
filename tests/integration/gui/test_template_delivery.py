@@ -7,6 +7,18 @@ from src.registration.template_matching import direct
 from src import projection_workflow as workflow
 from src import route_projection_app as app
 from tests.support.app_fakes import FakeApp, InlineThread
+from tests.support.qt_wait import wait_for
+
+
+def test_accepted_candidate_warning_is_visible_without_rejecting_projection(window):
+    result = SimpleNamespace(accepted=True, layer=np.zeros((4, 4, 4), np.uint8),
+        selected_layout=window.locked_layout, floor='1st', profile_key=window.profile.key,
+        variant_id=window.route_combo.currentData(),
+        registration=SimpleNamespace(validation={'warnings': ['匹配位置仍在搜索边界，候选可能错位，请核对位置']}))
+    window._finish_map_feedback(window.map_generation, window.settings['capture_roi'], result)
+    assert window.toast.title.text() == '模板候选可能错位'
+    assert '可能错位' in window.status_var.get()
+    assert result.accepted and window.settings['reference_floor'] == '1st'
 
 
 def test_template_open_waits_then_projects_without_floor_capture(monkeypatch):
@@ -67,7 +79,7 @@ def test_template_full_ui_result_reference_and_old_backend_setting_migrates(wind
     monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=2.,location=(0,0)))
     versions=json.loads(json.dumps(window.settings['route_versions']))
     window.apply_settings({**window.settings,'registration_backend':'template'})
-    assert window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
+    assert window.route_combo.isEnabled() and window.floor_combo.isEnabled()
     assert window.route_combo.currentData()=='route_zhanshi_fast'
     result=workflow.process_screenshot(original, catalog=window.catalog, profile=window.profile, layout_override=window.locked_layout, opacity=0.3, registration_backend='template')
     shown=[]
@@ -82,10 +94,11 @@ def test_template_full_ui_result_reference_and_old_backend_setting_migrates(wind
     assert 'floor_ms' not in window.status_rows
     references=[]
     monkeypatch.setattr(window.reference_overlay,'show_map',lambda *args:references.append(args))
-    window.reference_override=True;window._refresh_reference_map()
+    window.reference_visible=True;window._refresh_reference_map()
+    wait_for(lambda: bool(references))
     assert references and '2 楼' in references[-1][2]
     window.apply_settings({**window.settings,'registration_backend':'cpu'})
-    assert window.route_combo.isEnabled() and not window.floor_combo.isEnabled()
+    assert window.route_combo.isEnabled() and window.floor_combo.isEnabled()
     assert window.settings["registration_backend"] == "template"
     assert window.settings['route_versions']==versions and window.live_projection is None
     window._apply_result('project',True,generation,[0,0,40,40],result,None)

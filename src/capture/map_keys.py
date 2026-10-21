@@ -11,7 +11,8 @@ import threading
 import time
 from typing import Callable
 
-from src.app_catalog import key_to_vk
+from src.hotkeys import (key_to_vk, parse_hotkey, modifier_flags, physical_modifier_vk,
+                         MODIFIER_GROUPS, MODIFIER_VKS, PHYSICAL_MODIFIER_VKS)
 
 
 @dataclass(frozen=True)
@@ -42,6 +43,7 @@ class GlobalMapKeys:
         self._sequence = 0
         self._configuration = None
         self._held: set[int] = set()
+        self._pressed_actions: dict[int, str] = {}
         self.configure(map_key, titles)
 
     @property
@@ -49,20 +51,38 @@ class GlobalMapKeys:
         with self._lock:
             return self._revision
 
-    def configure(self, map_key: str, titles: list[str], *, suspended=False, discard=False):
-        configuration = (key_to_vk(map_key), tuple(title.casefold() for title in titles), bool(suspended))
+    def configure(self, map_key: str, titles: list[str], *, suspended=False, discard=False, action_keys=None):
         with self._lock:
+            actions = (self._configuration[3] if self._configuration else ()) if action_keys is None else tuple(
+                (parse_hotkey(key), action) for action, key in action_keys.items())
+            configuration = (key_to_vk(map_key), tuple(title.casefold() for title in titles), bool(suspended), actions)
             if configuration == self._configuration and not discard:
                 return
             self._configuration = configuration
             self._revision += 1
             # A held key at startup/reconfiguration must first be released.
-            self._held = self._read_held({configuration[0], 0x1B})
+            self._held = self._read_held(self._watched_keys(configuration))
+            flags = modifier_flags(self._held)
+            self._pressed_actions = {shortcut.vk: action for shortcut, action in actions
+                                     if shortcut.vk in self._held and shortcut.modifiers == flags}
             while True:
                 try:
                     self.events.get_nowait()
                 except queue.Empty:
                     break
+
+    @staticmethod
+    def _watched_keys(configuration):
+        map_vk = configuration[0]
+        keys = {0x1B, *PHYSICAL_MODIFIER_VKS, *(shortcut.vk for shortcut, _ in configuration[3])}
+        if map_vk not in MODIFIER_VKS:
+            keys.add(map_vk)
+        return keys
+
+    @staticmethod
+    def _map_down(held, vk):
+        group = next((group for group in MODIFIER_GROUPS.values() if group[0] == vk), (vk,))
+        return any(key in held for key in group)
 
     @staticmethod
     def _read_held(keys: set[int]) -> set[int]:
@@ -79,20 +99,40 @@ class GlobalMapKeys:
     def _record(self, vk: int, down: bool, foreground: tuple[int, str, int], *, detected_at=None):
         hwnd, title, process_id = foreground
         with self._lock:
-            map_vk, titles, suspended = self._configuration
-            if vk not in {map_vk, 0x1B}:
+            map_vk, titles, suspended, actions = self._configuration
+            if vk not in self._watched_keys(self._configuration) and vk not in MODIFIER_VKS:
                 return
             if down == (vk in self._held):
                 return  # Auto-repeat and duplicate releases do not toggle.
+            map_was_down = self._map_down(self._held, map_vk)
             if down:
                 self._held.add(vk)
             else:
                 self._held.discard(vk)
+            if vk in MODIFIER_VKS:
+                map_is_down = self._map_down(self._held, map_vk)
+                if map_was_down == map_is_down:
+                    return  # Modifier edges update state, never synthesize an action press.
+                action, down = 'map', map_is_down
+            elif vk == map_vk:
+                action = 'map'
+            elif vk == 0x1B:
+                action = 'escape'
+            elif down:
+                flags = modifier_flags(self._held)
+                action = next((action for shortcut, action in actions
+                               if shortcut.vk == vk and shortcut.modifiers == flags), None)
+                if action is not None:
+                    self._pressed_actions[vk] = action
+            else:
+                action = self._pressed_actions.pop(vk, None)
+            if action is None:
+                return
             enabled = (not suspended and process_id != os.getpid()
                        and any(token in title.casefold() for token in titles))
             self._sequence += 1
             self.events.put(MapKeyEvent(self._sequence, self._revision,
-                "map" if vk == map_vk else "escape", down,
+                action, down,
                 time.perf_counter() if detected_at is None else detected_at,
                 enabled, title, hwnd))
         self._wake()
@@ -191,15 +231,17 @@ class GlobalMapKeys:
             if RawHeader.from_buffer_copy(data).dwType != 1:
                 return
             keyboard = RawKeyboard.from_buffer_copy(data, header_size)
-            if keyboard.VKey not in {self._configuration[0], 0x1B}:
-                return
+            vk = physical_modifier_vk(keyboard.VKey, keyboard.MakeCode, bool(keyboard.Flags & 2))
+            with self._lock:
+                if vk not in self._watched_keys(self._configuration):
+                    return
             detected_at = time.perf_counter()
             hwnd = user32.GetForegroundWindow()
             title = ctypes.create_unicode_buffer(user32.GetWindowTextLengthW(hwnd) + 1)
             user32.GetWindowTextW(hwnd, title, len(title))
             pid = wintypes.DWORD()
             user32.GetWindowThreadProcessId(hwnd, ctypes.byref(pid))
-            self._record(keyboard.VKey, not bool(keyboard.Flags & 1),
+            self._record(vk, not bool(keyboard.Flags & 1),
                          (hwnd or 0, title.value, pid.value), detected_at=detected_at)
 
         @wndproc_type

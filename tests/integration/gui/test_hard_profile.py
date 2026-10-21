@@ -6,11 +6,14 @@ from src.route_projection_qt_ui import LayoutConfirmationDialog, EntrancePreview
 
 def test_switch_to_hard_clears_old_context_and_only_lists_two_floors(window, tmp_path):
     window.settings['floor'] = 'b1'
+    window.settings['reference_floor'] = 'b1'
     window.difficulty_var.set('困难')
     window._profile_changed()
     assert window.profile.key == 'a_bringer_of_doom/hard'
     assert window.locked_layout is None
     assert window.settings['floor'] == '2nd'
+    import json
+    assert json.loads(window.settings_path.read_text(encoding='utf-8'))['reference_floor'] == '2nd'
     assert [window.floor_combo.itemData(i) for i in range(window.floor_combo.count())] == ['2nd', '1st']
     assert selected_template_variant(window.settings, window.profile.key) == 'route_zhanshi_full'
     assert [window.route_combo.itemData(i) for i in range(window.route_combo.count())] == [
@@ -47,9 +50,9 @@ def test_hard_clean_version_switch_rematches_and_uses_new_reference(window, monk
         window.profile.key] == 'route_zhanshi_full_clean'
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *args: seen.append(args))
-    window.reference_override = True
-    window._apply_reference_ready(window.map_generation, [0,0,1180,1050], '1st',
-                                  window.profile.key, window.locked_layout)
+    window.floor_combo.setCurrentIndex(window.floor_combo.findData('1st'))
+    window.reference_visible = True
+    window._refresh_reference_map()
     wait_for(lambda: bool(seen))
     assert seen[-1][0].shape[:2] == (3592, 4360)
     assert '展十全图路线底图版' in seen[-1][2]

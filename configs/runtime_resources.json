@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "payload_sha256": "5a8d3c7621200faafe53776c4e08857e8230d0dd6a5891cc300b62106a7eff7c",
+  "payload_sha256": "6aedfb19933cf5205a352d7642ccacd1ec2e902c70604cd341792f8bd6fbc39c",
   "payload": {
     "template": {
       "perf_mode": 2,
@@ -12039,8 +12039,8 @@
         "sha256": "2e586b055be3d432feca799fc7b98a86aa9eb162780463ddf0230da498aa9758"
       },
       "configs/app_defaults.json": {
-        "bytes": 722,
-        "sha256": "c631831971aac07e34105b1fcad87ae13cab880be164caa687c8db49b0f57c1c"
+        "bytes": 1007,
+        "sha256": "883e9cd092b769dda179b1193a8d0fbcba96e1f1c91f53da82a4196408668a89"
       },
       "configs/map_catalog.json": {
         "bytes": 2161,
@@ -12048,13 +12048,13 @@
       },
       "src/registration/template_matching/provenance.json": {
         "bytes": 934,
-        "sha256": "7d90c81a06c0fc709a4e2f31a0b44b10ef723f122451fa1e61768039229909ca"
+        "sha256": "83213aadc6f44f4150bd83009cf653571fa9cbf1a7d8e37d10d47216bc32973b"
       },
       "configs/scale_config.json": {
         "bytes": 77524,
         "sha256": "b8d956150ec9ab068f4b71da8fdfb63e8c5816ccafce7d1fdf339ae02224f0fd"
       }
     },
-    "maintenance_revision": "78594da33a6555bb6d60a2e78513c35d963d3b1ddfa95e2235d6d1f231e3f0bc"
+    "maintenance_revision": "b140c938f974903d9e27d67d39ef8c9faf44138006c2a6c0a46a789162e17f79"
   }
 }

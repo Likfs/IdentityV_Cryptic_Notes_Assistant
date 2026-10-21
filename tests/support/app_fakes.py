@@ -19,6 +19,7 @@ class FakeApp:
         self.results=queue.Queue();self.requests=[];self.scheduled=[];self.hidden=0
         self.profile=SimpleNamespace(key='a_bringer_of_doom/nightmare')
         self.catalog=object()
+        self.capture_policy=SimpleNamespace(begin_capture=lambda _token: None, end_capture=lambda _token: None)
     def _log(self,*args):pass
     def _refresh_status(self):pass
     def _gui_diagnostic_snapshot(self):return {'log_entries': 0, 'activity': {}}

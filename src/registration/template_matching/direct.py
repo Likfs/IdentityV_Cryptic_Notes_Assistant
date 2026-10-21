@@ -12,6 +12,8 @@ from . import resources, matcher, floors
 from .screen import screen_info
 
 _images = {}
+FLOOR_REVIEW_MARGIN = 1.0
+FLOOR_REVIEW_DS = 0.5
 
 
 def entry_fingerprint(entry):
@@ -35,6 +37,7 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
     Ordered collection preserves candidate order and the original tie policy.
     """
     prepared = matcher.ScreenshotPreparation(screenshot)
+    initial_ds = matcher.TEMPLATE_DS
     jobs = []
     last_path = None
     for floor in snapshot.entries:
@@ -45,32 +48,91 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
             scale = saved_scale * screen_factor
             options = dict(map_threshold=entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
                            map_image=image, image_fingerprint=floors.fingerprint(entry))
-            matcher.prepare_map(str(path), matcher.TEMPLATE_DS, **options)
-            prepared.get(scale, matcher.TEMPLATE_DS)
             jobs.append((floor, entry, path, image, rgba, saved_scale, scale, options))
         except (ValueError, cv2.error) as exc:
             jobs.append(dict(candidate_floor=floor, reason=str(exc)))
 
-    def match_floor(job):
+    def match_floor(job, *, ds, expanded=False):
         if isinstance(job, dict):
-            return job, None
+            return dict(job), None
         floor, entry, path, image, rgba, saved_scale, scale, options = job
         try:
-            match = matcher._match_template(screenshot, str(path), scale, prepared=prepared, **options)
+            match = matcher._match_template(screenshot, str(path), scale, prepared=prepared,
+                                            expand_search=expanded, ds=ds, **options)
             if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
                 raise ValueError('定尺度模板匹配未返回有限分数或坐标')
-            return (dict(candidate_floor=floor, saved_scale=saved_scale,
-                         score=float(match['score']), location=list(match['location'])),
+            match['ds'] = ds
+            return (dict(candidate_floor=floor, saved_scale=saved_scale, ds=ds,
+                         score=float(match['score']), location=list(match['location']),
+                         search=match.get('search', {})),
                     (match, scale, saved_scale, floor, entry, path, rgba, image))
         except (ValueError, cv2.error) as exc:
-            return dict(candidate_floor=floor, reason=str(exc)), None
+            return dict(candidate_floor=floor, reason=str(exc),
+                        failure='template_too_large' if isinstance(exc, matcher.TemplateSizeError) else 'match_error'), None
+
+    def select_best(results):
+        best = None
+        for _, candidate in results:
+            if candidate is not None and (best is None or candidate[0]['score'] > best[0]['score']):
+                best = candidate
+        return best
+
+    def score_gap(results):
+        scores = sorted((candidate[0]['score'] for _, candidate in results if candidate is not None),
+                        reverse=True)
+        return scores[0] - scores[1] if len(scores) >= 2 else None
+
+    def run_resolution(ds, pool):
+        ready = []
+        for job in jobs:
+            if isinstance(job, dict):
+                ready.append(job)
+                continue
+            _, _, path, _, _, _, scale, options = job
+            try:
+                # Shared caches and query groups are populated only by the coordinator.
+                matcher.prepare_map(str(path), ds, **options)
+                prepared.get(scale, ds)
+                ready.append(job)
+            except (ValueError, cv2.error) as exc:
+                ready.append(dict(candidate_floor=job[0], reason=str(exc)))
+        results = list(pool.map(lambda job: match_floor(job, ds=ds), ready))
+        best = select_best(results)
+        trigger = None
+        if best is not None and best[0].get('search', {}).get('boundary_edges'):
+            trigger = 'best_at_boundary'
+        elif results and best is None and all(attempt.get('failure') == 'template_too_large' for attempt, _ in results):
+            trigger = 'all_candidates_too_large'
+        if trigger:
+            initial = results
+            # Retry every configured, scaled floor under the same search policy.
+            # The coordinator already prepared all shared inputs; workers only
+            # allocate their own temporary padded masks and response arrays.
+            results = list(pool.map(lambda job: match_floor(job, ds=ds, expanded=True), ready))
+            for (attempt, _), (previous, _) in zip(results, initial):
+                attempt.update(initial_attempt=previous, retry_trigger=trigger)
+            best = select_best(results)
+        return results, best
 
     with ThreadPoolExecutor(max_workers=2, thread_name_prefix='template-match') as pool:
-        results = list(pool.map(match_floor, jobs))
-    best = None
-    for _, candidate in results:
-        if candidate is not None and (best is None or candidate[0]['score'] > best[0]['score']):
-            best = candidate
+        results, best = run_resolution(initial_ds, pool)
+        gap = score_gap(results)
+        if best is not None:
+            review = dict(triggered=False, threshold=FLOOR_REVIEW_MARGIN, initial_ds=initial_ds,
+                          review_ds=FLOOR_REVIEW_DS, initial_gap=gap)
+            if initial_ds < FLOOR_REVIEW_DS and gap is not None and gap < FLOOR_REVIEW_MARGIN:
+                review.update(triggered=True, initial_floor=best[3],
+                              initial_candidates=[attempt for attempt, _ in results])
+                reviewed, reviewed_best = run_resolution(FLOOR_REVIEW_DS, pool)
+                review.update(review_candidates=[attempt for attempt, _ in reviewed],
+                              review_gap=score_gap(reviewed),
+                              outcome='reviewed' if reviewed_best is not None else 'failed')
+                if reviewed_best is not None:
+                    # Select only among review scores; scores at different resolutions
+                    # are not comparable. Keep saved scales and source coordinates.
+                    results, best = reviewed, reviewed_best
+                review['final_floor'] = best[3]
+            best[0]['resolution_review'] = review
     return [attempt for attempt, _ in results], best, last_path
 
 
@@ -240,11 +302,25 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
         result.original_to_screen = np.linalg.inv(result.screenshot_to_original)
         result.validation['template'] = dict(scale=scale, saved_scale=saved_scale,
             screen=screen, score=float(match['score']), location=[int(x),int(y)],
-            ds=matcher.PERF_MODES[mode]['ds'], perf_mode=mode,
+            ds=match.get('ds', matcher.PERF_MODES[mode]['ds']), perf_mode=mode,
             source_sha256=entry['source_sha256'], source_image=entry['source_image'],
             target='single_floor_source_image', scale_policy='saved_original_scale_with_screen_factor',
             variant_id=variant_id, candidate_floor=floor, source_record_sha256=floors.fingerprint(entry),
-            scale_provenance=entry.get('scale_provenance', 'imported_saved_scale'))
+            scale_provenance=entry.get('scale_provenance', 'imported_saved_scale'),
+            search=match.get('search', {}))
+        warnings = []
+        if match.get('search', {}).get('boundary_edges'):
+            warnings.append('匹配位置仍在搜索边界，候选可能错位，请核对位置')
+        if match['score'] < 0:
+            warnings.append('匹配分数为负，候选可能错位，请核对位置')
+        review = match.get('resolution_review', {})
+        result.validation['resolution_review'] = review
+        if review.get('triggered'):
+            if review['outcome'] == 'failed':
+                warnings.append('50%分辨率复核未返回有效候选，保留初次候选，请核对楼层')
+            elif review['review_gap'] is None or review['review_gap'] < FLOOR_REVIEW_MARGIN:
+                warnings.append('50%分辨率复核后楼层仍难区分，请核对楼层')
+        result.validation['warnings'] = warnings
         result.timings['total'] = (perf_counter()-started)*1000
         projection_started = perf_counter()
         layer = cv2.warpPerspective(rgba, result.original_to_screen,

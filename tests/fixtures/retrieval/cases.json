@@ -481,5 +481,40 @@
         "label_provenance": "User uncertain; saved selected layout is not ground truth"
       }
     ]
-  }
+  },
+  "projection_regressions": [
+    {
+      "id": "layout18_extra_right_room",
+      "screenshot": "tests/fixtures/registration/layout18_extra_right_room.png",
+      "sha256": "eeb6940b02e81af22798432266bde648b09f4cf15d99247c7cf6c8188c07dc2f",
+      "source_run": "runtime/diagnostics/route_projection/app_runs/20261019_184055_957021_layout_18_1st",
+      "profile": "a_bringer_of_doom/nightmare",
+      "selected_layout": "layout_18",
+      "variant_id": "route_zhanshi_fast_clean",
+      "layout_label_provenance": "Diagnostic selected layout, not independently labelled gameplay ground truth",
+      "expected_source_sha256": "f9996f337d0e55175a61de4e8d201c5b655074221aff8f6eff8fb2973f2c2a12",
+      "expected_origin": [
+        476,
+        56
+      ],
+      "pose_provenance": "Consensus from offline partial-width matches (600/700/800/840/880 pixels) and visual correspondence, holding selected layout and fixed scale 1.49 unchanged; not a recognition accuracy label"
+    },
+    {
+      "id": "layout19_floor_ambiguity",
+      "screenshot": "tests/fixtures/registration/layout19_floor_ambiguity.png",
+      "sha256": "ad3c9727cb35ede574f1e6b31e7857579ef3a7b7598c9aed82020c340c852260",
+      "source_run": "runtime/diagnostics/route_projection/app_runs/20261020_161634_827439_layout_19_2nd",
+      "profile": "a_bringer_of_doom/nightmare",
+      "selected_layout": "layout_19",
+      "variant_id": "route_zhanshi_fast_clean",
+      "layout_label_provenance": "Selected layout from diagnostic; not an independent recognition accuracy label",
+      "expected_floor": "b1",
+      "expected_origin": [
+        -186,
+        -502
+      ],
+      "expected_source_sha256": "0919780a333530e73be715f56a8c422e43d7176792f9429311c6692f5aa99974",
+      "pose_provenance": "Visible room protrusion, corridor and doors correspond to basement room 3; independent offline fixed-scale 0.5 and 1.0 resolution checks agree on origin. Saved scale remains 1.49."
+    }
+  ]
 }

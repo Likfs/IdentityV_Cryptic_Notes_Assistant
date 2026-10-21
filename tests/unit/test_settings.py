@@ -2,6 +2,59 @@ from __future__ import annotations
 import json
 import pytest
 from src.app_catalog import MapCatalog, load_settings, save_settings, selected_template_variant
+from src.chest_counter import CHEST_HOTKEY_FIELDS
+
+
+def test_combination_preferences_normalize_and_roundtrip_without_changing_single_keys(tmp_path):
+    path = tmp_path / 'settings.json'
+    path.write_text(json.dumps({'recognize_hotkey': 'ctrl+1', 'project_hotkey': 'shift+ctrl+1',
+        'reference_hotkey': '1', 'reference_floor_hotkey': 'alt+j', 'chest_gold_add_hotkey': 'ctrl+shift+f5'}))
+    before = path.read_bytes()
+    settings = load_settings(MapCatalog(), path)
+    assert path.read_bytes() == before
+    assert [settings[field] for field in ('recognize_hotkey', 'project_hotkey', 'reference_hotkey',
+        'reference_floor_hotkey', 'chest_gold_add_hotkey', 'chest_gold_subtract_hotkey')] == [
+        'Ctrl+1', 'Ctrl+Shift+1', '1', 'Alt+J', 'Ctrl+Shift+F5', 'F6']
+    save_settings(settings, path)
+    assert load_settings(MapCatalog(), path) == settings
+
+
+def test_counter_hotkeys_migrate_without_overriding_existing_keys(tmp_path):
+    path = tmp_path / 'settings.json'
+    path.write_text(json.dumps({'recognize_hotkey': 'F5', 'reference_hotkey': 'F6',
+                               'chest_gold_add_hotkey': 'F5', 'chest_purple_add_hotkey': [],
+                               'capture_exclusion_enabled': False, 'chest_counter_visible': False}))
+    before = path.read_bytes()
+    settings = load_settings(MapCatalog(), path)
+    assert path.read_bytes() == before
+    assert settings['recognize_hotkey'] == 'F5' and settings['reference_hotkey'] == 'F6'
+    fields = ('map_key', 'recognize_hotkey', 'project_hotkey', 'reference_hotkey', 'reference_floor_hotkey', *CHEST_HOTKEY_FIELDS)
+    assert len({settings[field] for field in fields}) == len(fields)
+    assert not settings['capture_exclusion_enabled'] and not settings['chest_counter_visible']
+    save_settings(settings, path)
+    assert load_settings(MapCatalog(), path) == settings
+
+
+def test_new_settings_defaults_and_invalid_booleans_do_not_write_on_read(tmp_path):
+    path = tmp_path / 'settings.json'
+    path.write_text('{"capture_exclusion_enabled": "false", "chest_counter_visible": null}')
+    settings = load_settings(MapCatalog(), path)
+    assert settings['capture_exclusion_enabled'] is True
+    assert settings['chest_counter_visible'] is True
+    assert [settings[field] for field in CHEST_HOTKEY_FIELDS] == ['F5', 'F6', 'F7', 'F9']
+
+
+def test_reference_floor_key_preserves_existing_shortcuts_and_normalizes_hard_floor(tmp_path):
+    path = tmp_path / 'settings.json'
+    path.write_text(json.dumps({'map_key': 'J', 'map_id': 'a_bringer_of_doom', 'difficulty_id': 'hard',
+                               'reference_floor': 'b1'}), encoding='utf-8')
+    before = path.read_bytes()
+    settings = load_settings(MapCatalog(), path)
+    assert path.read_bytes() == before
+    assert settings['map_key'] == 'J' and settings['reference_floor_hotkey'] == 'K'
+    assert settings['reference_floor'] == '2nd'
+    save_settings(settings, path)
+    assert load_settings(MapCatalog(), path) == settings
 
 
 @pytest.mark.parametrize('value', [None, 'unknown', [], 'cnn', 'icon_structure', 'pure_structure'])

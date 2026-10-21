@@ -11,8 +11,9 @@ def test_reference_uses_selected_source_version(window, monkeypatch, variant):
     window.route_combo.setCurrentIndex(window.route_combo.findData(variant))
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: seen.append(a))
-    window.reference_override = True
-    window._apply_reference_ready(window.map_generation, [0, 0, 1180, 1050], 'b1', window.profile.key, window.locked_layout)
+    window.floor_combo.setCurrentIndex(window.floor_combo.findData('b1'))
+    window.reference_visible = True
+    window._refresh_reference_map()
     wait_for(lambda: bool(seen))
     assert seen and '底图版' in seen[-1][2]
     expected = direct.floors.load(window.profile.key, window.locked_layout, variant, 'b1')[3]

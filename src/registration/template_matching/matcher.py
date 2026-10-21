@@ -23,6 +23,10 @@ _map_cache = {}
 FLOAT_MASK_CACHE_BYTES = 64 * 1024 * 1024
 
 
+class TemplateSizeError(ValueError):
+    """The visible query cannot fit the current bounded search canvas."""
+
+
 def _float_masks(map_bw):
     white = (map_bw > 0).astype(np.float32)
     black = (map_bw == 0).astype(np.float32)
@@ -135,10 +139,12 @@ class ScreenshotPreparation:
 
 
 def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH, search_region=None,
-                    map_image=None, image_fingerprint=None, prepared=None):
+                    map_image=None, image_fingerprint=None, prepared=None, expand_search=False, ds=None):
     if not np.isfinite(scale) or scale <= 0:
         raise ValueError('固定尺度必须为有限正数')
-    ds = TEMPLATE_DS
+    ds = TEMPLATE_DS if ds is None else ds
+    if not np.isfinite(ds) or not 0 < ds <= 1:
+        raise ValueError('处理分辨率必须大于0且不超过1')
     inv_ds = 1.0 / ds
     _, map_left, map_top, map_white, map_black = prepare_map(
         map_path, ds, map_threshold=map_threshold, search_region=search_region,
@@ -148,8 +154,20 @@ def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH,
         raise ValueError('截图预处理不属于本次截图')
     (game_white, game_black, white_count, black_count, game_left, game_top,
      scaled_width, scaled_height) = prepared.get(scale, ds)
+    # Retry buffers are request-local; verified pixels and cached masks stay immutable.
+    # Each edge grows by at most half the query or source extent. This bounds the
+    # response size and keeps at least half the query overlapping the source on
+    # each axis, instead of allowing a tiny fragment to match far outside it.
+    pad_y = min(game_white.shape[0], map_white.shape[0]) // 2 if expand_search else 0
+    pad_x = min(game_white.shape[1], map_white.shape[1]) // 2 if expand_search else 0
+    if pad_x or pad_y:
+        padding = ((pad_y, pad_y), (pad_x, pad_x))
+        map_white = np.pad(map_white, padding, constant_values=0)
+        map_black = np.pad(map_black, padding, constant_values=1)
+        map_left -= pad_x
+        map_top -= pad_y
     if game_white.shape[0] > map_white.shape[0] or game_white.shape[1] > map_white.shape[1]:
-        raise ValueError('固定尺度下截图可见区域大于原图搜索区域')
+        raise TemplateSizeError('固定尺度下截图可见区域大于原图搜索区域')
     # FFT roundoff can produce tiny negative counts, especially on uniform backgrounds.
     ww = cv2.matchTemplate(map_white, game_white, cv2.TM_CCORR)
     np.clip(ww, 0., white_count, out=ww)
@@ -187,9 +205,17 @@ def _match_template(game, map_path, scale, *, map_threshold=TEMPLATE_MAP_THRESH,
     np.multiply(TEMPLATE_WB, wb, out=wb)
     np.add(ww, wb, out=ww)
     _, score, _, location = cv2.minMaxLoc(ww)
+    maximum_x, maximum_y = ww.shape[1] - 1, ww.shape[0] - 1
+    edges = [name for name, hit in (('left', location[0] == 0), ('right', location[0] == maximum_x),
+                                    ('top', location[1] == 0), ('bottom', location[1] == maximum_y)) if hit]
     return {'location': (int((location[0]+map_left-game_left)*inv_ds),
                          int((location[1]+map_top-game_top)*inv_ds)),
-            'scale': scale, 'score': score, 'size': (scaled_width, scaled_height)}
+            'scale': scale, 'score': score, 'size': (scaled_width, scaled_height),
+            'search': dict(expanded=bool(expand_search), boundary_edges=edges,
+                padding_xy=[pad_x*inv_ds, pad_y*inv_ds],
+                origin_bounds_xyxy=[(map_left-game_left)*inv_ds, (map_top-game_top)*inv_ds,
+                                    (maximum_x+map_left-game_left)*inv_ds,
+                                    (maximum_y+map_top-game_top)*inv_ds])}
 
 
 def find_best_scale(game, map_path):

@@ -18,10 +18,13 @@ from PyQt6.QtWidgets import (
     QSlider, QSpinBox, QVBoxLayout, QWidget,
 )
 
-from src.app_catalog import ACTION_KEYS, MAP_KEYS, key_to_vk, load_settings
+from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings
 from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
 from src.capture.region import CaptureRegion
 from src.layout_retrieval import BACKEND_LABELS
+from src.chest_counter import CHEST_ACTIONS, CHEST_HOTKEY_FIELDS
+from src.capture.visibility import apply_window_capture_policy
+from src.hotkeys import Hotkey, validate_action_hotkeys
 
 
 BG = "#101a27"
@@ -298,7 +301,7 @@ class Value:
 
 
 class HotkeyCaptureButton(QPushButton):
-    """Click, then press a supported key to replace one shortcut."""
+    """Record a primary key with optional Ctrl/Shift/Alt modifiers."""
 
     SPECIAL_KEYS = {
         Qt.Key.Key_Tab: "Tab", Qt.Key.Key_Space: "Space",
@@ -306,7 +309,7 @@ class HotkeyCaptureButton(QPushButton):
         Qt.Key.Key_Alt: "Alt", Qt.Key.Key_CapsLock: "CapsLock",
     }
 
-    def __init__(self, value: str, allowed: tuple[str, ...], on_capture, parent=None):
+    def __init__(self, value: str, allowed: tuple[str, ...], on_capture, parent=None, *, allow_modifiers=True):
         super().__init__(value, parent)
         self.setObjectName("hotkeyCapture")
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -314,32 +317,63 @@ class HotkeyCaptureButton(QPushButton):
         self.allowed = allowed
         self.on_capture = on_capture
         self.capturing = False
+        self.allow_modifiers = allow_modifiers
         self.clicked.connect(self.begin_capture)
 
     def begin_capture(self):
         self.capturing = True
-        self.setText("请按下新按键 · Esc 取消")
+        self.setText('请按快捷键 · Esc 取消' if self.allow_modifiers else '请按地图单键 · Esc 取消')
         self.setFocus(Qt.FocusReason.MouseFocusReason)
 
     @staticmethod
     def key_name(event):
         key = event.key()
+        native = event.nativeVirtualKey()
+        if 0x30 <= native <= 0x39 or 0x41 <= native <= 0x5A:
+            return chr(native)
         if Qt.Key.Key_F1 <= key <= Qt.Key.Key_F12:
             return f"F{key - Qt.Key.Key_F1 + 1}"
         if Qt.Key.Key_A <= key <= Qt.Key.Key_Z or Qt.Key.Key_0 <= key <= Qt.Key.Key_9:
             return chr(key)
+        shifted_digits = {Qt.Key.Key_ParenRight: '0', Qt.Key.Key_Exclam: '1', Qt.Key.Key_At: '2',
+                          Qt.Key.Key_NumberSign: '3', Qt.Key.Key_Dollar: '4', Qt.Key.Key_Percent: '5',
+                          Qt.Key.Key_AsciiCircum: '6', Qt.Key.Key_Ampersand: '7', Qt.Key.Key_Asterisk: '8',
+                          Qt.Key.Key_ParenLeft: '9'}
+        if event.modifiers() & Qt.KeyboardModifier.ShiftModifier and key in shifted_digits:
+            return shifted_digits[key]
         return HotkeyCaptureButton.SPECIAL_KEYS.get(key)
 
     def event(self, event):
+        if self.capturing and event.type() == QEvent.Type.ShortcutOverride:
+            event.accept()
+            return True
         if self.capturing and event.type() == QEvent.Type.KeyPress:
             key = event.key()
             if key == Qt.Key.Key_Escape:
                 self.capturing = False
                 self.setText(self.value)
                 return True
+            if event.isAutoRepeat():
+                return True
+            modifiers = event.modifiers()
+            flags = sum(flag for qt_flag, flag in (
+                (Qt.KeyboardModifier.ControlModifier, 2), (Qt.KeyboardModifier.ShiftModifier, 4),
+                (Qt.KeyboardModifier.AltModifier, 1)) if modifiers & qt_flag)
+            if modifiers & (Qt.KeyboardModifier.MetaModifier | Qt.KeyboardModifier.KeypadModifier):
+                self.setText('请使用 Ctrl／Shift／Alt 与主键盘按键 · Esc 取消')
+                return True
+            if self.allow_modifiers and key in (Qt.Key.Key_Control, Qt.Key.Key_Shift, Qt.Key.Key_Alt):
+                prefix = '+'.join(name for name, flag in (('Ctrl', 2), ('Shift', 4), ('Alt', 1)) if flags & flag)
+                self.setText(prefix + '+… · Esc 取消')
+                return True
             name = self.key_name(event)
             if name not in self.allowed:
                 self.setText("不支持此键，请重按 · Esc 取消")
+                return True
+            if self.allow_modifiers:
+                name = Hotkey(name, flags).label
+            elif flags & ~{'Ctrl': 2, 'Shift': 4, 'Alt': 1}.get(name, 0):
+                self.setText('游戏地图键仅支持单键 · Esc 取消')
                 return True
             if self.on_capture(name) is False:
                 self.setText("按键冲突，请重按 · Esc 取消")
@@ -452,12 +486,7 @@ class ImagePanel(QFrame):
 
 
 def exclude_window_from_capture(widget: QWidget) -> bool:
-    if sys.platform != "win32":
-        return False
-    set_affinity = ctypes.windll.user32.SetWindowDisplayAffinity
-    set_affinity.argtypes = (wintypes.HWND, wintypes.DWORD)
-    set_affinity.restype = wintypes.BOOL
-    return bool(set_affinity(int(widget.winId()), 0x00000011))
+    return apply_window_capture_policy(widget)
 
 
 def physical_to_qt_geometry(left: int, top: int, width: int, height: int):
@@ -689,14 +718,44 @@ class ReferenceMapWindow(RouteOverlayWindow):
         scale = width / image.shape[1]
         thumb = cv2.resize(image, (width, max(1, round(image.shape[0] * scale))),
                            interpolation=cv2.INTER_AREA if scale <= 1 else cv2.INTER_LINEAR)
-        canvas = np.full((thumb.shape[0] + 30, thumb.shape[1], 4), 255, np.uint8)
-        canvas[:30, :, :3] = (49, 35, 23)
-        canvas[30:, :, :3] = thumb
+        canvas = np.full((thumb.shape[0] + 54, thumb.shape[1], 4), 255, np.uint8)
+        canvas[:54, :, :3] = (49, 35, 23)
+        canvas[54:, :, :3] = thumb
         self.setWindowOpacity(opacity)
         super().show(canvas, 0, 0)
         self.caption.setText(caption)
-        self.caption.setGeometry(0, 0, self.width(), max(20, round(30 / self.devicePixelRatioF())))
+        self.caption.setGeometry(0, 0, self.width(), max(36, round(54 / self.devicePixelRatioF())))
         self.caption.raise_()
+
+
+class ChestCounterWindow(RouteOverlayWindow):
+    """A mouse-through counter that stays visible while the game is foreground."""
+
+    def __init__(self):
+        super().__init__(clear_before_hide=False)
+        self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label.setStyleSheet(
+            'background: transparent; color: white; font-family: "Microsoft YaHei UI"; font-size: 16px;')
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setBrush(QColor(16, 26, 39, 225))
+        painter.setPen(QColor('#526980'))
+        painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 7, 7)
+        painter.end()
+
+    def show_counts(self, gold, purple, client):
+        x, y, width, height, _ = physical_to_qt_geometry(*client.as_list())
+        self.setGeometry(x + max(0, width - 296), y + min(100, max(0, height - 54)), 280, 54)
+        self.label.setGeometry(self.rect())
+        self.label.setText(f'已开启　<span style="color:#f5c879">金箱 {gold}</span>'
+                           f'　<span style="color:#d9a0ff">紫箱 {purple}</span>')
+        if not self.isVisible():
+            self._prepare_native_window()
+            QWidget.show(self)
+        self.visible = True
 
 
 class SettingsPage(QWidget):
@@ -716,7 +775,8 @@ class SettingsPage(QWidget):
         title = QLabel("偏好设置")
         title.setObjectName("section")
         outer.addWidget(title)
-        hint = QLabel("点击快捷键按钮，再按键盘上的目标按键；修改会自动保存。")
+        hint = QLabel('点击快捷键按钮，再按目标按键；程序操作可使用 Ctrl／Shift／Alt 组合，地图键保持单键。修改会自动保存。')
+        hint.setWordWrap(True)
         hint.setObjectName("muted")
         outer.addWidget(hint)
         self.status = QLabel(self.save_status.get())
@@ -755,7 +815,8 @@ class SettingsPage(QWidget):
 
         def capture(name, allowed, value):
             self.vars[name] = Value(value)
-            button = HotkeyCaptureButton(value, allowed, lambda key: self._capture_key(name, key))
+            button = HotkeyCaptureButton(value, allowed, lambda key: self._capture_key(name, key),
+                                         allow_modifiers=name != 'map_key')
             self.hotkey_buttons[name] = button
             return button
 
@@ -776,7 +837,23 @@ class SettingsPage(QWidget):
         form.addRow("游戏地图键", capture("map_key", MAP_KEYS, settings["map_key"]))
         form.addRow("识别快捷键", capture("recognize_hotkey", ACTION_KEYS, settings["recognize_hotkey"]))
         form.addRow("投影快捷键", capture("project_hotkey", ACTION_KEYS, settings["project_hotkey"]))
-        form.addRow("左上角路线图显隐", capture("reference_hotkey", ACTION_KEYS, settings["reference_hotkey"]))
+        form.addRow("常驻参考图显隐", capture("reference_hotkey", ACTION_KEYS, settings["reference_hotkey"]))
+        form.addRow('参考图下一层', capture('reference_floor_hotkey', ACTION_KEYS, settings['reference_floor_hotkey']))
+        reference_note = QLabel('H 显隐、J 切层为默认按键，可修改。配准成功后同步参考楼层，仍可用 J 手动切换；关地图后常驻，不影响投影，也不持续追踪角色楼层。')
+        reference_note.setWordWrap(True)
+        form.addRow('', reference_note)
+        for action, (label, _, _, _) in CHEST_ACTIONS.items():
+            field = f'{action}_hotkey'
+            form.addRow('宝箱计数 · ' + label, capture(field, ACTION_KEYS, settings[field]))
+        form.addRow('宝箱计数条', check('chest_counter_visible', '游戏前台时显示（关地图后仍显示）', settings['chest_counter_visible']))
+        self.capture_exclusion_check = check('capture_exclusion_enabled', '在截图和录屏中隐藏本程序', settings['capture_exclusion_enabled'])
+        form.addRow('防捕获', self.capture_exclusion_check)
+        self.capture_status_label = QLabel(self.app.capture_policy.status)
+        self.capture_status_label.setWordWrap(True)
+        form.addRow('', self.capture_status_label)
+        capture_note = QLabel('关闭后允许捕获；OBS 游戏捕获未必包含独立悬浮窗。内部截图期间会临时排除本程序，录屏中可能短暂消隐。')
+        capture_note.setWordWrap(True)
+        form.addRow('', capture_note)
         form.addRow("自动投影", check("auto_project", "地图打开时自动配准并投影", settings["auto_project"]))
         form.addRow("地图拖动跟随（试用）", check("template_motion_tracking", "拖动地图时路线同步平移（不支持缩放）", settings.get("template_motion_tracking", True)))
         self.map_capture_delay_spin = QSpinBox()
@@ -826,9 +903,12 @@ class SettingsPage(QWidget):
             '请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。')
 
     def _capture_key(self, name: str, key: str) -> bool:
-        names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey")
-        if any(self.vars[other].get() == key for other in names if other != name):
-            self.save_status.set(f"{key} 已被其他快捷键使用，请选择其他按键")
+        names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey", 'reference_floor_hotkey', *CHEST_HOTKEY_FIELDS)
+        values = {field: key if field == name else self.vars[field].get() for field in names}
+        try:
+            validate_action_hotkeys(values['map_key'], {field: value for field, value in values.items() if field != 'map_key'})
+        except ValueError as exc:
+            self.save_status.set(str(exc))
             return False
         self.vars[name].set(key)
         self._schedule_settings_save()
@@ -848,16 +928,9 @@ class SettingsPage(QWidget):
         self._settings_save_job.start(600)
 
     def _collect_settings(self):
-        keys = [self.vars[name].get() for name in ("map_key", "recognize_hotkey", "project_hotkey")]
-        if len(set(keys)) != 3:
-            raise ValueError("地图键、识别快捷键和投影快捷键不能重复")
-        reference_key = (self.vars["reference_hotkey"].get() if "reference_hotkey" in self.vars
-                         else self.app.settings["reference_hotkey"])
-        if reference_key in keys or reference_key not in ACTION_KEYS:
-            raise ValueError("左上角路线图显隐键不能与其他按键重复，默认使用 H")
-        key_to_vk(keys[0])
-        if any(key not in ACTION_KEYS for key in keys[1:]):
-            raise ValueError("识别和投影快捷键只支持单个字母、数字、功能键或常用键")
+        fields = ('recognize_hotkey', 'project_hotkey', 'reference_hotkey', 'reference_floor_hotkey', *CHEST_HOTKEY_FIELDS)
+        shortcuts = validate_action_hotkeys(self.vars['map_key'].get(), {
+            name: self.vars[name].get() if name in self.vars else self.app.settings[name] for name in fields})
         roi = [int(part.strip()) for part in self.vars["roi"].get().split(",")]
         CaptureRegion.from_value(roi)
         reference = [int(part.strip()) for part in self.vars["reference_size"].get().split(",")]
@@ -868,6 +941,7 @@ class SettingsPage(QWidget):
         updated = dict(self.app.settings)
         updated.update({name: value.get() for name, value in self.vars.items()
                         if name not in ("roi", "reference_size", "window_titles", "opacity")})
+        updated.update(shortcuts)
         updated["capture_roi"] = roi
         updated["capture_reference_size"] = reference
         updated["game_window_titles"] = [part.strip() for part in self.vars["window_titles"].get().split(",") if part.strip()]
@@ -887,7 +961,8 @@ class SettingsPage(QWidget):
             self.app.apply_settings(updated)
             persisted = load_settings(self.app.catalog, self.app.settings_path)
             fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "template_motion_tracking", "map_capture_delay_ms", "recognize_hotkey",
-                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "layout_recognition_backend")
+                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "layout_recognition_backend",
+                      *CHEST_HOTKEY_FIELDS, 'reference_floor_hotkey', 'chest_counter_visible', 'capture_exclusion_enabled')
             if any(persisted[name] != updated[name] for name in fields):
                 raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
         except Exception as exc:

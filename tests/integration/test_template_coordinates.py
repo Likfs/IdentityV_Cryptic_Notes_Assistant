@@ -52,3 +52,17 @@ def test_blank_capture_does_not_create_random_overlay(monkeypatch):
     monkeypatch.setattr(direct,'load_original',lambda *a:pytest.fail('empty frame must not search'))
     result,_,layer,_,_=direct.project_original(np.zeros((20,20,3),np.uint8),'map/diff','layout_16',.5)
     assert not result.accepted and layer is None
+
+
+def test_negative_score_still_projects_candidate_with_explicit_warning(monkeypatch):
+    original = np.full((40, 40, 3), 120, np.uint8)
+    rgba = np.dstack((original, np.full((40, 40), 255, np.uint8)))
+    install_floor_inputs(monkeypatch, dict(saved_scale=1., source_sha256='verified',
+        source_image='original.png'), original, rgba)
+    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1.))
+    monkeypatch.setattr(direct.matcher, '_match_template', lambda *a, **kw:
+        dict(score=-3., location=(4, 8), search={'boundary_edges': []}))
+    result, _, layer, _, _ = direct.project_original(original[:10, :10], 'map/difficulty', 'layout_16', .5)
+    assert result.accepted and layer is not None
+    assert any('分数为负' in warning for warning in result.validation['warnings'])
+    np.testing.assert_array_equal(result.screenshot_to_original, [[1, 0, 4], [0, 1, 8], [0, 0, 1]])

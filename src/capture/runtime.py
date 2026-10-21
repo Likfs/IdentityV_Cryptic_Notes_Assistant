@@ -14,7 +14,7 @@ import numpy as np
 from mss.exception import ScreenShotError
 from PIL import Image
 
-from src.app_catalog import key_to_vk
+from src.hotkeys import parse_hotkey
 from src.capture.region import CaptureRegion
 
 
@@ -48,7 +48,12 @@ class GlobalActionHotkeys:
 
     @staticmethod
     def virtual_key(label: str) -> int:
-        return key_to_vk(label)
+        return parse_hotkey(label).vk
+
+    @staticmethod
+    def registration(label: str):
+        shortcut = parse_hotkey(label)
+        return shortcut.modifiers | 0x4000, shortcut.vk
 
     def start(self) -> None:
         if sys.platform != "win32":
@@ -71,7 +76,8 @@ class GlobalActionHotkeys:
         try:
             for action, hotkey_id in self.IDS.items():
                 key = self.keys[action]
-                if not user32.RegisterHotKey(None, hotkey_id, 0x4000, self.virtual_key(key)):
+                flags, vk = self.registration(key)
+                if not user32.RegisterHotKey(None, hotkey_id, flags, vk):
                     raise RuntimeError(f"{key} 注册失败，可能被其他程序占用。")
                 registered.append(hotkey_id)
             self.ready = True

@@ -1,2 +1,13 @@
 # Keep byte-level template provenance stable across Git checkouts.
 src/registration/template_matching/*.py text eol=lf
+
+# Resource manifests hash bytes. Keep their checkout format independent of core.autocrlf.
+*.json text eol=lf
+# These existing inputs were fingerprinted with CRLF; retain their original bytes.
+configs/app_defaults.json text eol=crlf
+src/registration/template_matching/provenance.json text eol=crlf
+maintenance/maps/*/*/routes/route_clean/*/calibration.json text eol=crlf
+maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/calibration.json text eol=crlf
+maintenance/maps/a_bringer_of_doom/hard/sources/screen_scale_calibration.json text eol=crlf
+tests/fixtures/retrieval/cases.json text eol=crlf
+assets/app_ui/icons/check.svg text eol=crlf

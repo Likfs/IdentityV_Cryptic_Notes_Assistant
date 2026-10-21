@@ -161,8 +161,9 @@ def test_queued_close_wins_before_preview_and_reference_delivery(window, source,
     monkeypatch.setattr(window, '_set_preview_kind', lambda *a: pytest.fail('late preview restored'))
     window._receive_work_event(('preview', generation, session, ready, replace(ready)))
     assert window.last_result is ready and not window.map_state.is_open
-    window._apply_reference_ready(generation, [0, 0, 40, 40], '2nd', window.profile.key, window.locked_layout)
-    assert window.reference_context is None and not window.reference_overlay.visible
+    key = window._reference_image_key()
+    window._receive_work_event(('floor_reference', key, direct_inputs, None))
+    assert not window.reference_visible and not window.reference_overlay.visible
 
 
 def test_close_arriving_during_result_ui_updates_cannot_restore_overlay(window, source, direct_inputs, monkeypatch):

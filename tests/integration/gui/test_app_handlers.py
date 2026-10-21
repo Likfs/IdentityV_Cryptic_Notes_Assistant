@@ -122,6 +122,10 @@ def test_all_settings_are_persisted_without_save_button(tmp_path) -> None:
     values = {
         "map_key": "J", "window_titles": "第五人格, Identity V",
         "recognize_hotkey": "F7", "project_hotkey": "F9",
+        "reference_floor_hotkey": "K",
+        "chest_gold_add_hotkey": "U", "chest_gold_subtract_hotkey": "I",
+        "chest_purple_add_hotkey": "O", "chest_purple_subtract_hotkey": "P",
+        "chest_counter_visible": False, "capture_exclusion_enabled": False,
         "auto_project": False, "auto_floor": True, "opacity": 83.0,
         "layout_recognition_backend": "pure_structure",
         "roi": "900, 180, 1180, 1050", "reference_size": "2560, 1440",
@@ -140,6 +144,9 @@ def test_all_settings_are_persisted_without_save_button(tmp_path) -> None:
     assert persisted["map_key"] == "J"
     assert persisted["recognize_hotkey"] == "F7"
     assert persisted["project_hotkey"] == "F9"
+    assert persisted['chest_gold_add_hotkey'] == 'U'
+    assert persisted['chest_purple_subtract_hotkey'] == 'P'
+    assert not persisted['chest_counter_visible'] and not persisted['capture_exclusion_enabled']
     assert persisted["auto_project"] is False
     assert persisted["auto_floor"] is False
     assert persisted["capture_roi"] == [900, 180, 1180, 1050]

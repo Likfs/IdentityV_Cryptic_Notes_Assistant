@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
 from src.layout_retrieval import normalize_recognition_backend
+from src.chest_counter import CHEST_ACTIONS
+from src.hotkeys import (HOTKEYS, MAP_KEYS, ACTION_KEYS, key_to_vk, normalize_hotkey,
+                         conflicts_with_map)
 
 
 from src.paths import PROJECT_ROOT, CONFIG_ROOT, SETTINGS_PATH
@@ -36,13 +38,6 @@ def canonical_route_version(value: str) -> str:
 def normalize_route_versions(saved: dict) -> dict:
     return {profile: {layout: canonical_route_version(version) for layout, version in choices.items()}
             for profile, choices in saved.items() if isinstance(choices, dict)}
-
-
-HOTKEYS = tuple(f"F{i}" for i in range(1, 13))
-MAP_KEYS = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") + (
-    "Tab", "Space", "Shift", "Ctrl", "Alt", "CapsLock", "X1", "X2"
-) + HOTKEYS
-ACTION_KEYS = tuple(key for key in MAP_KEYS if key not in ("Shift", "Ctrl", "Alt", "X1", "X2"))
 
 
 @dataclass(frozen=True)
@@ -180,28 +175,6 @@ class MapCatalog:
         return matches[0]
 
 
-def key_to_vk(key: str) -> int:
-    if len(key) == 1 and key.upper() in "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789":
-        return ord(key.upper())
-    if re.fullmatch(r"F([1-9]|1[0-2])", key):
-        return 0x70 + int(key[1:]) - 1
-    special = {
-        "Tab": 0x09,
-        "Space": 0x20,
-        "Shift": 0x10,
-        "Ctrl": 0x11,
-        "Alt": 0x12,
-        "CapsLock": 0x14,
-        "X1": 0x05,
-        "X2": 0x06,
-    }
-    if key not in special:
-        raise ValueError(f"不支持的地图按键：{key}")
-    return special[key]
-
-
-
-
 DEFAULT_MAP_CAPTURE_DELAY_MS = 150
 MAX_MAP_CAPTURE_DELAY_MS = 500
 
@@ -242,18 +215,36 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
     if not settings["game_window_titles"]:
         settings["game_window_titles"] = ["第五人格", "Identity V", "IdentityV"]
     for name in ("recognize_hotkey", "project_hotkey"):
-        if settings[name] not in ACTION_KEYS:
-            settings[name] = "F8" if name == "recognize_hotkey" else "F10"
+        settings[name] = normalize_hotkey(settings[name], 'F8' if name == 'recognize_hotkey' else 'F10')
     if settings["recognize_hotkey"] == settings["project_hotkey"]:
         settings["project_hotkey"] = "F10" if settings["recognize_hotkey"] != "F10" else "F11"
-    if settings["map_key"] in (settings["recognize_hotkey"], settings["project_hotkey"]):
-        raise ValueError("地图按键不能与程序快捷键相同")
+    if any(conflicts_with_map(settings[name], settings['map_key']) for name in ('recognize_hotkey', 'project_hotkey')):
+        raise ValueError('地图按键不能与程序快捷键使用相同主键或修饰键')
     used_keys = {settings[name] for name in ("map_key", "recognize_hotkey", "project_hotkey")}
-    if settings["reference_hotkey"] not in ACTION_KEYS or settings["reference_hotkey"] in used_keys:
-        settings["reference_hotkey"] = next(key for key in ("H", "J", "K", "L") if key not in used_keys)
+    def available(key):
+        return key not in used_keys and not conflicts_with_map(key, settings['map_key'])
+    settings['reference_hotkey'] = normalize_hotkey(settings['reference_hotkey'], 'H')
+    if not available(settings['reference_hotkey']):
+        settings['reference_hotkey'] = next(key for key in ('H', 'J', 'K', 'L', *ACTION_KEYS) if available(key))
+    used_keys.add(settings['reference_hotkey'])
+    for action, (_, default, _, _) in CHEST_ACTIONS.items():
+        field = f'{action}_hotkey'
+        key = normalize_hotkey(settings.get(field, default), default)
+        if not available(key):
+            key = next(value for value in (default, *ACTION_KEYS) if available(value))
+        settings[field] = key
+        used_keys.add(key)
+    key = normalize_hotkey(settings.get('reference_floor_hotkey', 'J'), 'J')
+    if not available(key):
+        key = next(value for value in ('J', 'K', 'L', *ACTION_KEYS) if available(value))
+    settings['reference_floor_hotkey'] = key
+    for field in ('chest_counter_visible', 'capture_exclusion_enabled'):
+        settings[field] = settings.get(field) if isinstance(settings.get(field), bool) else True
     profile = catalog.profile(settings['map_id'], settings['difficulty_id'])
     if settings["floor"] not in profile.floors:
         settings["floor"] = profile.floors[0]
+    if settings.get('reference_floor') not in profile.floors:
+        settings['reference_floor'] = profile.floors[0]
     settings["opacity"] = min(1.0, max(0.0, float(settings["opacity"])))
     settings["reference_opacity"] = min(1.0, max(0.0, float(settings["reference_opacity"])))
     roi = settings["capture_roi"]

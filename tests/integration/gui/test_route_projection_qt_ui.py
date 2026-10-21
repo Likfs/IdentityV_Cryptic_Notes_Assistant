@@ -94,7 +94,9 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         QTest.keyClick(map_button, Qt.Key.Key_H)
         assert dialog.vars["map_key"].get() == "Tab"  # H belongs to the reference map.
         QTest.keyClick(map_button, Qt.Key.Key_J)
-        assert dialog.vars["map_key"].get() == "J"
+        assert dialog.vars["map_key"].get() == "Tab"  # J belongs to manual reference-floor cycling.
+        QTest.keyClick(map_button, Qt.Key.Key_K)
+        assert dialog.vars["map_key"].get() == "K"
 
         project = dialog.hotkey_buttons["project_hotkey"]
         project.click()
@@ -102,7 +104,9 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert dialog.vars["project_hotkey"].get() == "F10"
         project.click()
         QTest.keyClick(project, Qt.Key.Key_F9)
-        assert dialog.vars["project_hotkey"].get() == "F9"
+        assert dialog.vars["project_hotkey"].get() == "F10"  # F9 now belongs to purple-box decrement.
+        QTest.keyClick(project, Qt.Key.Key_F11)
+        assert dialog.vars["project_hotkey"].get() == "F11"
         assert dialog.map_capture_delay_spin.value() == 150
         dialog.map_capture_delay_spin.setValue(65)
         dialog.vars["opacity"].set(81)
@@ -111,9 +115,9 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert persisted["opacity"] == 0.81
         assert persisted["map_capture_delay_ms"] == 65
         assert window.settings["map_capture_delay_ms"] == 65
-        assert persisted["map_key"] == "J"
+        assert persisted["map_key"] == "K"
         assert persisted["recognize_hotkey"] == "R"
-        assert persisted["project_hotkey"] == "F9"
+        assert persisted["project_hotkey"] == "F11"
         assert persisted["template_route_versions"][window.profile.key] == "route_lhp_solo"
         assert GlobalActionHotkeys.virtual_key("R") == ord("R")
         dialog.close()
