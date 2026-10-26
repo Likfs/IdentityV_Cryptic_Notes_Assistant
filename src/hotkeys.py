@@ -5,8 +5,20 @@ from dataclasses import dataclass
 import re
 
 HOTKEYS = tuple(f'F{i}' for i in range(1, 13))
+# NumEnter has no distinct Windows VK. This token is only used by Raw Input;
+# the E0 flag distinguishes it from the main keyboard's Enter key.
+NUM_ENTER = 0x10D
+KEYPAD_VKS = {**{f'Num{i}': 0x60 + i for i in range(10)},
+    'NumMultiply': 0x6A, 'NumAdd': 0x6B, 'NumSeparator': 0x6C,
+    'NumSubtract': 0x6D, 'NumDecimal': 0x6E, 'NumDivide': 0x6F, 'NumEnter': NUM_ENTER}
+KEYPAD_SCAN_VKS = {0x52: 0x60, 0x4F: 0x61, 0x50: 0x62, 0x51: 0x63,
+    0x4B: 0x64, 0x4C: 0x65, 0x4D: 0x66, 0x47: 0x67, 0x48: 0x68,
+    0x49: 0x69, 0x53: 0x6E}
+KEYPAD_POLL_ALIASES = {0x60: 0x2D, 0x61: 0x23, 0x62: 0x28, 0x63: 0x22,
+    0x64: 0x25, 0x65: 0x0C, 0x66: 0x27, 0x67: 0x24, 0x68: 0x26,
+    0x69: 0x21, 0x6E: 0x2E, NUM_ENTER: 0x0D}
 MAP_KEYS = tuple('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') + (
-    'Tab', 'Space', 'Shift', 'Ctrl', 'Alt', 'CapsLock', 'X1', 'X2') + HOTKEYS
+    'Tab', 'Space', 'Shift', 'Ctrl', 'Alt', 'CapsLock', 'X1', 'X2') + HOTKEYS + ('Enter', *KEYPAD_VKS)
 ACTION_KEYS = tuple(key for key in MAP_KEYS if key not in ('Shift', 'Ctrl', 'Alt', 'X1', 'X2'))
 MODIFIERS = (('Ctrl', 2), ('Shift', 4), ('Alt', 1))
 # Include Win in observed state so Win+H never fires a plain H action.
@@ -22,7 +34,7 @@ def key_to_vk(key: str) -> int:
     if re.fullmatch(r'F([1-9]|1[0-2])', key):
         return 0x70 + int(key[1:]) - 1
     special = {'Tab': 0x09, 'Space': 0x20, 'Shift': 0x10, 'Ctrl': 0x11,
-               'Alt': 0x12, 'CapsLock': 0x14, 'X1': 0x05, 'X2': 0x06}
+               'Alt': 0x12, 'CapsLock': 0x14, 'X1': 0x05, 'X2': 0x06, 'Enter': 0x0D, **KEYPAD_VKS}
     if key not in special:
         raise ValueError(f'不支持的地图按键：{key}')
     return special[key]
@@ -49,7 +61,7 @@ def parse_hotkey(value) -> Hotkey:
     keys = {key.casefold(): key for key in ACTION_KEYS}
     modifiers = {name.casefold(): flag for name, flag in MODIFIERS}
     if not parts or parts[-1] not in keys:
-        raise ValueError('快捷键须为字母、数字、F1～F12 或常用键，可搭配 Ctrl／Shift／Alt')
+        raise ValueError('快捷键须为字母、数字、F1～F12、常用键或小键盘键，可搭配 Ctrl／Shift／Alt')
     flags = 0
     for part in parts[:-1]:
         if part not in modifiers or flags & modifiers[part]:
@@ -98,3 +110,22 @@ def physical_modifier_vk(vk, scan_code, extended):
     if vk == 0x12:
         return 0xA5 if extended else 0xA4
     return vk
+
+
+def physical_key_vk(vk, scan_code, extended):
+    """Canonical input identity, independent of NumLock, with separate Enter keys."""
+    if vk == 0x0D and extended:
+        return NUM_ENTER
+    if not extended and (0x21 <= vk <= 0x28 or vk in (0x0C, 0x2D, 0x2E) or 0x60 <= vk <= 0x69 or vk == 0x6E):
+        return KEYPAD_SCAN_VKS.get(scan_code, vk)
+    return physical_modifier_vk(vk, scan_code, extended)
+
+
+def polling_vk(vk):
+    """Never pass our internal NumEnter token to Windows key-state APIs."""
+    return 0x0D if vk == NUM_ENTER else vk
+
+
+def polling_vks(vk):
+    """Conservatively suppress held keys at configuration, in either NumLock state."""
+    return tuple(dict.fromkeys((polling_vk(vk), KEYPAD_POLL_ALIASES.get(vk, polling_vk(vk)))))

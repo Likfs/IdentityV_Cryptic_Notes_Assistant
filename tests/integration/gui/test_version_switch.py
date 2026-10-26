@@ -44,7 +44,7 @@ def test_reference_and_late_preview_follow_selected_original(window, monkeypatch
     window.last_result = ready
     generation, session = window.map_generation, window.session_id
     window.route_combo.setCurrentIndex(window.route_combo.findData('route_lhp_solo'))
-    monkeypatch.setattr(window, '_set_preview_kind', lambda *a: pytest.fail('late preview'))
+    monkeypatch.setattr(window, '_set_preview', lambda *a: pytest.fail('late screenshot'))
     window._receive_work_event(('preview', generation, session, ready, SimpleNamespace()))
     assert window.last_result is None
     seen = []

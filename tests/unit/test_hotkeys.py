@@ -5,7 +5,7 @@ from ctypes import wintypes
 import pytest
 
 from src.hotkeys import (normalize_hotkey, parse_hotkey, validate_action_hotkeys,
-                         physical_modifier_vk)
+                         physical_modifier_vk, physical_key_vk, KEYPAD_SCAN_VKS, NUM_ENTER)
 from src.capture.map_keys import GlobalMapKeys
 from src.capture.runtime import GlobalActionHotkeys
 from tests.support.key_events import record
@@ -120,3 +120,43 @@ def test_modifier_map_key_stays_down_until_both_sides_release(source):
 ])
 def test_raw_keyboard_side_information_is_preserved(vk, scan, extended, physical):
     assert physical_modifier_vk(vk, scan, extended) == physical
+
+
+@pytest.mark.parametrize('label,vk', [('Num0', 0x60), ('Num1', 0x61), ('Num9', 0x69),
+    ('NumAdd', 0x6B), ('NumSubtract', 0x6D), ('NumMultiply', 0x6A), ('NumDivide', 0x6F),
+    ('NumDecimal', 0x6E), ('NumSeparator', 0x6C), ('NumEnter', NUM_ENTER), ('Enter', 0x0D)])
+def test_numpad_shortcuts_parse_with_modifiers_and_distinct_identities(label, vk):
+    shortcut = parse_hotkey('ctrl+shift+' + label.lower())
+    assert shortcut.label == 'Ctrl+Shift+' + label and shortcut.vk == vk and shortcut.modifiers == 6
+    assert validate_action_hotkeys('G', {'a': label, 'b': 'Ctrl+' + label})
+
+
+@pytest.mark.parametrize('scan,expected', list(KEYPAD_SCAN_VKS.items()))
+def test_raw_numpad_identity_survives_numlock_change_and_does_not_match_navigation(scan, expected):
+    nav = {0x52: 0x2D, 0x4F: 0x23, 0x50: 0x28, 0x51: 0x22, 0x4B: 0x25,
+           0x4C: 0x0C, 0x4D: 0x27, 0x47: 0x24, 0x48: 0x26, 0x49: 0x21, 0x53: 0x2E}[scan]
+    assert physical_key_vk(nav, scan, False) == physical_key_vk(expected, scan, False) == expected
+    assert physical_key_vk(nav, scan, True) == nav
+
+
+def test_raw_enter_keys_are_distinct_and_internal_token_is_not_registered():
+    assert physical_key_vk(0x0D, 0x1C, False) == 0x0D
+    assert physical_key_vk(0x0D, 0x1C, True) == NUM_ENTER
+    with pytest.raises(ValueError, match='Raw Input'):
+        GlobalActionHotkeys.registration('NumEnter')
+
+
+@pytest.mark.parametrize('map_key,held_vk,release_vk', [('Num1', 0x23, 0x23),
+    ('NumEnter', 0x0D, 0x0D), ('Enter', 0x0D, NUM_ENTER)])
+def test_held_keypad_alias_at_reconfigure_is_released_before_next_press(monkeypatch, map_key, held_vk, release_vk):
+    # Model GetAsyncKeyState's ambiguous navigation/Enter state without native listeners.
+    from src.hotkeys import polling_vks, key_to_vk
+    monkeypatch.setattr(GlobalMapKeys, '_read_held', staticmethod(
+        lambda keys: {key for key in keys if held_vk in polling_vks(key)}))
+    source = GlobalMapKeys(map_key, ['IdentityV'], lambda: None)
+    actual = key_to_vk(map_key)
+    record(source, True, actual)
+    assert source.events.empty()
+    record(source, False, release_vk)
+    record(source, True, actual)
+    assert [(event.action, event.down) for event in source.events.queue] == [('map', False), ('map', True)]

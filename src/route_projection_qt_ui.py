@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import (
     QButtonGroup, QCheckBox, QComboBox, QDialog, QFormLayout, QFrame, QGridLayout,
     QGraphicsDropShadowEffect, QHBoxLayout, QLabel, QLineEdit, QMessageBox,
     QPushButton, QRadioButton, QScrollArea, QSizePolicy,
-    QSlider, QSpinBox, QVBoxLayout, QWidget,
+    QSlider, QSpinBox, QVBoxLayout, QWidget, QTabWidget,
 )
 
 from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings
@@ -24,55 +24,138 @@ from src.capture.region import CaptureRegion
 from src.layout_retrieval import BACKEND_LABELS
 from src.chest_counter import CHEST_ACTIONS, CHEST_HOTKEY_FIELDS
 from src.capture.visibility import apply_window_capture_policy
-from src.hotkeys import Hotkey, validate_action_hotkeys
+from src.hotkeys import Hotkey, validate_action_hotkeys, KEYPAD_VKS
 
 
-BG = "#101a27"
-CARD = "#1b2b3b"
-CARD_2 = "#223347"
-INK = "#edf4ff"
-MUTED = "#adbed1"
-ACCENT = "#2789f5"
-GREEN = "#4be27b"
-AMBER = "#f5c879"
-BAD = "#f57d83"
+# Graphite surfaces and a restrained sage accent, shared by the native windows.
+BG = "#14181e"
+CARD = "#1c222a"
+CARD_2 = "#272f39"
+INK = "#edf1f5"
+MUTED = "#aeb9c7"
+ACCENT = "#a9cec5"
+GREEN = "#b9d8c7"
+AMBER = "#e4c48a"
+BAD = "#efaaa9"
 
 STYLE = f"""
 QWidget {{ background: transparent; color: {INK}; font-family: 'Microsoft YaHei UI'; font-size: 14px; }}
 QLabel {{ background: transparent; }}
-QFrame#titlebar {{ background: rgba(12, 23, 36, 172); border: 1px solid rgba(125, 159, 185, 90); border-radius: 8px; }}
-QFrame#card {{ background: rgba(24, 39, 55, 230); border: 1px solid #394f64; border-radius: 8px; }}
-QFrame#subcard {{ background: rgba(19, 32, 47, 238); border: 1px solid #344a60; border-radius: 7px; }}
-QLabel#section {{ font-size: 17px; font-weight: 700; background: transparent; }}
-QLabel#subheading {{ font-size: 14px; font-weight: 700; background: transparent; }}
-QLabel#muted {{ color: {MUTED}; background: transparent; }}
-QLabel#good {{ color: {GREEN}; background: transparent; }}
-QLabel#warning {{ color: {AMBER}; background: transparent; }}
-QComboBox, QLineEdit, QSpinBox {{ background: #1d2d3e; border: 1px solid #4a6178; border-radius: 5px; padding: 5px 9px; min-height: 23px; }}
-QComboBox::drop-down {{ border: none; width: 24px; }}
-QComboBox QAbstractItemView {{ background: #1d2d3e; color: {INK}; selection-background-color: {ACCENT}; }}
-QPushButton {{ background: #26394d; border: 1px solid #526980; border-radius: 5px; padding: 6px 12px; min-height: 23px; }}
-QPushButton:hover {{ background: #36536d; }}
-QPushButton:checked {{ background: {ACCENT}; border-color: #5ca9ff; font-weight: 700; }}
-QPushButton#primary {{ background: {ACCENT}; border-color: #4ea2ff; font-weight: 700; }}
-QPushButton#primary:hover {{ background: #4a9fff; }}
-QPushButton#windowControl {{ background: transparent; border: none; font-size: 19px; min-width: 28px; padding: 3px; }}
-QPushButton#windowControl:hover {{ background: rgba(114, 151, 181, 95); }}
-QPushButton#hotkeyCapture:focus {{ border: 2px solid {ACCENT}; background: #1b4266; }}
+QFrame#titlebar {{ background: {BG}; border-bottom: 1px solid #303944; }}
+QFrame#card {{ background: {CARD}; border: 1px solid #303944; border-radius: 10px; }}
+QFrame#subcard {{ background: #202831; border: 1px solid #3c4753; border-radius: 8px; }}
+QFrame#separator {{ background: #333d48; border: none; min-height: 1px; max-height: 1px; }}
+QFrame#segmented {{ background: #151b22; border: 1px solid #313b47; border-radius: 6px; }}
+QFrame#segmented QPushButton {{ border: 1px solid transparent; background: transparent; padding: 5px 4px; min-height: 22px; color: {MUTED}; }}
+QFrame#segmented QPushButton:checked {{ background: #35423f; border-color: #576d65; color: #e3f0eb; }}
+QLabel#section {{ font-size: 15px; font-weight: 600; }}
+QLabel#subheading {{ font-size: 13px; font-weight: 600; }}
+QLabel#muted {{ color: {MUTED}; font-size: 12px; }}
+QLabel#layoutNumber {{ font-size: 30px; font-weight: 500; }}
+QLabel#counterGold {{ color: #e4c48a; font-size: 20px; font-weight: 600; }}
+QLabel#counterPurple {{ color: #c3acdb; font-size: 20px; font-weight: 600; }}
+QLabel#good {{ color: {GREEN}; }}
+QLabel#warning {{ color: {AMBER}; }}
+QComboBox, QLineEdit, QSpinBox {{ background: {CARD_2}; border: 1px solid #46525f; border-radius: 6px; padding: 5px 9px; min-height: 24px; }}
+QComboBox::drop-down {{ border: none; width: 22px; }}
+QComboBox QAbstractItemView {{ background: {CARD_2}; color: {INK}; selection-background-color: #40584f; }}
+QPushButton {{ background: {CARD_2}; border: 1px solid #46525f; border-radius: 6px; padding: 6px 12px; min-height: 24px; }}
+QPushButton:hover {{ background: #333e4a; border-color: #617182; }}
+QPushButton:focus {{ border-color: {ACCENT}; }}
+QPushButton:checked {{ background: #35423f; border-color: #637e73; }}
+QPushButton:disabled {{ color: #84909e; background: #222932; border-color: #333d48; }}
+QPushButton#primary {{ background: #b3d4ca; color: #203b32; border-color: #c3dfd6; font-weight: 600; }}
+QPushButton#primary:hover {{ background: #c5e2d9; }}
+QPushButton#primary:disabled {{ background: #53665f; color: #b2c1ba; border-color: #63766e; }}
+QPushButton#windowControl {{ background: transparent; border: none; font-size: 18px; min-width: 26px; padding: 3px; }}
+QPushButton#windowControl:hover {{ background: #343e49; }}
+QPushButton#quiet {{ color: {MUTED}; background: transparent; border-color: transparent; padding: 4px; }}
+QPushButton#quiet:hover {{ color: {INK}; background: #29323c; }}
+QPushButton#disclosure {{ background: transparent; border: none; padding: 5px 0; text-align: left; color: #ccd7e2; font-size: 13px; }}
+QPushButton#disclosure:checked {{ background: transparent; }}
+QPushButton#hotkeyCapture:focus {{ border: 2px solid {ACCENT}; background: #354940; }}
 QCheckBox, QRadioButton {{ background: transparent; spacing: 8px; }}
-QCheckBox::indicator {{ width: 20px; height: 20px; background: #0e1824; border: 2px solid #d0dfed; border-radius: 4px; }}
-QCheckBox::indicator:unchecked:hover {{ border-color: #79b8ff; background: #243d54; }}
-QCheckBox::indicator:checked {{ background: {ACCENT}; border-color: #79b8ff; image: url("{(Path(__file__).resolve().parents[1] / 'assets/app_ui/icons/check.svg').as_posix()}"); }}
-QCheckBox::indicator:disabled {{ border-color: #8293a5; background: #263342; }}
-QCheckBox:focus {{ color: #79b8ff; }}
-QSlider::groove:horizontal {{ height: 5px; background: #4b6278; border-radius: 2px; }}
-QSlider::handle:horizontal {{ width: 17px; background: {ACCENT}; border-radius: 8px; margin: -6px 0; }}
-QTableWidget {{ background: #172433; alternate-background-color: #203246; gridline-color: #31485d; border: 1px solid #40566c; }}
-QHeaderView::section {{ background: #273b50; color: {INK}; padding: 6px; border: none; }}
+QCheckBox::indicator {{ width: 18px; height: 18px; background: #151b22; border: 1px solid #9baab9; border-radius: 4px; }}
+QCheckBox::indicator:checked {{ background: #597e70; border-color: #b7d9cc; image: url("{(Path(__file__).resolve().parents[1] / 'assets/app_ui/icons/check.svg').as_posix()}"); }}
+QCheckBox::indicator:disabled {{ border-color: #67717d; background: #303b46; }}
+QCheckBox:focus {{ color: {ACCENT}; }}
+QSlider::groove:horizontal {{ height: 4px; background: #4d5a68; border-radius: 2px; }}
+QSlider::handle:horizontal {{ width: 14px; background: {ACCENT}; border-radius: 7px; margin: -5px 0; }}
+QTableWidget {{ background: {CARD}; alternate-background-color: {CARD_2}; gridline-color: #38424e; border: 1px solid #46525f; }}
+QHeaderView::section {{ background: {CARD_2}; color: {INK}; padding: 6px; border: none; }}
+QTabWidget::pane {{ border: none; }}
+QTabBar::tab {{ background: transparent; color: {MUTED}; padding: 10px 16px; border-bottom: 2px solid transparent; }}
+QTabBar::tab:selected {{ color: #d8ede5; border-bottom-color: {ACCENT}; }}
 QScrollArea {{ border: none; background: transparent; }}
-QScrollBar:vertical {{ background: #152332; width: 9px; }}
-QScrollBar::handle:vertical {{ background: #516b82; border-radius: 4px; }}
+QScrollBar:vertical {{ background: transparent; width: 7px; margin: 2px; }}
+QScrollBar::handle:vertical {{ background: #46535f; border-radius: 3px; min-height: 28px; }}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: transparent; }}
+QToolTip {{ background: #29343f; color: {INK}; border: 1px solid #617182; padding: 6px; }}
 """
+
+
+class CollapsibleSection(QWidget):
+    """Keep secondary controls available without occupying the main workspace."""
+
+    def __init__(self, title, parent=None):
+        super().__init__(parent)
+        self.title = title
+        box = QVBoxLayout(self)
+        box.setContentsMargins(0, 0, 0, 0)
+        box.setSpacing(8)
+        self.toggle = QPushButton()
+        self.toggle.setObjectName('disclosure')
+        self.toggle.setCheckable(True)
+        self.toggle.setAccessibleName(title)
+        self.toggle.toggled.connect(self.setExpanded)
+        box.addWidget(self.toggle)
+        self.content = QWidget()
+        self.body = QVBoxLayout(self.content)
+        self.body.setContentsMargins(0, 4, 0, 4)
+        self.body.setSpacing(12)
+        box.addWidget(self.content)
+        self.setExpanded(False)
+
+    def setExpanded(self, expanded):
+        self.toggle.setChecked(expanded)
+        self.toggle.setText(('−  ' if expanded else '+  ') + self.title)
+        self.content.setVisible(expanded)
+
+
+class SegmentedSelector(QFrame):
+    """Present an existing combo's choices without adding another state model."""
+
+    def __init__(self, combo, parent=None):
+        super().__init__(parent)
+        self.combo = combo
+        self.setObjectName('segmented')
+        self.row = QHBoxLayout(self)
+        self.row.setContentsMargins(3, 3, 3, 3)
+        self.row.setSpacing(3)
+        self.buttons = []
+        combo.currentIndexChanged.connect(self.refresh)
+        self.refresh()
+
+    def refresh(self, *_args):
+        labels = [self.combo.itemText(i) for i in range(self.combo.count())]
+        if labels != [button.text() for button in self.buttons]:
+            for button in self.buttons:
+                self.row.removeWidget(button)
+                button.hide()
+                button.deleteLater()
+            self.buttons = []
+            for index, label in enumerate(labels):
+                button = QPushButton(label)
+                button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+                button.setCheckable(True)
+                button.setAccessibleName(label)
+                button.clicked.connect(lambda _checked=False, i=index: self.combo.setCurrentIndex(i))
+                self.row.addWidget(button, 1)
+                self.buttons.append(button)
+        for index, button in enumerate(self.buttons):
+            button.setChecked(index == self.combo.currentIndex())
+            button.setEnabled(self.combo.isEnabled())
 
 
 class EntrancePreview(QLabel):
@@ -146,10 +229,10 @@ class LayoutConfirmationDialog(QDialog):
         self.setStyleSheet(STYLE + f"""
             QFrame#confirmationPanel {{ background: {BG}; border: 1px solid #40566c; border-radius: 14px; }}
             QLabel#confirmationTitle {{ font-size: 25px; font-weight: 700; }}
-            QLabel#questionIcon {{ background: {ACCENT}; color: {INK}; border-radius: 28px; font-size: 38px; font-weight: 700; }}
+            QLabel#questionIcon {{ background: #354940; color: {INK}; border-radius: 28px; font-size: 38px; font-weight: 700; }}
             QPushButton#layoutCandidate {{ background: {CARD}; border: 2px solid #344a60; border-radius: 10px; padding: 0; }}
             QPushButton#layoutCandidate:hover {{ background: {CARD_2}; border-color: #6284a3; }}
-            QPushButton#layoutCandidate:checked {{ background: #1b3652; border-color: {ACCENT}; }}
+            QPushButton#layoutCandidate:checked {{ background: #35423f; border-color: {ACCENT}; }}
             QPushButton#layoutCandidate:focus {{ border-color: #83bdff; }}
             QRadioButton {{ font-size: 22px; font-weight: 700; spacing: 12px; }}
             QRadioButton::indicator {{ width: 22px; height: 22px; border: 2px solid #8197af; border-radius: 13px; background: {BG}; }}
@@ -255,7 +338,8 @@ class LayoutConfirmationDialog(QDialog):
 
         footer = QVBoxLayout() if width < 850 else QHBoxLayout()
         footer.setSpacing(18)
-        self.confirmation_required = QCheckBox('布局识别需要人工确认')
+        self.confirmation_required = QCheckBox('当前使用人工确认（可在设置中开启自动选择）')
+        self.confirmation_required.setChecked(True)
         self.confirmation_required.setToolTip('请核对入口图片后确认布局；匹配分数不是正确概率。')
         self.confirmation_required.setEnabled(False)
         description.setText(('入口图待补，请对照候选楼层底图和布局编号确认。' if any(c.get('preview_path') for c in candidates)
@@ -307,6 +391,7 @@ class HotkeyCaptureButton(QPushButton):
         Qt.Key.Key_Tab: "Tab", Qt.Key.Key_Space: "Space",
         Qt.Key.Key_Shift: "Shift", Qt.Key.Key_Control: "Ctrl",
         Qt.Key.Key_Alt: "Alt", Qt.Key.Key_CapsLock: "CapsLock",
+        Qt.Key.Key_Return: 'Enter',
     }
 
     def __init__(self, value: str, allowed: tuple[str, ...], on_capture, parent=None, *, allow_modifiers=True):
@@ -329,6 +414,22 @@ class HotkeyCaptureButton(QPushButton):
     def key_name(event):
         key = event.key()
         native = event.nativeVirtualKey()
+        if key == Qt.Key.Key_Enter:
+            return 'NumEnter'
+        native_keypad = next((name for name, vk in KEYPAD_VKS.items() if vk == native), None)
+        if native_keypad:
+            return native_keypad
+        if event.modifiers() & Qt.KeyboardModifier.KeypadModifier:
+            if Qt.Key.Key_0 <= key <= Qt.Key.Key_9:
+                return f'Num{key - Qt.Key.Key_0}'
+            return {Qt.Key.Key_Insert: 'Num0', Qt.Key.Key_End: 'Num1', Qt.Key.Key_Down: 'Num2',
+                Qt.Key.Key_PageDown: 'Num3', Qt.Key.Key_Left: 'Num4', Qt.Key.Key_Clear: 'Num5',
+                Qt.Key.Key_Right: 'Num6', Qt.Key.Key_Home: 'Num7', Qt.Key.Key_Up: 'Num8',
+                Qt.Key.Key_PageUp: 'Num9', Qt.Key.Key_Delete: 'NumDecimal',
+                Qt.Key.Key_Period: 'NumDecimal', Qt.Key.Key_Comma: 'NumDecimal',
+                Qt.Key.Key_Plus: 'NumAdd', Qt.Key.Key_Minus: 'NumSubtract',
+                Qt.Key.Key_Asterisk: 'NumMultiply', Qt.Key.Key_Slash: 'NumDivide',
+                Qt.Key.Key_Return: 'NumEnter'}.get(key)
         if 0x30 <= native <= 0x39 or 0x41 <= native <= 0x5A:
             return chr(native)
         if Qt.Key.Key_F1 <= key <= Qt.Key.Key_F12:
@@ -359,8 +460,8 @@ class HotkeyCaptureButton(QPushButton):
             flags = sum(flag for qt_flag, flag in (
                 (Qt.KeyboardModifier.ControlModifier, 2), (Qt.KeyboardModifier.ShiftModifier, 4),
                 (Qt.KeyboardModifier.AltModifier, 1)) if modifiers & qt_flag)
-            if modifiers & (Qt.KeyboardModifier.MetaModifier | Qt.KeyboardModifier.KeypadModifier):
-                self.setText('请使用 Ctrl／Shift／Alt 与主键盘按键 · Esc 取消')
+            if modifiers & Qt.KeyboardModifier.MetaModifier:
+                self.setText('请使用 Ctrl／Shift／Alt 组合 · Esc 取消')
                 return True
             if self.allow_modifiers and key in (Qt.Key.Key_Control, Qt.Key.Key_Shift, Qt.Key.Key_Alt):
                 prefix = '+'.join(name for name, flag in (('Ctrl', 2), ('Shift', 4), ('Alt', 1)) if flags & flag)
@@ -386,10 +487,13 @@ class HotkeyCaptureButton(QPushButton):
         return super().event(event)
 
     def focusOutEvent(self, event):
+        self.cancel_capture()
+        super().focusOutEvent(event)
+
+    def cancel_capture(self):
         if self.capturing:
             self.capturing = False
             self.setText(self.value)
-        super().focusOutEvent(event)
 
 
 class DraggableTitleBar(QFrame):
@@ -452,12 +556,15 @@ class ImagePanel(QFrame):
         layout.addWidget(self.heading)
         self.image = QLabel(placeholder)
         self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.image.setStyleSheet("background: #101b28; color: #899eb2; border-radius: 4px;")
-        self.image.setMinimumHeight(80)
+        self.image.setStyleSheet("background: #1b252e; color: #aeb9c7; border-radius: 4px;")
+        self.image.setMinimumSize(0, 80)
+        self.image.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.setMinimumWidth(0)
         layout.addWidget(self.image, 1)
         self.caption = QLabel("")
         self.caption.setObjectName("muted")
-        self.caption.setMinimumHeight(17)
+        self.caption.setMinimumHeight(20)
+        self.caption.setWordWrap(True)
         layout.addWidget(self.caption)
 
     def set_image(self, bgr: np.ndarray | None, caption: str = ""):
@@ -483,6 +590,110 @@ class ImagePanel(QFrame):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         self._redraw()
+
+
+class ScreenshotViewport(QLabel):
+    """Pan a fitted screenshot locally without changing the game or its overlay."""
+
+    def __init__(self, parent=None):
+        super().__init__('等待本局截图', parent)
+        self.zoom = 1.
+        self.pan = QPointF()
+        self._drag = None
+
+    def reset_view(self):
+        self.zoom = 1.
+        self.pan = QPointF()
+        self._drag = None
+        self.setCursor(Qt.CursorShape.ArrowCursor)
+        self.update()
+
+    def paintEvent(self, event):
+        pixmap = self.pixmap()
+        if pixmap is None or pixmap.isNull():
+            return super().paintEvent(event)
+        painter = QPainter(self)
+        painter.fillRect(self.rect(), QColor('#1b252e'))
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+        painter.translate(self.width() / 2 + self.pan.x(), self.height() / 2 + self.pan.y())
+        painter.scale(self.zoom, self.zoom)
+        # QLabel's pixmap is already fitted by ImagePanel, with a device-aware size.
+        size = pixmap.deviceIndependentSize()
+        painter.drawPixmap(QPointF(-size.width() / 2, -size.height() / 2), pixmap)
+        painter.end()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.zoom != 1:
+            self._drag = (event.position(), QPointF(self.pan))
+            self.setCursor(Qt.CursorShape.ClosedHandCursor)
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if self._drag is not None:
+            self.pan = self._drag[1] + event.position() - self._drag[0]
+            self.update()
+            event.accept()
+            return
+        super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag = None
+        self.setCursor(Qt.CursorShape.OpenHandCursor if self.zoom != 1 else Qt.CursorShape.ArrowCursor)
+        super().mouseReleaseEvent(event)
+
+
+class ScreenshotPanel(ImagePanel):
+    def __init__(self, parent=None):
+        super().__init__('游戏截图', '等待本局截图', parent)
+        old_image = self.image
+        self.image = ScreenshotViewport(self)
+        self.image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.image.setMinimumSize(0, 80)
+        self.image.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Ignored)
+        self.image.setStyleSheet('background: #1b252e; color: #aeb9c7; border-radius: 4px;')
+        self.layout().replaceWidget(old_image, self.image)
+        old_image.hide()
+        old_image.deleteLater()
+        tools = QHBoxLayout()
+        tools.addStretch(1)
+        self.zoom_out = QPushButton('−')
+        self.zoom_out.setAccessibleName('缩小游戏截图')
+        self.zoom_in = QPushButton('+')
+        self.zoom_in.setAccessibleName('放大游戏截图')
+        self.zoom_label = QLabel('适应窗口')
+        self.zoom_label.setObjectName('muted')
+        self.fit_button = QPushButton('复位')
+        self.fit_button.setAccessibleName('截图适应窗口')
+        self.zoom_out.clicked.connect(lambda: self.set_zoom(self.image.zoom - .25))
+        self.zoom_in.clicked.connect(lambda: self.set_zoom(self.image.zoom + .25))
+        self.fit_button.clicked.connect(self.reset_view)
+        for button in (self.zoom_out, self.zoom_in):
+            button.setStyleSheet('padding: 0; min-height: 0;')
+            button.setFixedSize(28, 28)
+        for widget in (self.zoom_out, self.zoom_label, self.zoom_in, self.fit_button):
+            tools.addWidget(widget)
+        self.layout().insertLayout(self.layout().count() - 1, tools)
+        self.setToolTip('仅调整截图预览，不改变游戏缩放；放大后可拖动查看。')
+
+    def set_zoom(self, value):
+        if self._pixmap is None:
+            return
+        self.image.zoom = max(.5, min(3., value))
+        if self.image.zoom == 1:
+            self.image.pan = QPointF()
+        self.image.setCursor(Qt.CursorShape.OpenHandCursor if self.image.zoom != 1 else Qt.CursorShape.ArrowCursor)
+        self.zoom_label.setText('适应窗口' if self.image.zoom == 1 else f'{self.image.zoom:.0%}')
+        self.image.update()
+
+    def reset_view(self):
+        self.image.reset_view()
+        self.zoom_label.setText('适应窗口')
+
+    def set_image(self, bgr, caption=''):
+        self.reset_view()
+        super().set_image(bgr, caption)
 
 
 def exclude_window_from_capture(widget: QWidget) -> bool:
@@ -783,21 +994,54 @@ class SettingsPage(QWidget):
         self.status.setObjectName("good")
         outer.addWidget(self.status)
 
-        scroll = QScrollArea()
-        scroll.setWidgetResizable(True)
-        scroll.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        outer.addWidget(scroll, 1)
-        content = QWidget()
-        content.setMaximumWidth(1120)
-        scroll.setWidget(content)
-        body = QVBoxLayout(content)
-        form_box = QFrame()
-        form_box.setObjectName("card")
-        form = QFormLayout(form_box)
-        form.setContentsMargins(18, 14, 18, 14)
-        form.setSpacing(10)
-        body.addWidget(form_box)
+        self.tabs = QTabWidget()
+        outer.addWidget(self.tabs, 1)
+        self.forms = {}
+        self.key_forms = {}
+        for key, label in (('general', '识别与显示'), ('keys', '快捷键'), ('capture', '截图设置')):
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+            content = QWidget()
+            scroll.setWidget(content)
+            body = QVBoxLayout(content)
+            body.setContentsMargins(0, 14, 0, 0)
+            if key == 'keys':
+                columns = QHBoxLayout()
+                columns.setSpacing(18)
+                body.addLayout(columns)
+                for group, title in (('map', '地图与路线'), ('round', '本局与计数')):
+                    card = QFrame()
+                    card.setObjectName('card')
+                    column = QVBoxLayout(card)
+                    column.setContentsMargins(20, 20, 20, 20)
+                    column.setSpacing(20)
+                    heading = QLabel(title)
+                    heading.setObjectName('subheading')
+                    column.addWidget(heading)
+                    fields = QFormLayout()
+                    fields.setSpacing(18)
+                    fields.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+                    column.addLayout(fields)
+                    column.addStretch(1)
+                    self.key_forms[group] = fields
+                    columns.addWidget(card, 1)
+                self.forms[key] = self.key_forms['map']
+                self.keys_body = body
+                body.addStretch(1)
+                self.tabs.addTab(scroll, label)
+                continue
+            form_box = QFrame()
+            form_box.setObjectName('card')
+            form = QFormLayout(form_box)
+            form.setContentsMargins(22, 20, 22, 20)
+            form.setSpacing(18)
+            form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
+            body.addWidget(form_box)
+            body.addStretch(1)
+            self.forms[key] = form
+            self.tabs.addTab(scroll, label)
+        form = self.forms['general']
 
         settings = self.app.settings
         def entry(name, value):
@@ -831,9 +1075,13 @@ class SettingsPage(QWidget):
             self.vars['layout_recognition_backend'].set(self.layout_recognition_combo.currentData()),
             self._update_recognition_controls(), self._schedule_settings_save()))
         form.addRow('布局识别方法', self.layout_recognition_combo)
+        self.auto_select_layout_check = check('auto_select_layout', '自动选择识别布局，无需确认', settings['auto_select_layout'])
+        self.auto_select_layout_check.setToolTip('默认关闭。开启后按最高匹配分数选择，可能选错；分数不是正确概率。可重新识别或手动改选布局。')
+        form.addRow('布局选择', self.auto_select_layout_check)
         self.recognition_note = QLabel()
         self.recognition_note.setWordWrap(True)
         form.addRow('', self.recognition_note)
+        form = self.forms['keys']
         form.addRow("游戏地图键", capture("map_key", MAP_KEYS, settings["map_key"]))
         form.addRow("识别快捷键", capture("recognize_hotkey", ACTION_KEYS, settings["recognize_hotkey"]))
         form.addRow("投影快捷键", capture("project_hotkey", ACTION_KEYS, settings["project_hotkey"]))
@@ -841,10 +1089,17 @@ class SettingsPage(QWidget):
         form.addRow('参考图下一层', capture('reference_floor_hotkey', ACTION_KEYS, settings['reference_floor_hotkey']))
         reference_note = QLabel('H 显隐、J 切层为默认按键，可修改。配准成功后同步参考楼层，仍可用 J 手动切换；关地图后常驻，不影响投影，也不持续追踪角色楼层。')
         reference_note.setWordWrap(True)
-        form.addRow('', reference_note)
+        self.keys_body.insertWidget(self.keys_body.count() - 1, reference_note)
+        form = self.key_forms['round']
+        form.addRow('下一局', capture('next_round_hotkey', ACTION_KEYS, settings['next_round_hotkey']))
+        next_round_note = QLabel('下一局快捷键仅在游戏前台生效；请先关闭游戏地图。换局会清零计数、重置布局和取消旧任务，撤销仅恢复计数。')
+        next_round_note.setObjectName('muted')
+        next_round_note.setWordWrap(True)
+        self.keys_body.insertWidget(self.keys_body.count() - 1, next_round_note)
         for action, (label, _, _, _) in CHEST_ACTIONS.items():
             field = f'{action}_hotkey'
             form.addRow('宝箱计数 · ' + label, capture(field, ACTION_KEYS, settings[field]))
+        form = self.forms['general']
         form.addRow('宝箱计数条', check('chest_counter_visible', '游戏前台时显示（关地图后仍显示）', settings['chest_counter_visible']))
         self.capture_exclusion_check = check('capture_exclusion_enabled', '在截图和录屏中隐藏本程序', settings['capture_exclusion_enabled'])
         form.addRow('防捕获', self.capture_exclusion_check)
@@ -856,6 +1111,7 @@ class SettingsPage(QWidget):
         form.addRow('', capture_note)
         form.addRow("自动投影", check("auto_project", "地图打开时自动配准并投影", settings["auto_project"]))
         form.addRow("地图拖动跟随（试用）", check("template_motion_tracking", "拖动地图时路线同步平移（不支持缩放）", settings.get("template_motion_tracking", True)))
+        form = self.forms['capture']
         self.map_capture_delay_spin = QSpinBox()
         self.map_capture_delay_spin.setRange(0, MAX_MAP_CAPTURE_DELAY_MS)
         self.map_capture_delay_spin.setSuffix(" ms")
@@ -870,6 +1126,7 @@ class SettingsPage(QWidget):
         form.addRow("游戏窗口标题", entry("window_titles", ", ".join(settings["game_window_titles"])))
         form.addRow("截图区域 左, 上, 宽, 高", entry("roi", ", ".join(map(str, settings["capture_roi"]))))
         form.addRow("参考分辨率 宽, 高", entry("reference_size", ", ".join(map(str, settings["capture_reference_size"]))))
+        form = self.forms['general']
         opacity_row = QWidget()
         opacity_layout = QHBoxLayout(opacity_row)
         opacity_layout.setContentsMargins(0, 0, 0, 0)
@@ -884,26 +1141,30 @@ class SettingsPage(QWidget):
         opacity_layout.addWidget(self.opacity_label)
         form.addRow("投影不透明度", opacity_row)
 
-        body.addStretch(1)
         close_button = QPushButton("←  返回首页")
         close_button.clicked.connect(self.close)
         outer.addWidget(close_button, alignment=Qt.AlignmentFlag.AlignRight)
+        self.tabs.currentChanged.connect(self._cancel_key_capture)
         self._update_recognition_controls()
+
+    def _cancel_key_capture(self, *_args):
+        for button in self.hotkey_buttons.values():
+            button.cancel_capture()
 
     def _update_recognition_controls(self):
         if self.app.profile.key == 'a_bringer_of_doom/hard':
             self.recognition_note.setText(
                 ('困难支持最小或 50% 缩放识别，CPU 比较各层底图。' if self.layout_recognition_combo.currentData() == 'pure_structure'
                  else '困难支持最小或 50% 缩放的二楼图标与结构识别。')
-                + '确认布局后请缩到最小再配准；识别尺度不会用于投影。匹配分数不是正确概率。')
+                + '选定布局后请缩到最小再配准；识别尺度不会用于投影。默认人工确认，开启自动选择后采用首选候选。匹配分数不是正确概率。')
             return
         self.recognition_note.setText(
-            '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。请核对候选并人工确认，分数不是正确概率。'
+            '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。默认人工确认，可开启自动选择；分数不是正确概率。'
             if self.layout_recognition_combo.currentData() == 'pure_structure' else
-            '请在二楼地图识别，核对入口图并确认后可切层配准投影；匹配分数不是正确概率。')
+            '请在二楼地图识别，选定布局后可切层配准投影。默认人工确认，可开启自动选择；匹配分数不是正确概率。')
 
     def _capture_key(self, name: str, key: str) -> bool:
-        names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey", 'reference_floor_hotkey', *CHEST_HOTKEY_FIELDS)
+        names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey", 'reference_floor_hotkey', 'next_round_hotkey', *CHEST_HOTKEY_FIELDS)
         values = {field: key if field == name else self.vars[field].get() for field in names}
         try:
             validate_action_hotkeys(values['map_key'], {field: value for field, value in values.items() if field != 'map_key'})
@@ -928,7 +1189,7 @@ class SettingsPage(QWidget):
         self._settings_save_job.start(600)
 
     def _collect_settings(self):
-        fields = ('recognize_hotkey', 'project_hotkey', 'reference_hotkey', 'reference_floor_hotkey', *CHEST_HOTKEY_FIELDS)
+        fields = ('recognize_hotkey', 'project_hotkey', 'reference_hotkey', 'reference_floor_hotkey', 'next_round_hotkey', *CHEST_HOTKEY_FIELDS)
         shortcuts = validate_action_hotkeys(self.vars['map_key'].get(), {
             name: self.vars[name].get() if name in self.vars else self.app.settings[name] for name in fields})
         roi = [int(part.strip()) for part in self.vars["roi"].get().split(",")]
@@ -961,8 +1222,8 @@ class SettingsPage(QWidget):
             self.app.apply_settings(updated)
             persisted = load_settings(self.app.catalog, self.app.settings_path)
             fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "template_motion_tracking", "map_capture_delay_ms", "recognize_hotkey",
-                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "layout_recognition_backend",
-                      *CHEST_HOTKEY_FIELDS, 'reference_floor_hotkey', 'chest_counter_visible', 'capture_exclusion_enabled')
+                      "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "auto_select_layout", "layout_recognition_backend",
+                      *CHEST_HOTKEY_FIELDS, 'reference_floor_hotkey', 'next_round_hotkey', 'chest_counter_visible', 'capture_exclusion_enabled')
             if any(persisted[name] != updated[name] for name in fields):
                 raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
         except Exception as exc:

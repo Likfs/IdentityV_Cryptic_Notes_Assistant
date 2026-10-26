@@ -35,6 +35,32 @@ def test_counter_hotkeys_migrate_without_overriding_existing_keys(tmp_path):
     assert load_settings(MapCatalog(), path) == settings
 
 
+@pytest.mark.parametrize('old,expected', [
+    ({}, 'F12'),
+    ({'next_round_hotkey': 'ctrl+numEnter'}, 'Ctrl+NumEnter'),
+    ({'next_round_hotkey': []}, 'F12'),
+    ({'recognize_hotkey': 'F12'}, 'Ctrl+F12'),
+    ({'reference_floor_hotkey': 'F12'}, 'Ctrl+F12'),
+    ({'map_key': 'F12'}, 'Ctrl+N'),
+    ({'next_round_hotkey': 'G'}, 'F12'),
+])
+def test_next_round_hotkey_migrates_after_existing_bindings_without_writing(tmp_path, old, expected):
+    path = tmp_path / 'settings.json'
+    path.write_text(json.dumps(old), encoding='utf-8')
+    before = path.read_bytes()
+    settings = load_settings(MapCatalog(), path)
+    assert path.read_bytes() == before
+    assert settings['next_round_hotkey'] == expected
+    for field in ('map_key', 'recognize_hotkey', 'reference_floor_hotkey'):
+        if field in old:
+            assert settings[field] == old[field]
+    fields = ('map_key', 'recognize_hotkey', 'project_hotkey', 'reference_hotkey',
+              'reference_floor_hotkey', 'next_round_hotkey', *CHEST_HOTKEY_FIELDS)
+    assert len({settings[field] for field in fields}) == len(fields)
+    save_settings(settings, path)
+    assert load_settings(MapCatalog(), path) == settings
+
+
 def test_new_settings_defaults_and_invalid_booleans_do_not_write_on_read(tmp_path):
     path = tmp_path / 'settings.json'
     path.write_text('{"capture_exclusion_enabled": "false", "chest_counter_visible": null}')
@@ -42,6 +68,20 @@ def test_new_settings_defaults_and_invalid_booleans_do_not_write_on_read(tmp_pat
     assert settings['capture_exclusion_enabled'] is True
     assert settings['chest_counter_visible'] is True
     assert [settings[field] for field in CHEST_HOTKEY_FIELDS] == ['F5', 'F6', 'F7', 'F9']
+
+
+@pytest.mark.parametrize('value,expected', [(True, True), (False, False), ('true', False), (1, False), (None, False), ([], False)])
+def test_auto_select_layout_requires_explicit_boolean_and_roundtrips(tmp_path, value, expected):
+    path = tmp_path / 'settings.json'
+    path.write_text(json.dumps({'skip_layout_confirmation': True}), encoding='utf-8')
+    before = path.read_bytes()
+    assert load_settings(MapCatalog(), path)['auto_select_layout'] is False
+    assert path.read_bytes() == before
+    path.write_text(json.dumps({'auto_select_layout': value}), encoding='utf-8')
+    settings = load_settings(MapCatalog(), path)
+    assert settings['auto_select_layout'] is expected
+    save_settings(settings, path)
+    assert load_settings(MapCatalog(), path)['auto_select_layout'] is expected
 
 
 def test_reference_floor_key_preserves_existing_shortcuts_and_normalizes_hard_floor(tmp_path):

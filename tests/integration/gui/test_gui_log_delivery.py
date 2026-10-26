@@ -3,6 +3,8 @@ from src import route_projection_app as app
 
 
 def flush(window):
+    # The redesigned workspace defers painting while the log drawer is folded.
+    window.log_section.setExpanded(True)
     window._log_last_flush_at = 0.
     window._flush_logs()
 

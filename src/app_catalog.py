@@ -238,6 +238,13 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
     if not available(key):
         key = next(value for value in ('J', 'K', 'L', *ACTION_KEYS) if available(value))
     settings['reference_floor_hotkey'] = key
+    used_keys.add(key)
+    key = normalize_hotkey(settings.get('next_round_hotkey', 'F12'), 'F12')
+    if not available(key):
+        key = next(value for value in ('F12', 'Ctrl+F12', 'Shift+F12', 'Ctrl+N', *ACTION_KEYS)
+                   if available(value))
+    settings['next_round_hotkey'] = key
+    settings['auto_select_layout'] = settings.get('auto_select_layout') is True
     for field in ('chest_counter_visible', 'capture_exclusion_enabled'):
         settings[field] = settings.get(field) if isinstance(settings.get(field), bool) else True
     profile = catalog.profile(settings['map_id'], settings['difficulty_id'])
@@ -278,6 +285,7 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
 
 def save_settings(settings: dict, path: Path = DEFAULT_SETTINGS_PATH) -> None:
     settings = {**settings, "registration_backend": "template", "layout_recognition_backend": normalize_recognition_backend(settings.get("layout_recognition_backend")),
-                "auto_floor": False, "skip_layout_confirmation": False, "route_versions": normalize_route_versions(settings.get("route_versions", {}))}
+                "auto_floor": False, "auto_select_layout": settings.get('auto_select_layout') is True,
+                "skip_layout_confirmation": False, "route_versions": normalize_route_versions(settings.get("route_versions", {}))}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

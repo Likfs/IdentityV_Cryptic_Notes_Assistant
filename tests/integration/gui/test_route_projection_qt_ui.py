@@ -31,7 +31,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
     monkeypatch.setattr(app_module, "GlobalActionHotkeys", NoHotkeys)
     qt_app = QApplication.instance() or QApplication([])
     path = tmp_path / "settings.json"
-    # The current UI waits for an automatically matched floor before previewing a source.
+    # Startup displays the workspace with no game screenshot yet.
     path.write_text('{}', encoding="utf-8")
     window = app_module.RouteProjectionApp(settings_path=path)
     try:
@@ -40,7 +40,8 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert window.windowFlags() & Qt.WindowType.FramelessWindowHint
         assert window.windowFlags() & Qt.WindowType.WindowMinimizeButtonHint
         assert window.windowFlags() & Qt.WindowType.WindowSystemMenuHint
-        assert not window._wallpaper.isNull()
+        # The new neutral workspace paints a solid background behind its panels.
+        assert window.grab().toImage().pixelColor(1, 1).name() == ui.BG
         assert window.settings['layout_recognition_backend'] == 'pure_structure'
         window.opacity_slider.setValue(81)
         window.reset_button.click()
@@ -48,11 +49,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert load_settings(window.catalog, path)['opacity'] == .34
         window.layout_var.set("layout_01")
         window._update_assets()
-        assert window.template_panel._pixmap is None
-        assert '自动选中' in window.template_panel.caption.text()
-        assert window.route_panel._pixmap is None
-        window._select_preview_tab(1)
-        assert window.overlay_panel._pixmap is None
+        assert window.capture_panel._pixmap is None and window.last_result is None
 
         scheduled = []
         actions = []

@@ -9,6 +9,7 @@ from ctypes import wintypes
 import numpy as np
 
 from src.app_catalog import key_to_vk
+from src.hotkeys import polling_vks
 from src.capture.region import CaptureRegion
 from src.capture.runtime import capture_region, pil_to_bgr
 FLOOR_CONTROL_ROI = (1870, 70, 390, 66)
@@ -96,7 +97,7 @@ def ensure_region_on_screen(region: CaptureRegion) -> None:
 def map_key_down(key: str) -> bool:
     if sys.platform != "win32":
         return False
-    return bool(ctypes.windll.user32.GetAsyncKeyState(key_to_vk(key)) & 0x8000)
+    return any(ctypes.windll.user32.GetAsyncKeyState(vk) & 0x8000 for vk in polling_vks(key_to_vk(key)))
 
 
 def escape_key_down() -> bool:

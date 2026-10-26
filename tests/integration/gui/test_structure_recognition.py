@@ -9,7 +9,7 @@ from tests.support.layout_candidates import candidates
 
 
 @pytest.mark.parametrize('backend',['pure_structure','icon_structure'])
-def test_both_recognizers_always_require_human_confirmation(window,monkeypatch,backend):
+def test_both_recognizers_require_human_confirmation_by_default(window,monkeypatch,backend):
     window.apply_settings({**window.settings,'layout_recognition_backend':backend,'skip_layout_confirmation':True},save=False)
     window.locked_layout=None
     retrieval=candidates();retrieval.backend=backend

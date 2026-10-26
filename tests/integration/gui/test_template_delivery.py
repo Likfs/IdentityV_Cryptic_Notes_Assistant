@@ -89,8 +89,9 @@ def test_template_full_ui_result_reference_and_old_backend_setting_migrates(wind
     window._apply_result('project',True,generation,[0,0,40,40],result,None)
     assert len(shown)==1 and window.live_projection[0] is result
     assert window.reference_context[2]=='2nd'
-    assert window.template_panel._pixmap.width() == original.shape[1]
-    assert '2 楼' in window.template_panel.caption.text()
+    np.testing.assert_array_equal(window.last_result.registration.source_image, original)
+    assert window.capture_panel._pixmap.width() == original.shape[1]
+    assert window.last_result.floor == '2nd'
     assert 'floor_ms' not in window.status_rows
     references=[]
     monkeypatch.setattr(window.reference_overlay,'show_map',lambda *args:references.append(args))

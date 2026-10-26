@@ -3,6 +3,7 @@ from types import SimpleNamespace
 from queue import Queue
 import pytest
 from PyQt6.QtWidgets import QApplication
+from PyQt6.QtGui import QFontDatabase
 from src import route_projection_app as app
 from src import route_projection_core as core
 from src.capture import runtime as capture_runtime
@@ -13,6 +14,15 @@ from src.registration.template_matching import direct
 from src.capture.map_keys import GlobalMapKeys
 from src.capture.mouse_pan import MousePanHook
 from src import projection_workflow
+
+
+def _load_offscreen_font():
+    # Qt's Windows offscreen plugin has no system font database. Use the installed
+    # Chinese UI font for representative layout/render checks without bundling it.
+    if not QFontDatabase.families():
+        font = Path('C:/Windows/Fonts/msyh.ttc')
+        if font.is_file():
+            QFontDatabase.addApplicationFont(str(font))
 
 
 @pytest.fixture(autouse=True)
@@ -60,6 +70,7 @@ def window(tmp_path, monkeypatch):
     monkeypatch.setattr(app, "map_key_down", lambda _: False)
     monkeypatch.setattr(app.RouteProjectionApp, "after", lambda *_: None)
     qt = QApplication.instance() or QApplication([])
+    _load_offscreen_font()
     # Ordinary windows start with current defaults; migration has dedicated tests.
     (tmp_path / "settings.json").write_text('{}', encoding="utf-8")
     instance = app.RouteProjectionApp(settings_path=tmp_path / "settings.json")
@@ -76,6 +87,7 @@ def window(tmp_path, monkeypatch):
 def qt_app(monkeypatch):
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     app = QApplication.instance() or QApplication([])
+    _load_offscreen_font()
     monkeypatch.setattr(ui.RouteOverlayWindow, "_prepare_native_window", lambda self: None)
     monkeypatch.setattr(ui, "physical_to_qt_geometry", lambda x, y, w, h: (x, y, w, h, 1.0))
     yield app

@@ -6,11 +6,11 @@
 
 - 正式支持 CPU 固定缩放纯结构识别、图标与结构识别＋定尺度模板匹配。CNN、CPU/GPU 多尺度结构配准、采集训练和旧评测已移除，用户已删除 `retired_features/` 归档目录；不得从正式程序重新导入旧功能。曾经提交的旧文件和规则可从 Git 历史查阅，不能假定未提交的本机资料仍有备份。
 - 正式入口 `python -m src`，由 Qt 应用调用 `src/projection_workflow.py`；识别由 `src/layout_retrieval.py` 创建，纯结构实现位于 `src/structure_layout/`，单层配准用 `src/registration/template_matching/direct.py`，共用资源校验位于 `resources.py`；旧楼层适配器已移除。
-- 纯结构识别默认 CPU 最多8线程，每张底图只搜索一至两个已配置的固定尺度（未单独标定时沿用原两个最小档值）；困难识别支持最小与 50% 两档，模板配准仍仅使用最小尺度。读取当前难度各布局的全部有效楼层底图，不精修、不接入GPU或自动尺度；图标识别仍读取二楼底图。两者固定 0°，必须人工确认布局；匹配分数不是正确概率。不训练或加载模型，不依赖 torch/CUDA。
+- 纯结构识别默认 CPU 最多8线程，每张底图只搜索一至两个已配置的固定尺度（未单独标定时沿用原两个最小档值）；困难识别支持最小与 50% 两档，模板配准仍仅使用最小尺度。读取当前难度各布局的全部有效楼层底图，不精修、不接入GPU或自动尺度；图标识别仍读取二楼底图。两者固定 0°，默认人工确认布局，可显式开启 `auto_select_layout` 自动锁定最高分有效候选；匹配分数不是正确概率。不训练或加载模型，不依赖 torch/CUDA。
 - 模板读取保存尺度候选，坐标为 `single_floor_source_image`、`floor` 为胜出候选 `2nd`／`1st`／`b1`，矩阵为 `original_to_screen`／`screenshot_to_original`。不独立识别楼层按钮或 mylocation，自动比较已保存有效尺度的单层图，不执行连续尺度搜索或旧结构验收；最高分候选直接显示且保留核对提示。
 - 噩梦五个模板版本为 `route_zhanshi_fast`、`route_lhp_solo`、`route_clean`、`route_lhp_solo_clean`、`route_zhanshi_fast_clean`，偏好在 `template_route_versions`。正式配准尺度在 `scale_config.json`，图片归属在 `runtime_resources.json`，读取后适配为内部 `floor_variants`；原版底图各层独立读取，不拼接。不同源图必须重新截图匹配，不复用矩阵。
 - 当前布局从资源目录动态读取，不硬编码数量。有效楼层由难度 profile 的 `floors` 声明：噩梦为 `2nd`、`1st`、`b1`，困难只有 `2nd`、`1st`，不能为困难补空白地下室。布局 `layout_XX`；`route_01` 只作历史别名。资源完整不等于实机对齐。
-- 困难使用 `route_zhanshi_full`（展十全图路线）、`route_zhanshi_full_clean`（展十全图路线底图版）与 `route_clean`，不冒用噩梦速刷版本；各难度的显示版本由 `template_versions` 声明。困难 24 号暂缺两层底图，保留缺号及原图。入口图和实机截图后补；以候选对应楼层的底图辅助人工确认，不能跳过确认。未核对屏幕尺度的单层记录使用 `scale_status: pending`、`saved_scale: null`，资源仍核对指纹，仅匹配已有尺度的楼层，全部 pending 时投影明确拒绝，不套用噩梦尺度。
+- 困难使用 `route_zhanshi_full`（展十全图路线）、`route_zhanshi_full_clean`（展十全图路线底图版）与 `route_clean`，不冒用噩梦速刷版本；各难度的显示版本由 `template_versions` 声明。困难 24 号暂缺两层底图，保留缺号及原图。入口图和实机截图后补；默认以候选对应楼层的底图辅助人工确认，显式开启自动选择时可省略确认框。未核对屏幕尺度的单层记录使用 `scale_status: pending`、`saved_scale: null`，资源仍核对指纹，仅匹配已有尺度的楼层，全部 pending 时投影明确拒绝，不套用噩梦尺度。
 
 - 困难 `layout_05/1st` 的用户标注截图提供直接尺度 `3.178`；其余 57 张底图经公共结构比例及多路径一致性核对后独立推算，保存为 `derived_geometry`。离线识别配置 `recognition_scales.json` 与模板维护记录绑定 `sources/screen_scale_calibration.json` 及全部参与底图指纹，导出时完整审核；正式程序读取 `configs/runtime_resources.json` 中的固定尺度与实际图片指纹。变更素材须重新推算，不能只更新哈希。两种识别均读取对应底图固定尺度，图标模式仍只读二楼。固定截图和素材推算不代表所有楼层、其他缩放档或实时游戏操作已验收；16:50～16:51 的截图由用户确认为无可靠布局标签，不把目录中的选中布局当真值。
 
@@ -25,6 +25,7 @@
 - 正式运行不得依赖 tools、tests、workspace、retired_features 或 Tkinter。通用逻辑放 src，离线素材维护放 tools；使用已有 .venv，不因普通修改重建或卸载用户环境。
 - 不读取游戏内存，不自动寻路或控制角色。保留游戏前台检查、Esc 只关闭、覆盖层鼠标穿透和不抢焦点。
 - 保留现有鼠标拖动跟随（试用）、Raw Input 按键队列、松键后截图延迟和日志批量刷新。拖动只按鼠标位移平移，滚轮隐藏并要求重配，不推测游戏缩放。
+- 地图、识别／投影、参考图及计数快捷键共用 Raw Input 队列，不重复注册系统热键。支持小键盘数字、运算符、小数点及独立 `NumEnter`，主键盘数字／Enter 分开；数字和小数点按扫描码归一化，NumLock 不改变绑定。`NumEnter` 的内部事件码不能传给 Windows 注册或状态轮询 API。Esc 保留关闭／取消语义，不作为可录制操作键。
 
 ## 资源和归档
 
@@ -43,6 +44,8 @@
 - 耗时检索、配准和预览在后台，Qt 控件仅主线程更新，保留缓存并发保护。
 - 图层先经 Qt 信号提交，随后后台合成预览；两者均校验会话、代次、布局／版本、地图开关和窗口状态。迟到结果不得恢复旧图层或确认框。
 - 参考图与对齐投影为独立状态，尊重本次地图内手动显隐选择。切版本重新截图匹配，不能套用旧分层姿态复用逻辑。
+- “下一局”清零宝箱计数并重置布局、地图开关、参考图、截图和配准预览，即使计数为零也执行；撤销仅恢复计数。取消旧任务并清除待确认、延迟截图和待投影，任务回调按身份及会话检查，迟到结果不能恢复上一局状态或清除新任务的忙碌状态。保留已验证资源缓存和个人偏好。
+- `auto_select_layout` 默认关闭，仅显式布尔值 true 开启；旧 `skip_layout_confirmation` 继续忽略，不迁移为自动选择。自动选择仅锁布局，不复用识别姿态或自动截图投影；困难识别后仍须缩到最小并重新截图配准。
 - `configs/app_defaults.json` 为默认设置，`runtime/settings.json` 为个人设置。无效识别偏好归一到 pure_structure，合法 icon_structure 选择保留；投影固定 template，保留截图、热键、不透明度、模板版本等偏好。读取配置不主动落盘。
 
 ## 验证与交付

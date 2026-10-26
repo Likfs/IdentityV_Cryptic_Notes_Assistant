@@ -89,7 +89,7 @@ def test_late_preview_never_restores_old_ui(window,direct_inputs,monkeypatch,cha
     elif change=='new_result':window.last_result=replace(ready)
     else:window.settings['registration_backend']='cpu'
     before=window.last_result
-    monkeypatch.setattr(window,'_set_preview_kind',lambda *a:pytest.fail('stale preview applied'))
+    monkeypatch.setattr(window,'_set_preview',lambda *a:pytest.fail('stale screenshot applied'))
     window._receive_work_event(('preview',generation,session,ready,complete))
     assert window.last_result is before
 

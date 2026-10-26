@@ -21,7 +21,8 @@ def capture_setup(window,monkeypatch):
 
 
 @pytest.mark.parametrize('old_outcome',['result','error'])
-def test_f8_restarts_capture_and_old_completion_cannot_clear_new_busy(window,monkeypatch,old_outcome):
+@pytest.mark.parametrize('transition', ['restart', 'next_round'])
+def test_f8_restarts_capture_and_old_completion_cannot_clear_new_busy(window,monkeypatch,old_outcome,transition):
     captures=capture_setup(window,monkeypatch)
     entered=[Event(),Event()];release=[Event(),Event()];finished=[Event(),Event()]
     calls=[]
@@ -40,6 +41,9 @@ def test_f8_restarts_capture_and_old_completion_cannot_clear_new_busy(window,mon
     try:
         window.request_work('recognize',auto=False);wait_for(entered[0].is_set)
         first_session=window.session_id
+        if transition == 'next_round':
+            window.chest_reset_button.click()
+            assert not window.busy and window.locked_layout is None
         window.request_work('recognize',auto=False);wait_for(entered[1].is_set)
         assert len(captures)==2 and window.session_id!=first_session
         assert calls[0]['recognition_cancelled']() and not calls[1]['recognition_cancelled']()

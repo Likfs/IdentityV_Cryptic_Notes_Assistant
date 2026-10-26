@@ -14,6 +14,7 @@ class FakeApp:
             'registration_backend':'template','layout_recognition_backend':'icon_structure','auto_project':True,'auto_floor':False,'capture_roi':[901,185,1180,1050],
             'template_route_versions':{},'opacity':.72,'map_capture_delay_ms':35}
         self.map_generation=7;self.session_id='session';self.closed=False;self.busy=False
+        self._pending_confirmation=None;self._confirmation_in_progress=None
         self.map_state=app.MapToggleState(is_open=True);self.projection_delay_pending=True
         self.projection_triggered_at=100.;self.locked_layout='layout_16';self.settings_page=None
         self.results=queue.Queue();self.requests=[];self.scheduled=[];self.hidden=0

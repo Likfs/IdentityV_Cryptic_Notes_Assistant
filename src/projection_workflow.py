@@ -43,6 +43,7 @@ class WorkflowResult:
     recognition_window: list[int] | None = None
     gui_diagnostics: dict = field(default_factory=dict)
     capture_window_id: int | None = None
+    recognition_request_id: str | None = None
 
     def diagnostics(self) -> dict:
         return {
@@ -60,6 +61,7 @@ class WorkflowResult:
             "layout_recognition_backend": self.layout_recognition_backend,
             "layout_retrieval": self.layout_retrieval.diagnostics() if self.layout_retrieval else None,
             "recognition_window": self.recognition_window,
+            "recognition_request_id": self.recognition_request_id,
             "selected_layout": self.selected_layout,
             "variant_id": self.variant_id,
             "variant_source": self.variant_source,
@@ -183,8 +185,8 @@ def process_screenshot(
         layout_retrieval=retrieval,
     )
     if recognize_only:
-        # Recognition succeeds when candidates are available for manual review.
-        # Candidates are never automatically locked; the UI requires manual confirmation.
+        # Recognition succeeds when candidates are available. The UI chooses whether
+        # to ask for confirmation or lock the leading candidate; no pose is reused.
         result.selected_layout = decision["best_label"] if decision else None
         result.accepted = bool(result.selected_layout)
         if not result.accepted:

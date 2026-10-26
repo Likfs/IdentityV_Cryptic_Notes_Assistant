@@ -14,7 +14,7 @@ import numpy as np
 from mss.exception import ScreenShotError
 from PIL import Image
 
-from src.hotkeys import parse_hotkey
+from src.hotkeys import parse_hotkey, NUM_ENTER
 from src.capture.region import CaptureRegion
 
 
@@ -53,6 +53,8 @@ class GlobalActionHotkeys:
     @staticmethod
     def registration(label: str):
         shortcut = parse_hotkey(label)
+        if shortcut.vk == NUM_ENTER:
+            raise ValueError('小键盘回车必须使用 Raw Input 监听，不能注册为 Windows 虚拟键')
         return shortcut.modifiers | 0x4000, shortcut.vk
 
     def start(self) -> None:

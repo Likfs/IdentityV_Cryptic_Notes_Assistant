@@ -11,7 +11,8 @@ import threading
 import time
 from typing import Callable
 
-from src.hotkeys import (key_to_vk, parse_hotkey, modifier_flags, physical_modifier_vk,
+from src.hotkeys import (key_to_vk, parse_hotkey, modifier_flags, physical_key_vk, polling_vks,
+                         KEYPAD_POLL_ALIASES, NUM_ENTER,
                          MODIFIER_GROUPS, MODIFIER_VKS, PHYSICAL_MODIFIER_VKS)
 
 
@@ -62,6 +63,9 @@ class GlobalMapKeys:
             self._revision += 1
             # A held key at startup/reconfiguration must first be released.
             self._held = self._read_held(self._watched_keys(configuration))
+            # Windows polling cannot distinguish both Enter keys or keypad navigation
+            # from the navigation block. Suppress ambiguous startup keys until release.
+            self._initial_ambiguous = {vk for vk in self._held if vk in KEYPAD_POLL_ALIASES or vk == 0x0D}
             flags = modifier_flags(self._held)
             self._pressed_actions = {shortcut.vk: action for shortcut, action in actions
                                      if shortcut.vk in self._held and shortcut.modifiers == flags}
@@ -77,6 +81,7 @@ class GlobalMapKeys:
         keys = {0x1B, *PHYSICAL_MODIFIER_VKS, *(shortcut.vk for shortcut, _ in configuration[3])}
         if map_vk not in MODIFIER_VKS:
             keys.add(map_vk)
+        keys.update(alias for key in tuple(keys) for alias in polling_vks(key))
         return keys
 
     @staticmethod
@@ -88,7 +93,8 @@ class GlobalMapKeys:
     def _read_held(keys: set[int]) -> set[int]:
         if sys.platform != "win32":
             return set()
-        return {key for key in keys if ctypes.windll.user32.GetAsyncKeyState(key) & 0x8000}
+        return {key for key in keys if any(ctypes.windll.user32.GetAsyncKeyState(vk) & 0x8000
+                                          for vk in polling_vks(key))}
 
     def _wake(self):
         try:
@@ -100,6 +106,16 @@ class GlobalMapKeys:
         hwnd, title, process_id = foreground
         with self._lock:
             map_vk, titles, suspended, actions = self._configuration
+            if not down:
+                released = {key for key in self._initial_ambiguous
+                            if vk == key or vk in polling_vks(key) or (vk == NUM_ENTER and key == 0x0D)}
+                release_map = map_vk in released and self._map_down(self._held, map_vk)
+                self._initial_ambiguous.difference_update(released)
+                effective_vk = map_vk if release_map else vk
+                for key in released - {effective_vk}:
+                    self._held.discard(key)
+                    self._pressed_actions.pop(key, None)
+                vk = effective_vk
             if vk not in self._watched_keys(self._configuration) and vk not in MODIFIER_VKS:
                 return
             if down == (vk in self._held):
@@ -231,7 +247,7 @@ class GlobalMapKeys:
             if RawHeader.from_buffer_copy(data).dwType != 1:
                 return
             keyboard = RawKeyboard.from_buffer_copy(data, header_size)
-            vk = physical_modifier_vk(keyboard.VKey, keyboard.MakeCode, bool(keyboard.Flags & 2))
+            vk = physical_key_vk(keyboard.VKey, keyboard.MakeCode, bool(keyboard.Flags & 2))
             with self._lock:
                 if vk not in self._watched_keys(self._configuration):
                     return
