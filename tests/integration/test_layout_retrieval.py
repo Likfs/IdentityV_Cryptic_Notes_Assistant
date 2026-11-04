@@ -15,10 +15,15 @@ from tests.support.replay import read_cases, replay_image
 def test_index_tracks_official_layout_names_and_invalidates_content(tmp_path, monkeypatch):
     clean, resources = tmp_path / 'clean', tmp_path / 'resources'
     shutil.copytree(retrieval.RESOURCE_ROOT / 'icons', resources / 'icons')
-    source = next(iter(MapCatalog().profiles.values())).clean_root / 'layout_01/layout_01_2nd.png'
+    source = MapCatalog().profile('a_bringer_of_doom','hard').clean_root / 'layout_01/layout_01_2nd.png'
     target = clean / 'layout_22/layout_22_2nd.png'
     target.parent.mkdir(parents=True)
     shutil.copy2(source, target)
+    from tests.support.structure_scene import publish_structure
+    from src import runtime_resources
+    clean,_ = publish_structure(tmp_path,clean,floors=('2nd',))
+    target = clean/'layout_22/layout_22_2nd.png'
+    monkeypatch.setattr(runtime_resources,'PROJECT_ROOT',tmp_path)
     calls = []
     def detect(image, reference):
         calls.append(True)
@@ -32,11 +37,13 @@ def test_index_tracks_official_layout_names_and_invalidates_content(tmp_path, mo
     image = retrieval.read_image(target)
     image[0, 0] = 255 - image[0, 0]
     cv2.imencode('.png', image)[1].tofile(str(target))
+    publish_structure(tmp_path,clean,floors=('2nd',))
     changed = second.prepare()
     assert changed != original and len(calls) == 2
     extra = clean / 'layout_28/layout_28_2nd.png'
     extra.parent.mkdir()
     shutil.copy2(target, extra)
+    publish_structure(tmp_path,clean,floors=('2nd',))
     assert second.prepare() != changed
     assert [t['layout'] for t in second._targets] == ['layout_22', 'layout_28']
     icon = resources / 'icons/query.png'
@@ -67,7 +74,7 @@ def test_valid_image_with_missing_resources_reports_resource_error(tmp_path):
     assert result.reasons == ['新算法识别资源不完整，缺少候选底图或图标模板']
 
 
-def test_icon_workflow_returns_manual_candidates_without_cnn_or_registration(monkeypatch):
+def test_icon_workflow_returns_manual_candidates_without_cnn_or_registration(aligned_runtime, monkeypatch):
     def forbidden(*args, **kwargs):
         pytest.fail('Recognition called CNN or registration')
     from src.registration.template_matching import direct
@@ -95,6 +102,7 @@ def test_confirmed_icon_layout_enters_template_projection_without_retrieval(monk
         registration = SimpleNamespace(accepted=True, rejection_reasons=[], validation={'template': {'candidate_floor': 'b1'}})
         return registration, Path('original.png'), image, image, {'registration': 1.}
     monkeypatch.setattr(direct, 'project_original', project)
-    result = workflow.process_screenshot(np.zeros((80, 80, 3), np.uint8), catalog=None, profile=SimpleNamespace(key='test'), layout_override='layout_27', opacity=1.0, layout_recognition_backend='icon_structure', registration_backend='template')
+    profile = SimpleNamespace(key='test', template_versions=('测试路线',), version_names={'测试路线': '测试路线'})
+    result = workflow.process_screenshot(np.zeros((80, 80, 3), np.uint8), catalog=None, profile=profile, layout_override='layout_27', opacity=1.0, layout_recognition_backend='icon_structure', registration_backend='template')
     assert result.accepted and result.floor == 'b1' and calls == [('test', 'layout_27')]
     assert result.layout_retrieval is None

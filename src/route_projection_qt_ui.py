@@ -700,26 +700,28 @@ def exclude_window_from_capture(widget: QWidget) -> bool:
     return apply_window_capture_policy(widget)
 
 
+# POINTER retains its target type; defining it per refresh grows the global cache.
+class _MonitorInfo(ctypes.Structure):
+    _fields_ = (("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT),
+                ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD),
+                ("szDevice", wintypes.WCHAR * 32))
+
+
 def physical_to_qt_geometry(left: int, top: int, width: int, height: int):
     """Translate MSS physical pixels to Qt logical coordinates on each monitor."""
     if sys.platform != "win32":
         return left, top, width, height, 1.0
-
-    class MonitorInfo(ctypes.Structure):
-        _fields_ = (("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT),
-                    ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD),
-                    ("szDevice", wintypes.WCHAR * 32))
 
     user32 = ctypes.windll.user32
     monitor_from_point = user32.MonitorFromPoint
     monitor_from_point.argtypes = (wintypes.POINT, wintypes.DWORD)
     monitor_from_point.restype = wintypes.HANDLE
     get_monitor_info = user32.GetMonitorInfoW
-    get_monitor_info.argtypes = (wintypes.HANDLE, ctypes.POINTER(MonitorInfo))
+    get_monitor_info.argtypes = (wintypes.HANDLE, ctypes.POINTER(_MonitorInfo))
     get_monitor_info.restype = wintypes.BOOL
     monitor = monitor_from_point(wintypes.POINT(left + width // 2, top + height // 2), 2)
-    info = MonitorInfo()
-    info.cbSize = ctypes.sizeof(MonitorInfo)
+    info = _MonitorInfo()
+    info.cbSize = ctypes.sizeof(_MonitorInfo)
     if not monitor or not get_monitor_info(monitor, ctypes.byref(info)):
         raise ctypes.WinError()
     name = info.szDevice.casefold().removeprefix("\\\\.\\")
@@ -1152,12 +1154,6 @@ class SettingsPage(QWidget):
             button.cancel_capture()
 
     def _update_recognition_controls(self):
-        if self.app.profile.key == 'a_bringer_of_doom/hard':
-            self.recognition_note.setText(
-                ('困难支持最小或 50% 缩放识别，CPU 比较各层底图。' if self.layout_recognition_combo.currentData() == 'pure_structure'
-                 else '困难支持最小或 50% 缩放的二楼图标与结构识别。')
-                + '选定布局后请缩到最小再配准；识别尺度不会用于投影。默认人工确认，开启自动选择后采用首选候选。匹配分数不是正确概率。')
-            return
         self.recognition_note.setText(
             '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。默认人工确认，可开启自动选择；分数不是正确概率。'
             if self.layout_recognition_combo.currentData() == 'pure_structure' else

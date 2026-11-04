@@ -1,23 +1,16 @@
-"""Automatic fixed-scale single-floor projection; legacy source readers serve offline imports."""
+"""Fixed-scale matching of published clean floors and same-canvas route projection."""
 from time import perf_counter
 from concurrent.futures import ThreadPoolExecutor
-import json
-import hashlib
 import cv2
 import numpy as np
-from src.app_catalog import PROJECT_ROOT, TEMPLATE_VERSION_NAMES, DEFAULT_TEMPLATE_VERSIONS, MapCatalog
+from src.app_catalog import CLEAN_VERSION_ID, PROJECT_ROOT, MapCatalog
 from src.projection.route_overlay import composite_route_layer
 from src.registration.result import OriginalRegistrationResult
 from . import resources, matcher, floors
 from .screen import screen_info
 
-_images = {}
 FLOOR_REVIEW_MARGIN = 1.0
 FLOOR_REVIEW_DS = 0.5
-
-
-def entry_fingerprint(entry):
-    return hashlib.sha256(json.dumps(entry, sort_keys=True, ensure_ascii=False).encode('utf-8')).hexdigest()
 
 
 def saved_scale_value(candidate):
@@ -137,130 +130,38 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
 
 
 def available_variants(profile_key, layout):
-    config = floors.fixed_session().config
-    variants = config.get('floor_variants', {}).get(profile_key, {}).get(layout, {})
-    return [v for v in TEMPLATE_VERSION_NAMES if v in variants]
-
-
-def _source(profile_key, layout, variant_id='route_zhanshi_fast'):
-    if variant_id not in TEMPLATE_VERSION_NAMES:
-        raise ValueError('模板模式不支持所选原图版本')
-    config = json.loads((PROJECT_ROOT/'maintenance/configs/template_matching.json').read_text(encoding='utf-8'))
-    entry = config.get('original_variants', {}).get(profile_key, {}).get(layout, {}).get(variant_id)
-    if entry is not None:
-        reference_variant = entry.get('reference_variant_id')
-        if reference_variant is not None:
-            parent = config['original_variants'][profile_key][layout][reference_variant]
-            if reference_variant == variant_id or entry_fingerprint(parent) != entry['reference_variant_sha256']:
-                raise ValueError('底图版对应的原图尺度记录已改变，请重新导入底图版')
-        candidates = entry.get('candidates', [])
-        if not candidates:
-            raise ValueError('当前版本没有已保存的固定尺度')
-        for candidate in candidates:
-            saved_scale_value(candidate)
-            for dependency in candidate.get('dependencies', []):
-                resources.verify_fingerprint(PROJECT_ROOT/dependency['path'], dependency['sha256'])
-            reference = candidate.get('reference_entry_key')
-            if reference is not None and entry_fingerprint(config['entries'][reference]) != candidate['reference_entry_sha256']:
-                raise ValueError('推算尺度对应的展十记录已改变，请重新推算')
-            for reference in candidate.get('reference_entries', []):
-                if entry_fingerprint(config['entries'][reference['key']]) != reference['sha256']:
-                    raise ValueError('展十原图尺度记录已改变，请重新导入整图版本')
-        path = PROJECT_ROOT/entry['source_image']
-        if 'source_parts' in entry:
-            if variant_id != 'route_clean' or entry_fingerprint(entry['source_parts']) != entry['source_sha256']:
-                raise ValueError('三层底图拼接记录已改变，请重新推算')
-            parts = entry['source_parts']
-            if [part['floor'] for part in parts] != ['2nd', '1st', 'b1']:
-                raise ValueError('三层底图拼接记录不完整')
-            for part in parts:
-                resources.verify_fingerprint(PROJECT_ROOT/part['path'], part['sha256'])
-        else:
-            resources.verify_fingerprint(path, entry['source_sha256'])
-        return entry, path, config
-    if variant_id != 'route_zhanshi_fast':
-        raise ValueError('当前布局没有所选版本的完整原图及固定尺度')
-    prefix = f'assets/maps/{profile_key}/clean/{layout}/'
-    entries = [entry for key, entry in config['entries'].items()
-               if key.startswith(prefix) and entry['layout'] == layout]
-    if not entries:
-        raise ValueError('当前布局没有已导入的完整原图和尺度')
-    identities = {(e['source_image'], e['source_sha256'], saved_scale_value(e)) for e in entries}
-    if len(identities) != 1:
-        raise ValueError('同一布局的完整原图或尺度不一致，请重新导入')
-    entry = entries[0]
-    path = PROJECT_ROOT/entry['source_image']
-    resources.verify_fingerprint(path, entry['source_sha256'])
-    return entry, path, config
+    session = floors.fixed_session()
+    if profile_key not in session.profiles:
+        raise ValueError(f'未配置地图难度：{profile_key}')
+    profile = session.profiles[profile_key]
+    variants = session.config.get('floor_variants', {}).get(profile_key, {}).get(layout, {})
+    return [v for v in profile.template_versions if v in profile.version_names and v in variants]
 
 
 def check_original_resources(profile_key, layouts):
     """Inventory and fingerprint verification; this is not image-alignment validation."""
     path = PROJECT_ROOT / 'configs/map_catalog.json'
-    versions = (MapCatalog(path).profile(*profile_key.split('/')).template_versions if path.exists()
-                else DEFAULT_TEMPLATE_VERSIONS)
-    summary = {v: dict(name=TEMPLATE_VERSION_NAMES[v], layouts=0, fixed_candidates=0,
+    profile = MapCatalog(path).profile(*profile_key.split('/'))
+    versions = profile.template_versions
+    names = profile.version_names
+    summary = {v: dict(name=names[v], layouts=0, fixed_candidates=0,
                       resource_layouts=0, partial_layouts=0, pending_scales={}, errors=[])
                for v in versions}
     with resources.resource_lock:
         for layout in layouts:
             for variant_id, item in summary.items():
                 try:
-                    count = floors.check(profile_key, layout, variant_id, require_scale=False)
+                    count = floors.check(profile_key, layout, variant_id)
                     item['resource_layouts'] += 1
-                    entries, _ = floors.sources(profile_key, layout, variant_id, require_scale=False)
-                    pending = [f for f, entry in entries.items() if entry.get('scale_status') == 'pending' and entry.get('saved_scale') is None]
-                    item['fixed_candidates'] += count - len(pending)
-                    if pending:
-                        item['partial_layouts'] += int(count > len(pending))
-                        item['pending_scales'][layout] = pending
-                        item['errors'].append(f"{layout}: 屏幕尺度待标定（{'、'.join(pending)}）")
-                        continue
+                    item['fixed_candidates'] += count
                     item['layouts'] += 1
                 except (OSError, ValueError, KeyError) as exc:
                     item['errors'].append(f'{layout}: {exc}')
     return summary
 
 
-def load_original(profile_key, layout, variant_id='route_zhanshi_fast'):
-    """Load a complete original; derived scales additionally verify their calibration dependencies."""
-    with resources.resource_lock:
-        entry, path, config = _source(profile_key, layout, variant_id)
-        threshold = int(entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH))
-        preserve_colors = entry.get('preserve_colored_routes', variant_id == 'route_lhp_solo')
-        key = (str(path), entry['source_sha256'], variant_id, threshold, preserve_colors)
-        if key not in _images:
-            if 'source_parts' in entry:
-                parts = []
-                for part in entry['source_parts']:
-                    tile = matcher.read_image(PROJECT_ROOT/part['path'])
-                    x, y, width, height = part['region']
-                    if min(x, y) < 0 or tile.shape[:2] != (height, width):
-                        raise ValueError('三层底图拼接尺寸已改变，请重新推算')
-                    parts.append((tile, x, y, width, height))
-                image = np.zeros((max(y+h for _, x, y, w, h in parts),
-                                  max(x+w for _, x, y, w, h in parts), 3), np.uint8)
-                for tile, x, y, width, height in parts:
-                    image[y:y+height, x:x+width] = tile
-            else:
-                image = matcher.read_image(path)
-            # Zhanshi source images have a black background; preserve every nonblack mark.
-            foreground = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) > threshold
-            if preserve_colors:
-                hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-                foreground |= (hsv[:,:,1] >= 75) & (hsv[:,:,2] >= 60)
-            alpha = np.uint8(foreground)*255
-            _images.clear()  # Bound memory to one full-resolution original.
-            _images[key] = (image, np.dstack((image, alpha)))
-            # Matcher caches use paths; a newly imported image must rebuild them.
-            for cache_key in list(matcher._map_cache):
-                if str(path) in cache_key:
-                    del matcher._map_cache[cache_key]
-        image, rgba = _images[key]
-        return entry, path, config, image, rgba
-
-
-def project_original(screenshot, profile_key, layout, opacity, *, variant_id='route_zhanshi_fast', defer_preview=False):
+def project_original(screenshot, profile_key, layout, opacity, *, variant_id=None, defer_preview=False):
+    """Use the frozen profile's first enabled version when no version is supplied."""
     started = perf_counter()
     validation = dict(registration_algorithm='fixed_scale_template', projection_scope='single_floor',
                       coordinate_space='single_floor_source_image', floor_detection_enabled=False,
@@ -278,8 +179,17 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
         if not np.any(cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY) > matcher.TEMPLATE_GAME_THRESH):
             raise ValueError('截图中没有可匹配的可见像素，请保持地图打开后重试')
         with resources.resource_lock:
-            snapshot = floors.FrozenSourceSnapshot(profile_key, layout, variant_id, allow_pending=True)
-            result.validation['pending_scale_floors'] = snapshot.pending
+            if variant_id is None:
+                session = floors.fixed_session()
+                profile = session.profiles.get(profile_key)
+                if profile is None:
+                    raise ValueError(f'未配置地图难度：{profile_key}')
+                if profile.asset_status == 'pending':
+                    raise ValueError('资产待配置，请补充底图、路线图和最小缩放值')
+                variant_id = profile.template_versions[0]
+            display = floors.FrozenSourceSnapshot(profile_key, layout, variant_id)
+            snapshot = floors.FrozenSourceSnapshot(profile_key, layout, CLEAN_VERSION_ID)
+            result.validation['pending_scale_floors'] = []
             config = snapshot.config
             screen = screen_info(config.get('capture', {}).get('screen_name', ''))
             mode = int(config['perf_mode'])
@@ -287,12 +197,19 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id='ro
                 raise ValueError('性能档位无效')
             matcher.TEMPLATE_DS = matcher.PERF_MODES[mode]['ds']
             matching_started = perf_counter()
+            floors.retain_working_set(snapshot.entries.values(), frozen=snapshot._session)
             attempts, best, path = _match_floor_candidates(snapshot, screenshot, screen['factor'])
             result.validation['fixed_candidates'] = attempts
             if best is None:
                 raise ValueError('所有固定尺度候选均不可匹配：' + '；'.join(a['reason'] for a in attempts))
             snapshot.validate()
             match, scale, saved_scale, floor, entry, path, rgba, image = best
+            validation['matching_source_image'] = entry['source_image']
+            entry, path, _, image, rgba = display.load(floor)
+            if image.shape[:2] != best[7].shape[:2] or entry['saved_scale'] != saved_scale:
+                raise ValueError('路线图与底图画布或尺度不一致，请重新发布')
+            display.validate()
+            floors.retain_working_set([*snapshot.entries.values(), entry], frozen=display._session)
             result.timings['matching'] = (perf_counter()-matching_started)*1000
         if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
             raise ValueError('定尺度模板匹配未返回有限分数或坐标')

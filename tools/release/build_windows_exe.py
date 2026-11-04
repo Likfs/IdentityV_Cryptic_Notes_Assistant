@@ -45,96 +45,9 @@ def windows_version_resource() -> str:
 def maintenance_files() -> list[Path]:
     from src.registration.template_matching.resources import verify_module_provenance
     verify_module_provenance(ROOT / 'src/registration/template_matching')
-    files: set[Path] = set()
-
-    def include(value: str | Path) -> None:
-        path = (ROOT / value).resolve()
-        path.relative_to(ROOT)  # Do not accidentally ship files outside this project.
-        if not path.is_file():
-            raise FileNotFoundError(f"缺少运行资源：{path}")
-        files.add(path)
-
-    for name in ("map_catalog.json", "app_defaults.json"):
-        include(Path("configs") / name)
-    include("maintenance/configs/template_matching.json")
-    catalog = json.loads((ROOT / "configs/map_catalog.json").read_text(encoding="utf-8-sig"))
-    for map_item in catalog["maps"]:
-        for profile in map_item["difficulties"]:
-            clean_root = ROOT / profile["clean_root"]
-            from src.maintenance_paths import profile_root
-            scale_file = profile_root(clean_root) / 'recognition_scales.json'
-            if scale_file.exists():
-                from src.structure_layout.scales import read_scale_overrides, derivation_files
-                for name, record in read_scale_overrides(clean_root, offline=True).items():
-                    if hashlib.sha256((clean_root/name).read_bytes()).hexdigest() != record['source_sha256']:
-                        raise ValueError(f'识别尺度底图指纹不一致：{name}')
-                include(scale_file)
-                scale_data = json.loads(scale_file.read_text(encoding='utf-8'))
-                for key in ('derivation', 'zoom_derivation'):
-                    if scale_data.get(key) is not None:
-                        for dependency in derivation_files(clean_root, scale_data[key]):
-                            include(dependency)
-            from src.structure_layout.normalized import read_normalized_index
-            from src.structure_layout.scales import read_scale_overrides
-            normalized, _ = read_normalized_index(clean_root, read_scale_overrides(clean_root, offline=True), offline=True)
-            if normalized:
-                include(clean_root.parent/'recognition/index.json')
-                for record in normalized['targets'].values():
-                    include(clean_root.parent/'recognition'/record['path'])
-            layouts = sorted(p for p in clean_root.glob("layout_*") if p.is_dir())
-            if not layouts:
-                raise ValueError(f"没有可发布布局：{clean_root}")
-            for layout in layouts:
-                for floor in profile.get('floors', ("2nd", "1st", "b1")):
-                    images = list(layout.glob(f"*_{floor}.png"))
-                    if len(images) != 1:
-                        raise ValueError(f"底图数量错误：{layout.name}/{floor}")
-                    include(images[0])
-                if profile.get("entrance_root"):
-                    include(Path(profile["entrance_root"]) / f"{layout.name}.png")
-                calibrations = list((ROOT / profile["calibration_root"]).glob(
-                    f"route_*/{layout.name}/calibration.json"))
-                if not calibrations:
-                    raise ValueError(f"布局缺少路线标定：{layout.name}")
-                for calibration in calibrations:
-                    include(calibration)
-    config = json.loads((ROOT / "maintenance/configs/template_matching.json").read_text(encoding="utf-8"))
-    for entry in config["entries"].values():
-        include(entry["source_image"])
-        for field, fingerprint in (("source_image", "source_sha256"),
-                                   ("calibration", "calibration_sha256")):
-            path = (ROOT / entry[field]).resolve()
-            include(path)
-            if hashlib.sha256(path.read_bytes()).hexdigest() != entry[fingerprint]:
-                raise ValueError(f"定尺度模板匹配指纹不一致：{path}")
-    from src.registration.template_matching.direct import _source
-    for profile_key, layouts in config.get('original_variants', {}).items():
-        for layout, variants in layouts.items():
-            for variant_id in variants:
-                entry, source, _ = _source(profile_key, layout, variant_id)
-                if 'source_parts' in entry:
-                    for part in entry['source_parts']:
-                        include(part['path'])
-                else:
-                    include(source)
-                for candidate in entry['candidates']:
-                    for dependency in candidate.get('dependencies', []):
-                        include(dependency['path'])
-    from src.registration.template_matching.floors import sources
-    for profile_key, layouts in config.get('floor_variants', {}).items():
-        for layout, variants in layouts.items():
-            for variant in variants:
-                records, _ = sources(profile_key, layout, variant, require_scale=False, offline=True)
-                for record in records.values():
-                    include(record['source_image'])
-                    for dependency in record.get('dependencies', []):
-                        include(dependency['path'])
-    include("assets/app_ui/home_wallpaper.jpg")
-    include("assets/app_ui/icons/check.svg")
-    for name in ('query', 'clean_09', 'clean_15'):
-        include(f'assets/layout_retrieval/icons/{name}.png')
-    include("src/registration/template_matching/provenance.json")
-    return sorted(files)
+    from tools.assets.imports.export_aligned_assets import generate
+    data, _ = generate(ROOT)
+    return sorted(ROOT/name for name in data['payload']['files'] if name != 'configs/scale_config.json')
 
 
 def runtime_files() -> list[Path]:

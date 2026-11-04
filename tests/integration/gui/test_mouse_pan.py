@@ -130,7 +130,7 @@ def test_session_changes_discard_pending_drag(running, monkeypatch, change):
     elif change == 'session': window.session_id = 'new'
     elif change == 'generation': window.map_generation += 1
     elif change == 'layout': window.locked_layout = 'layout_02'
-    elif change == 'version': window.settings['template_route_versions'][window.profile.key] = 'route_clean'
+    elif change == 'version': window.settings['template_route_versions'][window.profile.key] = 'clean'
     elif change == 'backend': window.settings['registration_backend'] = 'cpu'
     elif change == 'settings': window.settings_page = SimpleNamespace()
     elif change == 'disabled': window.settings['template_motion_tracking'] = False

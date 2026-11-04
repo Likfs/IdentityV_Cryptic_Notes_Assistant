@@ -109,7 +109,7 @@ def test_all_settings_are_persisted_without_save_button(tmp_path) -> None:
     path = tmp_path / "settings.json"
     initial = load_settings(catalog, path)
     initial['route_versions'] = {"a_bringer_of_doom/nightmare": {
-        "layout_01": "route_lhp_solo", "layout_02": "route_clean"}}
+        "layout_01": "route_lhp_solo", "layout_02": "clean"}}
     app = SimpleNamespace(catalog=catalog, settings_path=path, settings=initial)
 
     def apply_settings(updated) -> None:

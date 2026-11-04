@@ -15,19 +15,19 @@ def test_switch_to_hard_clears_old_context_and_only_lists_two_floors(window, tmp
     import json
     assert json.loads(window.settings_path.read_text(encoding='utf-8'))['reference_floor'] == '2nd'
     assert [window.floor_combo.itemData(i) for i in range(window.floor_combo.count())] == ['2nd', '1st']
-    assert selected_template_variant(window.settings, window.profile.key) == 'route_zhanshi_full'
+    assert selected_template_variant(window.settings, window.profile.key) == 'clean'
     assert [window.route_combo.itemData(i) for i in range(window.route_combo.count())] == [
-        'route_clean', 'route_zhanshi_full', 'route_zhanshi_full_clean']
+        'clean', 'route_zhanshi_full']
     window.open_settings()
-    assert '50%' in window.settings_page.recognition_note.text()
-    assert '缩到最小再配准' in window.settings_page.recognition_note.text()
+    assert '缩到最小' in window.settings_page.recognition_note.text()
+    assert '其他缩放' in window.settings_page.recognition_note.text()
     window._leave_settings(window.settings_page)
     window.show()
     window.grab().save(str(tmp_path/'hard_window.png'))
     window.difficulty_var.set('噩梦')
     window._profile_changed()
     assert [window.floor_combo.itemData(i) for i in range(window.floor_combo.count())] == ['2nd', '1st', 'b1']
-    assert window.route_combo.findData('route_zhanshi_full_clean') == -1
+    assert window.route_combo.findData('route_zhanshi_full') == -1
 
 
 def test_hard_clean_version_switch_rematches_and_uses_new_reference(window, monkeypatch, tmp_path):
@@ -36,26 +36,30 @@ def test_hard_clean_version_switch_rematches_and_uses_new_reference(window, monk
     calls = []
     monkeypatch.setattr(window, 'request_work', lambda mode, **kw: calls.append((mode, kw)))
     window.difficulty_combo.setCurrentText('困难')
+    window.route_combo.setCurrentIndex(window.route_combo.findData('route_zhanshi_full'))
     window.locked_layout = 'layout_05'
     window.layout_var.set('layout_05')
     window.map_state.is_open = True
     window._update_assets()
+    calls.clear()
     generation = window.map_generation
     window.last_result = object()
-    window.route_combo.setCurrentIndex(window.route_combo.findData('route_zhanshi_full_clean'))
+    window.route_combo.setCurrentIndex(window.route_combo.findData('clean'))
     assert window.map_generation == generation+1
     assert window.last_result is None and window.live_projection is None
     assert calls == [('project', {'auto': False})]
     assert load_settings(window.catalog, window.settings_path)['template_route_versions'][
-        window.profile.key] == 'route_zhanshi_full_clean'
+        window.profile.key] == 'clean'
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *args: seen.append(args))
     window.floor_combo.setCurrentIndex(window.floor_combo.findData('1st'))
     window.reference_visible = True
     window._refresh_reference_map()
     wait_for(lambda: bool(seen))
-    assert seen[-1][0].shape[:2] == (3592, 4360)
-    assert '展十全图路线底图版' in seen[-1][2]
+    from src.registration.template_matching import floors
+    import numpy as np
+    np.testing.assert_array_equal(seen[-1][0], floors.load(window.profile.key, 'layout_05', 'clean', '1st')[3])
+    assert '原版干净底图' in seen[-1][2]
     window.show()
     window.grab().save(str(tmp_path/'hard_clean_version.png'))
 
@@ -107,11 +111,11 @@ def test_confirmation_previews_the_matched_floor_instead_of_always_second(window
 
 def test_close_scores_explain_local_ambiguity_without_blocking_manual_choice(qt_app, tmp_path):
     dialog=LayoutConfirmationDialog([
-        dict(layout='layout_03',score=.970,preview_floor='1st',recognition_zoom='50_percent',preview_path=tmp_path/'first.png'),
+        dict(layout='layout_03',score=.970,preview_floor='1st',recognition_zoom='minimum',preview_path=tmp_path/'first.png'),
         dict(layout='layout_27',score=.966,preview_floor='1st',preview_path=tmp_path/'second.png')],None)
     texts=[label.text() for label in dialog.findChildren(QLabel)]
     assert any('分数接近' in text for text in texts)
-    assert any('50%' in text and '缩到最小再配准' in text for text in texts)
+    assert not any('50%' in text for text in texts)
     assert any('一楼底图' in text for text in texts)
     assert not any('二楼底图' in text for text in texts)
     assert dialog.confirm_button.isEnabled()

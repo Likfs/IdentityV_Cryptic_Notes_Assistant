@@ -9,20 +9,7 @@ import pytest
 
 from src import runtime_resources as runtime
 from src.registration.template_matching import floors
-from tools.assets.imports.export_runtime_resources import compact_template, split_template, json_bytes
-
-
-def write_bundle(root, payload):
-    path = root/runtime.BUNDLE_PATH
-    path.parent.mkdir(parents=True, exist_ok=True)
-    data = deepcopy(payload)
-    data['template'], scales = split_template(data['template'])
-    raw = json_bytes(scales)
-    (root/runtime.SCALE_PATH).write_bytes(raw)
-    data['files'][runtime.SCALE_PATH] = dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
-    path.write_text(json.dumps(dict(schema_version=2, payload=data,
-                                   payload_sha256=runtime.digest(data))), encoding='utf-8')
-    return path
+from tests.support.published_records import write_bundle, write_template, json_bytes
 
 
 @pytest.fixture
@@ -33,11 +20,12 @@ def package(tmp_path, monkeypatch):
     name = path.relative_to(tmp_path).as_posix()
     item = dict(source_image=name, source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                 size=[40,30], saved_scale=1., scale_status='verified_capture')
-    payload = dict(template=dict(perf_mode=2,floor_variants={'map/diff':{'layout_01':{
-        'route_clean':{f:dict(item) for f in floors.FLOORS}}}}),
+    payload = dict(template=dict(perf_mode=2,asset_contract='aligned_floor_images',floor_variants={'map/diff':{'layout_01':{
+        'clean':{f:dict(item) for f in floors.FLOORS}}}}),
         files={name:dict(bytes=path.stat().st_size,sha256=item['source_sha256'])},
-        recognition={'assets/maps/map/diff/clean':dict(targets={
-            'layout_01/layout_01_1st.png':dict(source_sha256=item['source_sha256'],scales=[1.])})})
+        recognition={'assets/maps/map/diff/clean':dict(source_images=True,profile_key='map/diff',targets={
+            'layout_01/layout_01_1st.png':dict(source_sha256=item['source_sha256'])})})
+    write_template(tmp_path,payload['template'])
     write_bundle(tmp_path,payload)
     monkeypatch.setattr(runtime,'PROJECT_ROOT',tmp_path)
     monkeypatch.setattr(floors,'PROJECT_ROOT',tmp_path)
@@ -49,7 +37,7 @@ def test_package_matches_without_any_maintenance_document(package):
     assert not (root/'maintenance/configs/template_matching.json').exists()
     assert not (path.parents[2]/'recognition_scales.json').exists()
     assert runtime.runtime_files()==sorted([path,root/runtime.BUNDLE_PATH,root/runtime.SCALE_PATH])
-    assert floors.load('map/diff','layout_01','route_clean','1st')[3].shape==(30,40,3)
+    assert floors.load('map/diff','layout_01','clean','1st')[3].shape==(30,40,3)
     from src.structure_layout.scales import read_scale_overrides
     assert read_scale_overrides(path.parents[1])['layout_01/layout_01_1st.png']['scales']==[1.]
 
@@ -74,26 +62,11 @@ def test_offline_edits_do_not_change_runtime_but_explicit_audit_reads_them(packa
     root,_,_=package
     (root/'maintenance/configs').mkdir(parents=True)
     (root/'maintenance/configs/template_matching.json').write_text('{}')
-    assert floors.load('map/diff','layout_01','route_clean','1st')[0]['saved_scale']==1.
-    with pytest.raises(ValueError,match='缺少完整'):
-        floors.sources('map/diff','layout_01','route_clean',offline=True)
-
-
-def test_export_keeps_pending_and_pixel_controls_without_evidence_dependencies():
-    record=dict(source_image='a.png',source_sha256='f'*64,size=[40,30],saved_scale=None,
-        scale_status='pending',map_threshold=17,preserve_colored_routes=False,
-        scale_provenance='derived_geometry',dependencies=[dict(path='evidence.json',sha256='e'*64)])
-    source=dict(perf_mode=2,capture={'screen_name':'a'},floor_variants={'map/diff':{'layout_01':{'route_clean':{'1st':record}}}})
-    result=compact_template(source)
-    dependencies=[]
-    entries,_=floors._source_records(result,('1st',),'map/diff','layout_01','route_clean',
-        require_scale=False,verify_dependencies=dependencies.extend)
-    assert dependencies==[('a.png','f'*64)]
-    assert entries['1st']['map_threshold']==17 and entries['1st']['preserve_colored_routes'] is False
-    with pytest.raises(ValueError,match='待标定'):
-        floors._source_records(result,('1st',),'map/diff','layout_01','route_clean',
-            require_scale=True,verify_dependencies=dependencies.extend)
-    assert 'dependencies' in record
+    assert floors.load('map/diff','layout_01','clean','1st')[0]['saved_scale']==1.
+    assert floors.sources('map/diff','layout_01','clean')[0]['1st']['saved_scale']==1.
+    (root/runtime.BUNDLE_PATH).write_bytes(b'{}')
+    with pytest.raises(ValueError,match='运行资源配置'):
+        floors.sources('map/diff','layout_01','clean')
 
 
 def test_runtime_rejects_rehashed_inconsistent_zoom_scales(package):
@@ -103,17 +76,17 @@ def test_runtime_rejects_rehashed_inconsistent_zoom_scales(package):
     profile['targets']['layout_01/layout_01_1st.png'].update(scales=[1.,.5],scale_modes={'minimum':1.,'50_percent':.5})
     write_bundle(root,payload)
     from src.structure_layout.scales import read_scale_overrides
-    with pytest.raises(ValueError,match='两档尺度不一致'):
+    with pytest.raises(ValueError,match='不能重复保存尺度'):
         read_scale_overrides(path.parents[1])
 
 
-def test_export_rejects_wrong_dimensions_even_with_valid_source_hash(package):
-    from tools.assets.imports.export_runtime_resources import validate_dimensions
+def test_runtime_rejects_wrong_dimensions_even_with_valid_source_hash(package):
     root,_,payload=package
-    validate_dimensions(payload['template'],root)
-    payload['template']['floor_variants']['map/diff']['layout_01']['route_clean']['1st']['size']=[41,30]
+    for item in payload['template']['floor_variants']['map/diff']['layout_01']['clean'].values():
+        item['size']=[41,30]
+    write_bundle(root,payload)
     with pytest.raises(ValueError,match='尺寸'):
-        validate_dimensions(payload['template'],root)
+        floors.load('map/diff','layout_01','clean','1st')
 
 
 def test_formal_entry_requires_published_bundle_even_when_maintenance_exists(package,monkeypatch,capsys):
@@ -130,25 +103,25 @@ def test_formal_entry_requires_published_bundle_even_when_maintenance_exists(pac
     assert '缺少运行资源清单' in capsys.readouterr().err
 
 
-def test_flat_table_changes_only_on_restart_and_preserves_matcher_records(package):
+def test_grouped_scales_changes_only_on_restart_and_preserves_matcher_records(package):
     root,_,payload=package
-    expected=compact_template(payload['template'])
+    expected=payload['template']
     assert runtime.template_config()==expected
-    assert floors.load('map/diff','layout_01','route_clean','1st')[0]['saved_scale']==1.
-    for record in payload['template']['floor_variants']['map/diff']['layout_01']['route_clean'].values():
+    assert floors.load('map/diff','layout_01','clean','1st')[0]['saved_scale']==1.
+    for record in payload['template']['floor_variants']['map/diff']['layout_01']['clean'].values():
         record['saved_scale']=1.2345678912345
     write_bundle(root,payload)
-    assert floors.load('map/diff','layout_01','route_clean','1st')[0]['saved_scale']==1.
+    assert floors.load('map/diff','layout_01','clean','1st')[0]['saved_scale']==1.
     floors._close_fixed_session()
-    assert floors.load('map/diff','layout_01','route_clean','1st')[0]['saved_scale']==1.2345678912345
+    assert floors.load('map/diff','layout_01','clean','1st')[0]['saved_scale']==1.2345678912345
 
 
 @pytest.mark.parametrize('value',[0,-1,True,float('nan'),float('inf'),'1.0',None])
-def test_flat_table_rejects_invalid_scale_after_manifest_rehashed(package,value):
+def test_grouped_scales_rejects_invalid_scale_after_manifest_rehashed(package,value):
     root,_,_=package
     bundle=json.loads((root/runtime.BUNDLE_PATH).read_text())
     scales=json.loads((root/runtime.SCALE_PATH).read_text())
-    next(iter(scales['maps'].values()))['scale']=value
+    scales['maps']['map']['diff']['minimum_scale']=value
     raw=json_bytes(scales);(root/runtime.SCALE_PATH).write_bytes(raw)
     bundle['payload']['files'][runtime.SCALE_PATH]=dict(bytes=len(raw),sha256=hashlib.sha256(raw).hexdigest())
     bundle['payload_sha256']=runtime.digest(bundle['payload'])
@@ -158,18 +131,18 @@ def test_flat_table_rejects_invalid_scale_after_manifest_rehashed(package,value)
 
 
 @pytest.mark.parametrize('change',['missing','changed','duplicate','extra','missing_entry'])
-def test_flat_table_integrity_and_exact_image_coverage(package,change):
+def test_grouped_scales_integrity_and_exact_image_coverage(package,change):
     root,_,_=package
     path=root/runtime.SCALE_PATH
     if change=='missing':
         path.unlink()
     else:
         raw=path.read_bytes()
-        if change=='duplicate':raw=raw.replace(b'"scale": 1.0',b'"scale": 1.0, "scale": 2.0')
+        if change=='duplicate':raw=raw.replace(b'"minimum_scale": 1.0',b'"minimum_scale": 1.0, "minimum_scale": 2.0')
         elif change=='changed':raw=raw.replace(b'1.0',b'2.0')
         else:
             data=json.loads(raw)
-            if change=='extra':data['maps']['extra.png']={'scale':1.}
+            if change=='extra':data['maps']['extra']={'diff':{'minimum_scale':1.}}
             else:data['maps'].clear()
             raw=json_bytes(data)
         path.write_bytes(raw)
@@ -182,20 +155,13 @@ def test_flat_table_integrity_and_exact_image_coverage(package,change):
         runtime.template_config()
 
 
-def test_pending_flat_scale_still_refuses_projection(package):
+def test_pending_default_scale_still_refuses_projection(package):
     root,_,payload=package
-    for record in payload['template']['floor_variants']['map/diff']['layout_01']['route_clean'].values():
+    for record in payload['template']['floor_variants']['map/diff']['layout_01']['clean'].values():
         record.update(saved_scale=None,scale_status='pending')
     write_bundle(root,payload)
-    with pytest.raises(ValueError,match='待标定'):
-        floors.load('map/diff','layout_01','route_clean','1st')
-
-
-def test_export_rejects_two_scales_for_the_same_image(package):
-    _,_,payload=package
-    payload['template']['floor_variants']['map/diff']['layout_01']['route_clean']['1st']['saved_scale']=2.
-    with pytest.raises(ValueError,match='冲突尺度'):
-        split_template(payload['template'])
+    with pytest.raises(ValueError,match='scale'):
+        floors.load('map/diff','layout_01','clean','1st')
 
 
 def test_pair_publish_failure_restores_previous_scale_table(tmp_path,monkeypatch):
@@ -212,3 +178,30 @@ def test_pair_publish_failure_restores_previous_scale_table(tmp_path,monkeypatch
     assert bundle.read_bytes()==b'old manifest'
     assert sidecar.read_bytes()==b'old scales'
     assert not list(tmp_path.glob('*.tmp'))
+
+
+def test_unpublished_scale_edit_rejects_fresh_recognition_and_projection(package):
+    root, path, _ = package
+    scales = root/runtime.SCALE_PATH
+    scales.write_bytes(scales.read_bytes().replace(b'1.0', b'2.0'))
+    for read in (runtime.template_config, lambda: runtime.recognition_profile(path.parents[1])):
+        with pytest.raises(ValueError, match='尺度配置与已发布资源不一致'):
+            read()
+
+
+def test_manifest_publish_preserves_editable_scale_file(package, monkeypatch):
+    from tools.assets.imports import export_runtime_resources as exporter
+    root, _, _ = package
+    sidecar = root/runtime.SCALE_PATH
+    before = sidecar.read_bytes(), sidecar.stat().st_mtime_ns
+    replace = exporter.os.replace
+    def guarded(source, destination):
+        assert Path(destination) != sidecar
+        return replace(source, destination)
+    monkeypatch.setattr(exporter.os, 'replace', guarded)
+    exporter.publish_package(root/runtime.BUNDLE_PATH, {'new': 'manifest'}, before[0], preserve_scales=True)
+    assert (sidecar.read_bytes(), sidecar.stat().st_mtime_ns) == before
+    sidecar.write_bytes(before[0]+b' ')
+    with pytest.raises(ValueError, match='尺度配置发生变化'):
+        exporter.publish_package(root/runtime.BUNDLE_PATH, {}, before[0], preserve_scales=True)
+    assert sidecar.read_bytes() == before[0]+b' '

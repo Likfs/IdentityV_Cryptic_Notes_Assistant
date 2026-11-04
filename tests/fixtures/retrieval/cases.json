@@ -9,7 +9,7 @@
     {
       "id": "layout05_partial",
       "kind": "source_derived",
-      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png",
+      "source": "tests/fixtures/retrieval/icon_sources/layout_05_2nd.png",
       "crop_xywh": [
         1300,
         550,
@@ -28,7 +28,7 @@
     {
       "id": "layout11_partial",
       "kind": "source_derived",
-      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_11/layout_11_2nd.png",
+      "source": "tests/fixtures/retrieval/icon_sources/layout_11_2nd.png",
       "crop_xywh": [
         0,
         180,
@@ -47,7 +47,7 @@
     {
       "id": "layout05_missing_icon",
       "kind": "source_derived",
-      "source": "assets/maps/a_bringer_of_doom/nightmare/clean/layout_05/layout_05_2nd.png",
+      "source": "tests/fixtures/retrieval/icon_sources/layout_05_2nd.png",
       "crop_xywh": [
         1300,
         550,
@@ -81,79 +81,204 @@
       "sha256": "077e47c0b5a10186cade84637e140edfd4fd7a8beb44774f64ce29446ff0a67c"
     },
     {
-      "id": "hard_layout05_1st_game",
+      "id": "hard_aligned_layout_23_1st_crop",
+      "kind": "source_derived",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "tests/fixtures/retrieval/aligned_hard/clean/layout_23/layout_23_1st.png",
+      "sha256": "82b27310f95140e43d801dcdbdce8c4526e2562a20edddbe697bf50a61c3cfa6",
+      "crop_xywh": [
+        180,
+        180,
+        1500,
+        900
+      ],
+      "reference_size": [
+        1000,
+        600
+      ],
+      "expected_top1": "layout_23",
+      "expected_floor": "1st",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        180,
+        180
+      ],
+      "label_provenance": "Published same-canvas clean asset identity and explicit crop resized at screenshot-to-source scale 1.5. Checks deterministic recognition/projection geometry; not a gameplay accuracy label. Reference clean PNG is pinned in tests/fixtures/retrieval/aligned_hard; runtime replacements do not change this test identity."
+    },
+    {
+      "id": "hard_aligned_layout_23_2nd_crop",
+      "kind": "source_derived",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "tests/fixtures/retrieval/aligned_hard/clean/layout_23/layout_23_2nd.png",
+      "sha256": "f3212d5db27657d312f05d025f9d0de7cb03a84092c016707debd06b3bfda9f6",
+      "crop_xywh": [
+        180,
+        180,
+        1500,
+        900
+      ],
+      "reference_size": [
+        1000,
+        600
+      ],
+      "expected_top1": "layout_23",
+      "expected_floor": "2nd",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        180,
+        180
+      ],
+      "label_provenance": "Published same-canvas clean asset identity and explicit crop resized at screenshot-to-source scale 1.5. Checks deterministic recognition/projection geometry; not a gameplay accuracy label. Reference clean PNG is pinned in tests/fixtures/retrieval/aligned_hard; runtime replacements do not change this test identity."
+    },
+    {
+      "id": "hard_aligned_layout_28_1st_crop",
+      "kind": "source_derived",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "tests/fixtures/retrieval/aligned_hard/clean/layout_28/layout_28_1st.png",
+      "sha256": "08bc460a4695158f895392657a74df7a6455573a26b47fddab3043150fe7a809",
+      "crop_xywh": [
+        180,
+        180,
+        1500,
+        900
+      ],
+      "reference_size": [
+        1000,
+        600
+      ],
+      "expected_top1": "layout_28",
+      "expected_floor": "1st",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        180,
+        180
+      ],
+      "label_provenance": "Published same-canvas clean asset identity and explicit crop resized at screenshot-to-source scale 1.5. Checks deterministic recognition/projection geometry; not a gameplay accuracy label. Reference clean PNG is pinned in tests/fixtures/retrieval/aligned_hard; runtime replacements do not change this test identity."
+    },
+    {
+      "id": "hard_aligned_layout_28_2nd_crop",
+      "kind": "source_derived",
+      "backend": "pure_structure",
+      "profile": "a_bringer_of_doom/hard",
+      "source": "tests/fixtures/retrieval/aligned_hard/clean/layout_28/layout_28_2nd.png",
+      "sha256": "c7a15f4250077216b7d77ac6b4534b7245e51af84220f36a2454a6a65c37766e",
+      "crop_xywh": [
+        180,
+        180,
+        1500,
+        900
+      ],
+      "reference_size": [
+        1000,
+        600
+      ],
+      "expected_top1": "layout_28",
+      "expected_floor": "2nd",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        180,
+        180
+      ],
+      "label_provenance": "Published same-canvas clean asset identity and explicit crop resized at screenshot-to-source scale 1.5. Checks deterministic recognition/projection geometry; not a gameplay accuracy label. Reference clean PNG is pinned in tests/fixtures/retrieval/aligned_hard; runtime replacements do not change this test identity."
+    },
+    {
+      "id": "hard_minimum_01",
       "kind": "labelled_game_capture",
       "backend": "pure_structure",
       "profile": "a_bringer_of_doom/hard",
-      "source": "tests/fixtures/retrieval/hard_layout05_1st.png",
+      "source": "tests/fixtures/retrieval/hard_minimum_01.png",
+      "sha256": "be740fd7fc99d93016b1e3cea6222efafa0c1c58caf73b544bfc7b7b73ee5ed1",
       "reference_size": [
         1180,
         1050
       ],
-      "expected_top1": "layout_05",
+      "game_resolution": [
+        2560,
+        1440
+      ],
+      "expected_top1": "layout_23",
       "expected_floor": "1st",
-      "label_provenance": "User confirmed layout_05 on 2026-10-17; 1st floor inferred and visually checked against floor geometry. Calibration replay, not an independent accuracy sample.",
-      "sha256": "a68f1f4c419a288c154223c252307398d21eaf88250cfc7213570e4e85cc7388"
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        -106,
+        240
+      ],
+      "label_provenance": "User identified captures 1/2 as layout_23 and 3/4 as layout_28, confirmed minimum scale 1.5, and visually reviewed the current hard projections without obvious displacement. Source origins come from the independent wall-distance scale review; calibration replay, not an independent accuracy benchmark."
     },
     {
-      "id": "hard_zoom_minimum_1",
-      "kind": "unlabelled_game_capture",
+      "id": "hard_minimum_02",
+      "kind": "labelled_game_capture",
       "backend": "pure_structure",
       "profile": "a_bringer_of_doom/hard",
-      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/minimum_01.png",
-      "sha256": "862e3b77d1400fbab261e13ac1b1ee262379ac9c33277daae97912a1a5cc4f00",
+      "source": "tests/fixtures/retrieval/hard_minimum_02.png",
+      "sha256": "0a44c6539618d7e8378d65e7ca75bfdf5e7b3a2c13765eaf23fcac57ecb63478",
       "reference_size": [
         1180,
         1050
       ],
-      "zoom_pair": 1,
-      "zoom_mode": "minimum",
-      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+      "game_resolution": [
+        2560,
+        1440
+      ],
+      "expected_top1": "layout_23",
+      "expected_floor": "1st",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        -500,
+        74
+      ],
+      "label_provenance": "User identified captures 1/2 as layout_23 and 3/4 as layout_28, confirmed minimum scale 1.5, and visually reviewed the current hard projections without obvious displacement. Source origins come from the independent wall-distance scale review; calibration replay, not an independent accuracy benchmark."
     },
     {
-      "id": "hard_zoom_50_percent_1",
-      "kind": "unlabelled_game_capture",
+      "id": "hard_minimum_03",
+      "kind": "labelled_game_capture",
       "backend": "pure_structure",
       "profile": "a_bringer_of_doom/hard",
-      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/50_percent_01.png",
-      "sha256": "d8ffd7c537db797f7d038977fddfdd81aee03c99dba9c70c09cc38c10bbca958",
+      "source": "tests/fixtures/retrieval/hard_minimum_03.png",
+      "sha256": "541fb8085586edc843db11d9f974e44f03ecbb13e59f1d0d4e5a7cae4bb6e082",
       "reference_size": [
         1180,
         1050
       ],
-      "zoom_pair": 1,
-      "zoom_mode": "50_percent",
-      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+      "game_resolution": [
+        2560,
+        1440
+      ],
+      "expected_top1": "layout_28",
+      "expected_floor": "1st",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        62,
+        372
+      ],
+      "label_provenance": "User identified captures 1/2 as layout_23 and 3/4 as layout_28, confirmed minimum scale 1.5, and visually reviewed the current hard projections without obvious displacement. Source origins come from the independent wall-distance scale review; calibration replay, not an independent accuracy benchmark."
     },
     {
-      "id": "hard_zoom_minimum_2",
-      "kind": "unlabelled_game_capture",
+      "id": "hard_minimum_04",
+      "kind": "labelled_game_capture",
       "backend": "pure_structure",
       "profile": "a_bringer_of_doom/hard",
-      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/minimum_02.png",
-      "sha256": "7a0ea655e44d5a9893bd824dcefa49b234222417938c7dd2fab2f706dfb54182",
+      "source": "tests/fixtures/retrieval/hard_minimum_04.png",
+      "sha256": "5cf02e349fd9d561c4ad2e34e3ce6c3b38f4cf45d8e14a766f2c1607b1a5d0d5",
       "reference_size": [
         1180,
         1050
       ],
-      "zoom_pair": 2,
-      "zoom_mode": "minimum",
-      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
-    },
-    {
-      "id": "hard_zoom_50_percent_2",
-      "kind": "unlabelled_game_capture",
-      "backend": "pure_structure",
-      "profile": "a_bringer_of_doom/hard",
-      "source": "maintenance/maps/a_bringer_of_doom/hard/sources/recognition_zoom50/50_percent_02.png",
-      "sha256": "1b530684875f14f0feb5e1ec8495227dbbb54fbb0cd3e60b903e99391b298a34",
-      "reference_size": [
-        1180,
-        1050
+      "game_resolution": [
+        2560,
+        1440
       ],
-      "zoom_pair": 2,
-      "zoom_mode": "50_percent",
-      "label_provenance": "User reported minimum / 50% zoom on 2026-10-17; paired screenshot geometry checked offline. Layout identity unlabelled; compare cross-zoom consistency only."
+      "expected_top1": "layout_28",
+      "expected_floor": "1st",
+      "minimum_scale": 1.5,
+      "expected_source_origin": [
+        924,
+        382
+      ],
+      "label_provenance": "User identified captures 1/2 as layout_23 and 3/4 as layout_28, confirmed minimum scale 1.5, and visually reviewed the current hard projections without obvious displacement. Source origins come from the independent wall-distance scale review; calibration replay, not an independent accuracy benchmark."
     }
   ],
   "normalization_audit": {
@@ -490,14 +615,16 @@
       "source_run": "runtime/diagnostics/route_projection/app_runs/20261019_184055_957021_layout_18_1st",
       "profile": "a_bringer_of_doom/nightmare",
       "selected_layout": "layout_18",
-      "variant_id": "route_zhanshi_fast_clean",
+      "variant_id": "route_zhanshi_fast",
       "layout_label_provenance": "Diagnostic selected layout, not independently labelled gameplay ground truth",
-      "expected_source_sha256": "f9996f337d0e55175a61de4e8d201c5b655074221aff8f6eff8fb2973f2c2a12",
       "expected_origin": [
-        476,
-        56
+        348,
+        -72
       ],
-      "pose_provenance": "Consensus from offline partial-width matches (600/700/800/840/880 pixels) and visual correspondence, holding selected layout and fixed scale 1.49 unchanged; not a recognition accuracy label"
+      "pose_provenance": "Consensus from offline partial-width matches (600/700/800/840/880 pixels) and visual correspondence, holding selected layout and fixed scale 1.49 unchanged; not a recognition accuracy label New clean fixture removes the historical 128-pixel padding on each side, so source origin is translated by (-128,-128). The 1.49 scale is an offline hypothesis for the pending nightmare profile; this fixture does not publish it.",
+      "expected_floor": "1st",
+      "expected_clean_sha256": "fce0570d8bc9d0fd77040fde198b258b7d79ec8249f96f3ae5102f41d31b895a",
+      "minimum_scale": 1.49
     },
     {
       "id": "layout19_floor_ambiguity",
@@ -506,15 +633,16 @@
       "source_run": "runtime/diagnostics/route_projection/app_runs/20261020_161634_827439_layout_19_2nd",
       "profile": "a_bringer_of_doom/nightmare",
       "selected_layout": "layout_19",
-      "variant_id": "route_zhanshi_fast_clean",
+      "variant_id": "route_zhanshi_fast",
       "layout_label_provenance": "Selected layout from diagnostic; not an independent recognition accuracy label",
       "expected_floor": "b1",
       "expected_origin": [
-        -186,
-        -502
+        -314,
+        -630
       ],
-      "expected_source_sha256": "0919780a333530e73be715f56a8c422e43d7176792f9429311c6692f5aa99974",
-      "pose_provenance": "Visible room protrusion, corridor and doors correspond to basement room 3; independent offline fixed-scale 0.5 and 1.0 resolution checks agree on origin. Saved scale remains 1.49."
+      "pose_provenance": "Visible room protrusion, corridor and doors correspond to basement room 3; independent offline fixed-scale 0.5 and 1.0 resolution checks agree on origin. Saved scale remains 1.49. New clean fixture removes the historical 128-pixel padding on each side, so source origin is translated by (-128,-128). The 1.49 scale is an offline hypothesis for the pending nightmare profile; this fixture does not publish it.",
+      "expected_clean_sha256": "0ab30e648482fe58daaff3666966596d1add15d2ebec5cc6a401394bb56ceeb9",
+      "minimum_scale": 1.49
     }
   ]
 }

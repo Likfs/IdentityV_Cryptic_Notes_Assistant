@@ -20,8 +20,7 @@ class FrozenResources:
         self.root = root.resolve()
         self.config = deepcopy(config)
         catalog_path = self.root/'configs/map_catalog.json'
-        self.profiles = ({profile.key: profile.floors for profile in MapCatalog(catalog_path).profiles.values()}
-                         if catalog_path.exists() else None)
+        self.profiles = {profile.key: profile for profile in MapCatalog(catalog_path).profiles.values()}
         self._file = None
         self._files = {}
         self._records = {}
@@ -33,21 +32,19 @@ class FrozenResources:
         self._files.clear()
         self._records.clear()
 
-    def records(self, profile, layout, variant, *, require_scale=True):
+    def records(self, profile, layout, variant):
         from . import floors
         key = (profile, layout, variant)
         if key not in self._records:
-            if self.profiles is not None and profile not in self.profiles:
+            if profile not in self.profiles:
                 raise ValueError(f'未配置地图难度：{profile}')
-            expected = floors.FLOORS if self.profiles is None else self.profiles[profile]
-            # Pending records are retained and verified, even when they cannot match.
+            if self.profiles[profile].asset_status == 'pending':
+                raise ValueError('资产待配置')
+            expected = self.profiles[profile].floors_for_layout(layout)
             self._records[key] = floors._source_records(
                 self.config, expected, profile, layout, variant,
-                require_scale=False, verify_dependencies=self._verify)
+                verify_dependencies=self._verify)
         records, config = self._records[key]
-        if require_scale and any(item.get('scale_status') == 'pending' and item.get('saved_scale') is None
-                                 for item in records.values()):
-            raise ValueError('屏幕尺度待标定，请补充可靠保存尺度或实机截图')
         return deepcopy(records), deepcopy(config)
 
     def _verify(self, dependencies):

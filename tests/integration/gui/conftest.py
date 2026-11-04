@@ -31,8 +31,10 @@ def isolated_diagnostics(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
-def no_live_input(monkeypatch):
+def no_live_input(monkeypatch, request):
     """GUI tests use recorded input; never install operating-system listeners."""
+    if request.node.path.name != 'test_pending_assets.py':
+        request.getfixturevalue('aligned_runtime')
     monkeypatch.setattr(app, 'GlobalMapKeys', lambda *_args: None)
     monkeypatch.setattr(app, 'GlobalActionHotkeys', lambda *_args: SimpleNamespace(
         events=Queue(), error=None, start=lambda: None, stop=lambda: None))

@@ -1,5 +1,6 @@
 """Real retrieval -> modal choice -> real template projection; human/window boundaries are faked."""
 import numpy as np
+import cv2
 import pytest
 
 from src import projection_workflow as workflow
@@ -40,8 +41,16 @@ def test_real_candidates_only_project_after_explicit_confirmation(window, retrie
         return
     selected = displayed[choice]['layout']
     assert window.locked_layout == selected
+    # Projection captures a new minimum-zoom frame after the explicit choice.
+    # Recognition candidates supply a layout ID, never a reusable pose.
+    source = window.catalog.clean_template(window.profile, selected, '2nd')
+    clean = cv2.imdecode(np.frombuffer(source.read_bytes(), np.uint8), cv2.IMREAD_COLOR)
+    visible = cv2.resize(clean, (int(clean.shape[1]/window.profile.minimum_scale),
+                                int(clean.shape[0]/window.profile.minimum_scale)))
+    projected_frame = np.full_like(screenshot, (41,33,28))
+    projected_frame[20:20+visible.shape[0],20:20+visible.shape[1]] = visible
     projected = workflow.process_screenshot(
-        screenshot, catalog=window.catalog, profile=window.profile,
+        projected_frame, catalog=window.catalog, profile=window.profile,
         layout_override=window.locked_layout, opacity=.5, template_variant_id='route_lhp_solo')
     assert projected.accepted, projected.reasons
     assert projected.selected_layout == selected and projected.layout_retrieval is None

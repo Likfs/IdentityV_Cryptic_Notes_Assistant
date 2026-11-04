@@ -118,14 +118,14 @@ def test_auto_select_rejects_stale_result(window, monkeypatch, change):
 
 
 @pytest.mark.parametrize('backend', ['pure_structure', 'icon_structure'])
-def test_hard_large_zoom_auto_select_locks_only_layout_and_requires_fresh_projection(window, monkeypatch, backend):
+def test_hard_minimum_zoom_auto_select_locks_only_layout_and_requires_fresh_projection(window, monkeypatch, backend):
     from src.layout_retrieval import LayoutCandidate, LayoutRetrievalResult
     window.difficulty_var.set('困难')
     window._profile_changed()
     window.apply_settings({**window.settings, 'auto_select_layout': True, 'layout_recognition_backend': backend}, save=False)
     retrieval = LayoutRetrievalResult(backend=backend, timings_ms={'total': 1}, candidates=[
         LayoutCandidate(1, 'layout_26', 'layout_26/layout_26_2nd.png', 'hash', .88, .95, 0, 0, '候选',
-                        {'floor': '2nd', 'scale': 1.308, 'recognition_zoom': '50_percent'})])
+                        {'floor': '2nd', 'scale': 1.5, 'recognition_zoom': 'minimum'})])
     result = workflow.process_screenshot(np.zeros((80, 80, 3), np.uint8), catalog=window.catalog,
         profile=window.profile, opacity=.5, recognize_only=True, layout_recognition_backend=backend,
         layout_retriever=SimpleNamespace(recognize=lambda *a: retrieval))

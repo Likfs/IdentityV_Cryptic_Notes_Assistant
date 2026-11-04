@@ -10,21 +10,23 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from src.app_catalog import PROJECT_ROOT, TEMPLATE_VERSION_NAMES, MapCatalog
+from src.app_catalog import PROJECT_ROOT, MapCatalog
 from . import resources, matcher
 
 FLOORS = ('2nd', '1st', 'b1')
+DECODED_IMAGE_LIMIT = 4
 _images = OrderedDict()
-_config_cache = {}
+_retained_keys = frozenset()
 _fixed_session = None
 
 
 def _close_fixed_session():
-    global _fixed_session
+    global _fixed_session, _retained_keys
     with resources.resource_lock:
         if _fixed_session is not None:
             _fixed_session.close()
             _fixed_session = None
+        _retained_keys = frozenset()
 
 
 atexit.register(_close_fixed_session)
@@ -42,22 +44,12 @@ def fixed_session():
         return _fixed_session
 
 
-def _read_config(*, offline=False):
-    """Private parsed document; callers must never expose or mutate this object."""
-    if not offline:
-        from src.runtime_resources import template_config
-        config = template_config(PROJECT_ROOT)
-        if config is not None:
-            return config
-    path = PROJECT_ROOT / 'maintenance/configs/template_matching.json'
-    # Live audits read current bytes; the runtime session calls this only at creation.
-    raw = path.read_bytes()
-    if _config_cache.get('path') != path or _config_cache.get('raw') != raw:
-        # Decode only changed bytes; keep strict UTF-8/BOM validation unchanged.
-        config = json.loads(raw.decode('utf-8'))
-        _config_cache.clear()
-        _config_cache.update(path=path, raw=raw, config=config)
-    return _config_cache['config']
+def _read_config():
+    from src.runtime_resources import template_config
+    config = template_config(PROJECT_ROOT)
+    if config is None:
+        raise ValueError('缺少运行资源配置，请重新发布素材')
+    return config
 
 
 def fingerprint(value):
@@ -73,16 +65,12 @@ def source_path(value, *, root=None):
     return path
 
 
-def profile_floors(profile_key):
+def profile_floors(profile_key, layout=None):
     path = PROJECT_ROOT / 'configs/map_catalog.json'
-    if not path.exists():
-        return FLOORS  # Standalone legacy configurations use all three floors.
-    return MapCatalog(path).profile(*profile_key.split('/')).floors
+    return MapCatalog(path).profile(*profile_key.split('/')).floors_for_layout(layout)
 
 
-def _source_records(config, expected, profile_key, layout, variant_id, *, require_scale, verify_dependencies):
-    if variant_id not in TEMPLATE_VERSION_NAMES:
-        raise ValueError('模板模式不支持所选版本')
+def _source_records(config, expected, profile_key, layout, variant_id, *, verify_dependencies):
     entry = config.get('floor_variants', {}).get(profile_key, {}).get(layout, {}).get(variant_id)
     if entry is None or set(entry) != set(expected):
         raise ValueError('当前版本缺少完整的单层图片与尺度配置，请重新导入')
@@ -95,43 +83,25 @@ def _source_records(config, expected, profile_key, layout, variant_id, *, requir
             dependencies.append((value, digest))
             verified.add(key)
     for floor, item in entry.items():
-        pending = item.get('scale_status') == 'pending' and item.get('saved_scale') is None
-        if pending:
-            if require_scale:
-                raise ValueError(f'{floor}: 屏幕尺度待标定，请补充可靠保存尺度或实机截图')
-        else:
-            try:
-                scale = float(item['saved_scale'])
-            except (KeyError, TypeError, ValueError) as exc:
-                raise ValueError(f'{floor}: 单层图片尚未保存有效尺度') from exc
-            if not np.isfinite(scale) or scale <= 0:
-                raise ValueError(f'{floor}: 单层图片尚未保存有效尺度')
+        try:
+            scale = float(item['saved_scale'])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f'{floor}: 单层图片尚未保存有效尺度') from exc
+        if not np.isfinite(scale) or scale <= 0:
+            raise ValueError(f'{floor}: 单层图片尚未保存有效尺度')
         verify(item['source_image'], item['source_sha256'])
-        for dependency in item.get('dependencies', []):
-            verify(dependency['path'], dependency['sha256'])
-        reference = item.get('reference_entry_key')
-        if reference and fingerprint(config['entries'][reference]) != item['reference_entry_sha256']:
-            raise ValueError('单层尺度对应的参考记录已改变，请重新导入')
-        reference_floor = item.get('reference_floor_variant')
-        if reference_floor:
-            variants = config['floor_variants'][profile_key][layout]
-            source = variants.get(reference_floor.get('variant_id'), {}).get(floor)
-            if (reference_floor.get('floor') != floor or source is None
-                    or fingerprint(source) != reference_floor.get('sha256')):
-                raise ValueError('底图版对应的原底图尺度记录已改变，请重新导入')
     verify_dependencies(dependencies)
     # Only small request-owned records leave the cache. Unrelated layouts are not copied.
-    return deepcopy({f: entry[f] for f in expected}), deepcopy({key: config[key] for key in ('perf_mode', 'capture') if key in config})
+    return deepcopy({f: entry[f] for f in expected}), deepcopy({key: config[key] for key in ('perf_mode', 'capture', 'asset_contract') if key in config})
 
 
 
-def sources(profile_key, layout, variant_id, *, require_scale=True, offline=False):
-    """Live maintenance audit; runtime uses FrozenSourceSnapshot instead."""
+def sources(profile_key, layout, variant_id):
+    """Audit the current published records; runtime uses FrozenSourceSnapshot."""
     with resources.resource_lock:
-        config = _read_config(offline=offline)
+        config = _read_config()
         root = PROJECT_ROOT.resolve()
-        return _source_records(config, profile_floors(profile_key), profile_key, layout, variant_id,
-            require_scale=require_scale,
+        return _source_records(config, profile_floors(profile_key, layout), profile_key, layout, variant_id,
             verify_dependencies=lambda dependencies: resources.verify_fingerprints(
                 dependencies, lambda value: source_path(value, root=root)))
 
@@ -143,18 +113,13 @@ class SourceSnapshot:
     reference/pan loads use load() instead so a previous snapshot cannot reuse a pose.
     """
 
-    def __init__(self, profile_key, layout, variant_id, *, allow_pending=False, _session=None):
+    def __init__(self, profile_key, layout, variant_id, *, _session=None):
         self.key = (profile_key, layout, variant_id)
-        self.allow_pending = allow_pending
         self._session = _session
         reader = sources if _session is None else _session.records
-        records, self.config = reader(*self.key, require_scale=not allow_pending)
+        records, self.config = reader(*self.key)
         self.identity = fingerprint(records)
-        self.pending = [f for f, item in records.items()
-                        if item.get('scale_status') == 'pending' and item.get('saved_scale') is None]
-        self.entries = {f: item for f, item in records.items() if f not in self.pending}
-        if not self.entries:
-            raise ValueError('屏幕尺度待标定，请补充可靠保存尺度或实机截图')
+        self.entries = records
 
     def load(self, floor):
         if floor not in self.entries:
@@ -164,7 +129,7 @@ class SourceSnapshot:
 
     def validate(self):
         reader = sources if self._session is None else self._session.records
-        current, config = reader(*self.key, require_scale=not self.allow_pending)
+        current, config = reader(*self.key)
         if (fingerprint(current) != self.identity
                 or config.get('perf_mode') != self.config.get('perf_mode')
                 or config.get('capture') != self.config.get('capture')):
@@ -174,9 +139,9 @@ class SourceSnapshot:
 class FrozenSourceSnapshot(SourceSnapshot):
     """Runtime request view of verified bytes and configuration fixed until restart."""
 
-    def __init__(self, profile_key, layout, variant_id, *, allow_pending=False):
+    def __init__(self, profile_key, layout, variant_id):
         with resources.resource_lock:
-            super().__init__(profile_key, layout, variant_id, allow_pending=allow_pending,
+            super().__init__(profile_key, layout, variant_id,
                              _session=fixed_session())
 
 
@@ -185,7 +150,7 @@ def load(profile_key, layout, variant_id, floor, *, expected_fingerprint=None):
     if floor not in FLOORS:
         raise ValueError('尚未取得单层匹配候选')
     with resources.resource_lock:
-        snapshot = FrozenSourceSnapshot(profile_key, layout, variant_id, allow_pending=True)
+        snapshot = FrozenSourceSnapshot(profile_key, layout, variant_id)
         if floor not in snapshot.entries:
             raise ValueError('当前难度不包含该楼层')
         identity = fingerprint(snapshot.entries[floor])
@@ -194,13 +159,25 @@ def load(profile_key, layout, variant_id, floor, *, expected_fingerprint=None):
         return snapshot.load(floor)
 
 
+def retain_working_set(records, *, frozen):
+    """Caller holds resource_lock; reference/prewarm reads cannot displace these sources."""
+    global _retained_keys
+    keys = frozenset((str(source_path(item['source_image']) if frozen is None
+                         else frozen.path(item['source_image'], item['source_sha256'])), fingerprint(item))
+                     for item in records)
+    if len(keys) > DECODED_IMAGE_LIMIT:
+        raise ValueError('当前配准工作集超出解码缓存容量')
+    _retained_keys = keys
+
+
 def _load_verified(item, config, *, cancelled=lambda: False, frozen=None):
     """Decode/cache pixels from records verified by the owning snapshot."""
     identity = fingerprint(item)
     path = (source_path(item['source_image']) if frozen is None
             else frozen.path(item['source_image'], item['source_sha256']))
     key = (str(path), identity)
-    if key not in _images:
+    cached = _images.get(key)
+    if cached is None:
         payload = path if frozen is None else BytesIO(frozen.read(item['source_image'], item['source_sha256']))
         with Image.open(payload) as source:
             rgba = cv2.cvtColor(np.array(source.convert('RGBA')), cv2.COLOR_RGBA2BGRA)
@@ -215,18 +192,23 @@ def _load_verified(item, config, *, cancelled=lambda: False, frozen=None):
         rgba[:, :, 3] = np.where(foreground, rgba[:, :, 3], 0)
         if cancelled():
             return None
-        _images[key] = (image, rgba)
+        cached = (image, rgba)
+        _images[key] = cached
         # Keep a bounded working set; changed files must not reuse matcher pixels.
         for cache_key in list(matcher._map_cache):
             if str(path) in cache_key:
                 del matcher._map_cache[cache_key]
-        while len(_images) > 3:
-            old_key, _ = _images.popitem(last=False)
+        while len(_images) > DECODED_IMAGE_LIMIT:
+            # When all slots are retained, an unrelated reference is returned
+            # to its caller without caching it. Never evict live matching pixels.
+            old_key = next(k for k in _images if k not in _retained_keys)
+            del _images[old_key]
             for cache_key in list(matcher._map_cache):
                 if old_key[0] in cache_key:
                     del matcher._map_cache[cache_key]
-    _images.move_to_end(key)
-    image, rgba = _images[key]
+    if key in _images:
+        _images.move_to_end(key)
+    image, rgba = cached
     return item, path, config, image, rgba
 
 
@@ -241,7 +223,7 @@ def prewarm(profile_key, layout, variant_id, *, cancelled=lambda: False):
     try:
         if cancelled():
             return False
-        snapshot = FrozenSourceSnapshot(profile_key, layout, variant_id, allow_pending=True)
+        snapshot = FrozenSourceSnapshot(profile_key, layout, variant_id)
         mode = int(snapshot.config.get('perf_mode', 2))
         if not 0 <= mode < len(matcher.PERF_MODES):
             raise ValueError('性能档位无效')
@@ -272,10 +254,10 @@ def prewarm(profile_key, layout, variant_id, *, cancelled=lambda: False):
         resources.resource_lock.release()
 
 
-def check(profile_key, layout, variant_id, *, require_scale=True):
+def check(profile_key, layout, variant_id):
     """Validate fingerprints and dimensions without constructing all RGBA canvases."""
     with resources.resource_lock:
-        entries, _ = sources(profile_key, layout, variant_id, require_scale=require_scale)
+        entries, _ = sources(profile_key, layout, variant_id)
         for item in entries.values():
             with Image.open(source_path(item['source_image'])) as image:
                 if list(image.size) != item['size']:

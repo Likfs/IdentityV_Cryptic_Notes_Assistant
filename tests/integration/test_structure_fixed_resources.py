@@ -1,6 +1,7 @@
-"""Fixed recognition resources: publish one verified batch, then perform no disk reads."""
+"""Published recognition resources stay fixed; failed batches never replace an index."""
 from pathlib import Path
 from threading import Event
+import json
 import shutil
 
 import cv2
@@ -11,132 +12,150 @@ from src.layout_retrieval import create_layout_retriever
 from src.recognition_control import RecognitionCancelled
 from src.structure_layout import retriever as module
 from src.structure_layout.scales import check_scale_overrides
-from tests.support.normalized_index import make_profile
+from src.runtime_resources import BUNDLE_PATH, digest
+from tests.support.aligned_runtime import activate
+from tests.support.structure_scene import publish_structure
 from tests.support.directory_links import create_directory_link, remove_directory_link
-from tools.assets.imports import build_recognition_index as builder
 
 
 @pytest.fixture
-def fixed_scene(tmp_path, monkeypatch):
-    clean = make_profile(tmp_path)
-    monkeypatch.setattr(builder, 'project_relative', lambda p: 'assets/test/clean')
-    builder.build(clean, clean.parent/'recognition')
-    source = clean/'layout_05/layout_05_1st.png'
-    image = cv2.imdecode(np.frombuffer(source.read_bytes(), np.uint8), cv2.IMREAD_COLOR)
-    shot = cv2.resize(image, None, fx=1/3.178, fy=1/3.178)
-    return clean, shot
+def fixed_scene(tmp_path,monkeypatch):
+    source=tmp_path/'input/layout_05';source.mkdir(parents=True)
+    image=np.full((240,280,3),25,np.uint8)
+    cv2.rectangle(image,(30,30),(220,205),(100,100,100),-1)
+    cv2.rectangle(image,(30,30),(220,205),(175,175,175),3)
+    cv2.line(image,(90,30),(90,170),(175,175,175),3)
+    for floor in ('2nd','1st'):
+        cv2.imencode('.png',cv2.resize(image,None,fx=3.178,fy=3.178))[1].tofile(str(source/f'layout_05_{floor}.png'))
+    clean,_=publish_structure(tmp_path,source.parent,scale=3.178,floors=('2nd','1st'))
+    activate(tmp_path,monkeypatch)
+    return clean,image
 
 
 def fixed(clean):
-    return create_layout_retriever('pure_structure', clean, floors=('2nd','1st'), workers=2)
+    return create_layout_retriever('pure_structure',clean,floors=('2nd','1st'),cache_root=clean.parents[4]/'cache')
 
 
-def test_factory_limits_fixed_policy_to_normalized_profiles(fixed_scene, tmp_path):
-    clean, _ = fixed_scene
-    assert fixed(clean).fixed_resources
-    assert not create_layout_retriever('pure_structure', tmp_path/'other/clean').fixed_resources
-    assert not create_layout_retriever('pure_structure', clean, fixed_resources=False).fixed_resources
-    assert not module.PureStructureRetriever(clean).fixed_resources  # maintenance default
+def mutate(clean,change):
+    source=clean/'layout_05/layout_05_1st.png'
+    path=clean.parents[4]/BUNDLE_PATH
+    if change=='source':source.write_bytes(b'changed source')
+    elif change=='bundle':path.write_bytes(b'changed bundle')
+    else:
+        data=json.loads(path.read_text(encoding='utf-8'))
+        record=data['payload']['recognition'][clean.relative_to(clean.parents[4]).as_posix()]['targets']['layout_05/layout_05_1st.png']
+        if change=='record':record['source_sha256']='0'*64
+        else:record['scales']=[3.178,1.2]
+        data['payload_sha256']=digest(data['payload'])
+        path.write_text(json.dumps(data),encoding='utf-8')
 
 
-@pytest.mark.parametrize('change', ['source','index','image','scales'])
-def test_verified_index_ignores_later_edits_but_fresh_check_rejects(fixed_scene, monkeypatch, change):
-    clean, shot = fixed_scene
-    paths = {'source':clean/'layout_05/layout_05_1st.png',
-             'index':clean.parent/'recognition/index.json',
-             'image':clean.parent/'recognition/layout_05/layout_05_1st.png',
-             'scales':clean.parent/'recognition_scales.json'}
-    retriever = fixed(clean)
+def test_factory_keeps_published_resources_fixed_and_rejects_unpublished_inputs(fixed_scene,tmp_path):
+    clean,_=fixed_scene
+    retriever=fixed(clean)
     try:
-        before = retriever.recognize(shot, shot.shape[1::-1])
+        assert retriever.fixed_resources
+        assert not create_layout_retriever('pure_structure',clean,fixed_resources=False).fixed_resources
+        assert module.PureStructureRetriever(clean).fixed_resources
+        with pytest.raises(ValueError,match='已发布'):
+            create_layout_retriever('pure_structure',tmp_path/'other/clean').prepare()
+    finally:retriever.close()
+
+
+def test_retired_local_scale_document_cannot_replace_a_published_bundle(fixed_scene,tmp_path):
+    import hashlib
+    _,image=fixed_scene
+    clean=tmp_path/'unpublished/clean';path=clean/'layout_01/layout_01_1st.png'
+    path.parent.mkdir(parents=True)
+    path.write_bytes(cv2.imencode('.png',image)[1].tobytes())
+    (clean.parent/'recognition_scales.json').write_text(json.dumps(dict(schema_version=1,targets={
+        'layout_01/layout_01_1st.png':dict(scales=[1.5],source_sha256=hashlib.sha256(path.read_bytes()).hexdigest())})))
+    retriever=create_layout_retriever('pure_structure',clean,floors=('1st',),cache_root=tmp_path/'unpublished_cache')
+    try:
+        with pytest.raises(ValueError,match='已发布'):retriever.prepare()
+        assert not retriever._targets and not retriever._fingerprint
+    finally:retriever.close()
+
+
+@pytest.mark.parametrize('change',['source','bundle','record','scales'])
+def test_verified_index_ignores_later_edits_but_fresh_check_rejects(fixed_scene,monkeypatch,change):
+    clean,shot=fixed_scene;retriever=fixed(clean)
+    try:
+        before=retriever.recognize(shot,shot.shape[1::-1])
         assert before.candidates and not before.decision()['accepted']
-        paths[change].write_bytes(b'changed after complete publication')
+        mutate(clean,change)
         with monkeypatch.context() as patch:
-            def forbidden(*args, **kwargs):
-                raise AssertionError('hot recognition must not read or enumerate disk resources')
-            patch.setattr(Path, 'read_bytes', forbidden)
-            patch.setattr(Path, 'read_text', forbidden)
-            patch.setattr(Path, 'glob', forbidden)
-            after = retriever.recognize(shot, shot.shape[1::-1])
-            assert after.candidates == before.candidates
-            assert after.resource_fingerprint == before.resource_fingerprint
+            def forbidden(*args,**kwargs):raise AssertionError('Hot recognition must not reread source paths')
+            patch.setattr(Path,'read_bytes',forbidden);patch.setattr(Path,'read_text',forbidden);patch.setattr(Path,'glob',forbidden)
+            after=retriever.recognize(shot,shot.shape[1::-1])
+            assert after.candidates==before.candidates
+            assert after.resource_fingerprint==before.resource_fingerprint
         assert check_scale_overrides(clean)['errors']
         retriever.close()
-        with pytest.raises((ValueError, OSError)):
-            retriever.prepare()
-        assert retriever._targets == [] and not retriever._fingerprint
-    finally:
-        retriever.close()
+        with pytest.raises((ValueError,OSError)):retriever.prepare()
+        assert retriever._targets==[] and not retriever._fingerprint
+    finally:retriever.close()
 
 
-@pytest.mark.parametrize('change', ['source','index','image','scales','add','remove','cancel'])
-def test_change_during_first_build_never_publishes_partial_index(fixed_scene, monkeypatch, change):
-    clean, _ = fixed_scene
-    source = clean/'layout_05/layout_05_1st.png'
-    source_bytes = source.read_bytes()
-    old = module.prepare_response_cache
-    cancel = Event()
-    def changed(targets, **kwargs):
-        result = old(targets, **kwargs)
-        paths = {'source':source, 'index':clean.parent/'recognition/index.json',
-                 'image':clean.parent/'recognition/layout_05/layout_05_1st.png',
-                 'scales':clean.parent/'recognition_scales.json'}
-        if change in paths:
-            paths[change].write_bytes(b'changed while building')
-        elif change == 'add':
-            path=clean/'layout_06/layout_06_1st.png';path.parent.mkdir();path.write_bytes(source_bytes)
-        elif change == 'remove':
-            source.unlink()
-        else:
-            cancel.set()
+@pytest.mark.parametrize('change',['source','bundle','record','scales','add','remove','cancel'])
+def test_change_during_first_build_never_publishes_partial_index(fixed_scene,monkeypatch,change):
+    clean,_=fixed_scene;source=clean/'layout_05/layout_05_1st.png';saved=source.read_bytes()
+    original=module.FeatureStore.ensure;cancel=Event();first=True
+    def changed(*args,**kwargs):
+        nonlocal first
+        result=original(*args,**kwargs)
+        if first:
+            first=False
+            if change in ('source','bundle','record','scales'):mutate(clean,change)
+            elif change=='add':
+                path=clean/'layout_06/layout_06_1st.png';path.parent.mkdir();path.write_bytes(saved)
+            elif change=='remove':source.unlink()
+            else:cancel.set()
         return result
-    monkeypatch.setattr(module, 'prepare_response_cache', changed)
+    monkeypatch.setattr(module.FeatureStore,'ensure',changed)
     retriever=fixed(clean)
     try:
         with pytest.raises(RecognitionCancelled if change=='cancel' else (ValueError,OSError)):
             retriever.prepare(cancelled=cancel.is_set)
-        assert retriever._targets == [] and not retriever._fingerprint
-    finally:
-        retriever.close()
+        assert retriever._targets==[] and not retriever._fingerprint
+    finally:retriever.close()
 
 
 def test_failed_build_can_retry_after_repair_and_hot_cancel_is_honored(fixed_scene):
-    clean, shot=fixed_scene
-    index=clean.parent/'recognition/index.json';saved=index.read_bytes();index.write_bytes(b'broken')
+    clean,shot=fixed_scene;path=clean.parents[4]/BUNDLE_PATH;saved=path.read_bytes();path.write_bytes(b'broken')
     retriever=fixed(clean)
     try:
         with pytest.raises(ValueError):retriever.prepare()
         assert not retriever._fingerprint
-        index.write_bytes(saved)
+        path.write_bytes(saved)
         assert retriever.recognize(shot,shot.shape[1::-1]).candidates
         with pytest.raises(RecognitionCancelled):retriever.prepare(cancelled=lambda:True)
         with pytest.raises(RecognitionCancelled):retriever.recognize(shot,cancelled=lambda:True)
     finally:retriever.close()
 
 
-@pytest.mark.parametrize('during_build', [False,True])
-def test_real_directory_link_retarget_cannot_mix_snapshots(fixed_scene, tmp_path, monkeypatch, during_build):
-    clean,shot=fixed_scene
-    target=clean/'layout_05';alternate=tmp_path/'alternate';shutil.copytree(target,alternate)
-    # Keep the same bytes: a directory-link change during the batch is still detected.
-    stored=tmp_path/'stored';target.rename(stored);create_directory_link(target,stored)
+@pytest.mark.parametrize('during_build',[False,True])
+def test_real_directory_link_retarget_cannot_mix_snapshots(fixed_scene,tmp_path,monkeypatch,during_build):
+    clean,shot=fixed_scene;target=clean/'layout_05';alternate=clean/'alternate';shutil.copytree(target,alternate)
+    stored=clean/'stored';target.rename(stored);create_directory_link(target,stored)
     retriever=fixed(clean)
     def switch():
-        remove_directory_link(target,root=tmp_path)
-        create_directory_link(target,alternate)
+        remove_directory_link(target,root=tmp_path);create_directory_link(target,alternate)
     try:
         if during_build:
-            old=module.prepare_response_cache
+            original=module.FeatureStore.ensure;first=True
             def changed(*args,**kwargs):
-                result=old(*args,**kwargs);switch();return result
-            monkeypatch.setattr(module,'prepare_response_cache',changed)
-            with pytest.raises(ValueError,match='目录链接已改变'):retriever.prepare()
+                nonlocal first
+                result=original(*args,**kwargs)
+                if first:first=False;switch()
+                return result
+            monkeypatch.setattr(module.FeatureStore,'ensure',changed)
+            with pytest.raises(ValueError,match='特征准备期间变化'):retriever.prepare()
             assert not retriever._fingerprint and retriever._targets==[]
         else:
             before=retriever.recognize(shot,shot.shape[1::-1]);assert before.candidates
             switch();(alternate/'layout_05_1st.png').write_bytes(b'bad new target')
-            after=retriever.recognize(shot,shot.shape[1::-1])
-            assert after.candidates==before.candidates
+            assert retriever.recognize(shot,shot.shape[1::-1]).candidates==before.candidates
             assert check_scale_overrides(clean)['errors']
             retriever.close()
             with pytest.raises(ValueError):retriever.prepare()

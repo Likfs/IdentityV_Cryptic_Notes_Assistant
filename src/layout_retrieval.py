@@ -21,7 +21,7 @@ def normalize_recognition_backend(value):
     return value if isinstance(value, str) and value in BACKEND_LABELS else 'pure_structure'
 PARAMETERS = {
     'algorithm_version': 'fixed_direction_icon_structure_layout_v2',
-    'scale_policy': 'per_source_override_or_legacy_search',
+    'scale_policy': 'per_source_published_minimum',
     'rotation_degrees': [0], 'scale_min': .30, 'scale_max': 1.40,
     'scale_step': .005, 'target_wall_resize': .6, 'wall_distance_sigma': 1.6,
     'wall_weight': .8, 'floor_weight': .2, 'geometry_min': .60,
@@ -95,9 +95,7 @@ class LayoutRetrievalResult:
 def create_layout_retriever(backend, clean_root, *, floors=('2nd', '1st', 'b1'), **kwargs):
     if backend == 'pure_structure':
         from .structure_layout import PureStructureRetriever
-        # Published recognition-image profiles (currently hard) are fixed for
-        # this retriever's lifetime. Offline callers can request live checking.
-        kwargs.setdefault('fixed_resources', (Path(clean_root).parent/'recognition').is_dir())
+        kwargs.setdefault('fixed_resources', True)
         return PureStructureRetriever(clean_root, floors=floors, **kwargs)
     if backend == 'icon_structure':
         return LayoutRetriever(clean_root, **kwargs)
@@ -377,7 +375,6 @@ class LayoutRetriever:
                 targets.append(dict(image=image, walls=target_maps(image), floors=floor_masks(image),
                                     icon=icon, layout=path.parent.name,
                                     scales=tuple(overrides.get(path.relative_to(self.clean_root).as_posix(), {}).get('scales', [])),
-                                    scale_modes=overrides.get(path.relative_to(self.clean_root).as_posix(), {}).get('scale_modes', {}),
                                     path=path.relative_to(self.clean_root).as_posix(),
                                     sha256=digests[path]))
             # A cache write failure must not prevent recognition of valid resources.
@@ -427,8 +424,7 @@ class LayoutRetriever:
                             templates[scales] = fallback_templates(image, query['box'], cancelled=cancelled, scales=scales)
                         fit = fallback_fit(templates[scales], query['box'], target['image'], target, qi, self._references, cancelled=cancelled)
                     if fit is not None and np.isfinite(fit['score']):
-                        from src.structure_layout.scales import matched_scale_mode
-                        fit['recognition_zoom'] = matched_scale_mode(target['scale_modes'], fit['scale'])
+                        fit['recognition_zoom'] = None
                         candidates.append((target, fit))
                 from src.structure_layout.scales import read_scale_overrides
                 if read_scale_overrides(self.clean_root) != self._scale_overrides:

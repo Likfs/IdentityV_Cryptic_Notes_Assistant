@@ -33,6 +33,19 @@ def press_h(window, monkeypatch):
     window._toggle_reference_map()
 
 
+@pytest.mark.parametrize('foreground', [False, True])
+def test_reference_without_layout_passes_capture_region_to_game_guidance(window, monkeypatch, foreground):
+    window.clear_layout_lock()
+    monkeypatch.setattr(app, 'game_window_is_foreground', lambda _: foreground)
+    messages = []
+    def show_message(title, detail, *, success, roi):
+        messages.append((title, success, roi))
+    monkeypatch.setattr(window.toast, 'show_message', show_message)
+    window._toggle_reference_map()
+    assert window.locked_layout is None and not window.reference_visible
+    assert messages == ([('布局尚未选定', False, window.settings['capture_roi'])] if foreground else [])
+
+
 def test_reference_lifecycle_and_user_hide_survives_result(window, monkeypatch):
     ready(window)
     assert window.reference_overlay.visible
@@ -78,7 +91,7 @@ def test_reference_versions_opacity_and_focus(window, monkeypatch):
                         lambda mode, **kwargs: requests.append((mode, kwargs)))
     ready(window)
     images = []
-    for version in ("route_clean", "route_lhp_solo", "route_zhanshi_fast"):
+    for version in ("clean", "route_lhp_solo", "route_zhanshi_fast"):
         window.route_combo.setCurrentIndex(window.route_combo.findData(version))
         ready(window, floor="b1")  # A source switch invalidates the previous context.
         assert window.reference_overlay.visible
@@ -97,7 +110,7 @@ def test_reference_versions_opacity_and_focus(window, monkeypatch):
     assert window.reference_overlay.visible
 
 
-def test_confirmation_contains_the_matched_entrance_image(window, monkeypatch):
+def test_confirmation_contains_the_matched_clean_floor_when_entrance_is_absent(window, monkeypatch):
     observed = []
 
     def inspect(dialog):
@@ -110,7 +123,10 @@ def test_confirmation_contains_the_matched_entrance_image(window, monkeypatch):
 
     monkeypatch.setattr(LayoutConfirmationDialog, "exec", inspect)
     root = window.profile.entrance_root
-    assert app.messagebox.confirm_layout([{"layout": "layout_11", "score": .95}], root,
+    assert root is None
+    preview = window.catalog.clean_template(window.profile, 'layout_11', '2nd')
+    assert app.messagebox.confirm_layout([{"layout": "layout_11", "score": .95,
+                                          "preview_path": preview, "preview_floor": "2nd"}], root,
                                         screen_roi=[0, 0, 800, 600]) == "layout_11"
     assert observed
 
@@ -290,7 +306,7 @@ def test_hard_reference_cycles_only_two_floors(window):
 def test_late_source_after_round_reset_or_version_change_is_discarded(window, monkeypatch):
     key = window._reference_image_key()
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: pytest.fail('Old reference restored'))
-    window.settings['template_route_versions'][window.profile.key] = 'route_clean'
+    window.settings['template_route_versions'][window.profile.key] = 'clean'
     window._receive_work_event(('floor_reference', key, np.ones((10, 10, 3), np.uint8), None))
     assert getattr(window, '_floor_reference_image', None) is None
     key = window._reference_image_key()

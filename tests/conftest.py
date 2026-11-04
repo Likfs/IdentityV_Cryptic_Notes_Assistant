@@ -9,6 +9,41 @@ os.environ.setdefault('QT_QPA_PLATFORM', 'offscreen')
 ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(scope='session')
+def gui_asset_package(tmp_path_factory):
+    from tests.support.aligned_runtime import build_gui_package
+    return build_gui_package(tmp_path_factory.mktemp('aligned'))
+
+
+@pytest.fixture
+def aligned_runtime(gui_asset_package, monkeypatch):
+    from tests.support.aligned_runtime import activate
+    from src.registration.template_matching import floors
+    activate(gui_asset_package, monkeypatch)
+    yield gui_asset_package
+    floors._close_fixed_session()
+
+
+@pytest.fixture
+def hard_replay_package(tmp_path, monkeypatch):
+    from tests.support.aligned_runtime import build_hard_replay_package, activate
+    from src.registration.template_matching import floors
+    root = build_hard_replay_package(tmp_path/'hard_replay')
+    activate(root, monkeypatch)
+    yield root
+    floors._close_fixed_session()
+
+
+@pytest.fixture
+def nightmare_replay_package(tmp_path, monkeypatch):
+    from tests.support.aligned_runtime import build_nightmare_replay_package, activate
+    from src.registration.template_matching import floors
+    root = build_nightmare_replay_package(tmp_path/'nightmare')
+    activate(root, monkeypatch)
+    yield root
+    floors._close_fixed_session()
+
+
 def pytest_addoption(parser):
     parser.addoption('--run-release', action='store_true', help='Run external environment / EXE acceptance')
     parser.addoption('--runtime-python', help='Python in an isolated environment containing requirements.txt only')
@@ -46,8 +81,7 @@ def isolated_runtime_outputs(tmp_path, monkeypatch):
                 monkeypatch.setattr(module, attribute, tmp_path / directory)
     # Shared matcher settings and caches must not leak between test files.
     for name, attributes in {
-        'src.registration.template_matching.direct': ('_images',),
-        'src.registration.template_matching.floors': ('_images', '_config_cache'),
+        'src.registration.template_matching.floors': ('_images', '_retained_keys'),
         'src.registration.template_matching.matcher': ('_map_cache',),
         'src.registration.template_matching.resources': ('verified_fingerprints',),
     }.items():

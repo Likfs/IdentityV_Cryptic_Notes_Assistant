@@ -26,7 +26,7 @@ def test_real_retrieval_replay_is_ranked_and_requires_confirmation(retrieval_sce
         assert result.strong_evidence == case['expected_strong_evidence']
 
 
-def test_identical_layout_evidence_is_a_manual_tie(tmp_path, retrieval_scene):
+def test_identical_layout_evidence_is_a_manual_tie(tmp_path, retrieval_scene,monkeypatch):
     root = tmp_path / 'clean'
     original = retrieval_scene.clean_root / 'layout_05/layout_05_2nd.png'
     for layout in ('layout_05', 'layout_28'):
@@ -34,6 +34,10 @@ def test_identical_layout_evidence_is_a_manual_tie(tmp_path, retrieval_scene):
         target.parent.mkdir(parents=True)
         shutil.copy2(original, target)
     case = read_cases()[0]
+    from tests.support.structure_scene import publish_structure
+    from src import runtime_resources
+    root,_ = publish_structure(tmp_path,root,scale=.6,floors=('2nd',))
+    monkeypatch.setattr(runtime_resources,'PROJECT_ROOT',tmp_path)
     result = LayoutRetriever(root, cache_root=tmp_path/'cache').recognize(replay_image(case), case['reference_size'])
     assert [c.layout for c in result.candidates] == ['layout_05', 'layout_28']
     assert result.margin == pytest.approx(0, abs=1e-7)

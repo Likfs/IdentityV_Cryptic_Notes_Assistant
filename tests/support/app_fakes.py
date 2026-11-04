@@ -18,7 +18,7 @@ class FakeApp:
         self.map_state=app.MapToggleState(is_open=True);self.projection_delay_pending=True
         self.projection_triggered_at=100.;self.locked_layout='layout_16';self.settings_page=None
         self.results=queue.Queue();self.requests=[];self.scheduled=[];self.hidden=0
-        self.profile=SimpleNamespace(key='a_bringer_of_doom/nightmare')
+        self.profile=SimpleNamespace(asset_status='ready', key='a_bringer_of_doom/nightmare')
         self.catalog=object()
         self.capture_policy=SimpleNamespace(begin_capture=lambda _token: None, end_capture=lambda _token: None)
     def _log(self,*args):pass

@@ -39,6 +39,7 @@ def test_template_open_waits_then_projects_without_floor_capture(monkeypatch):
 
 def test_template_work_skips_before_and_after_floor_checks(monkeypatch):
     window=FakeApp();window.settings['registration_backend']='template'
+    window.settings['template_route_versions'][window.profile.key] = '测试路线'
     from src.capture.region import CaptureRegion
     monkeypatch.setattr(app.threading,'Thread',InlineThread)
     monkeypatch.setattr(app,'foreground_game_client',lambda _:CaptureRegion(0,0,2560,1440))
@@ -50,7 +51,7 @@ def test_template_work_skips_before_and_after_floor_checks(monkeypatch):
     monkeypatch.setattr(app,'process_screenshot',process)
     monkeypatch.setattr(app,'save_workflow_result',lambda _:Path('memory-only'))
     app.RouteProjectionApp.request_work(window,'project',auto=False)
-    assert len(calls)==1 and calls[0]['template_variant_id']=='route_zhanshi_fast'
+    assert len(calls)==1 and calls[0]['template_variant_id']=='测试路线'
     assert not {'floor', 'model_bundle', 'registration_priors'} & calls[0].keys()
 
 

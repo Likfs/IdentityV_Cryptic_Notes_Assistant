@@ -9,14 +9,14 @@ from src.registration.template_matching import direct
 
 
 @pytest.mark.parametrize('state', ['open', 'closed', 'background', 'busy'])
-@pytest.mark.parametrize('variant_id', ['route_lhp_solo', 'route_clean', 'route_lhp_solo_clean', 'route_zhanshi_fast_clean'])
+@pytest.mark.parametrize('variant_id', ['route_lhp_solo', 'clean', 'route_custom_a', 'route_custom_b'])
 def test_qt_version_switch_clears_old_result_and_rematches_only_current_state(window, monkeypatch, state, variant_id):
     calls = []
     monkeypatch.setattr(window, 'request_work', lambda mode, **kw: calls.append((mode, kw)))
     versions = json.loads(json.dumps(window.settings['route_versions']))
     window.apply_settings({**window.settings, 'registration_backend': 'template'})
     assert [window.route_combo.itemData(i) for i in range(window.route_combo.count())] == [
-        'route_zhanshi_fast', 'route_lhp_solo', 'route_clean', 'route_lhp_solo_clean', 'route_zhanshi_fast_clean']
+        'route_zhanshi_fast', 'route_lhp_solo', 'clean', 'route_custom_a', 'route_custom_b']
     generation = window.map_generation
     window.last_result = object()
     window.settings['auto_project'] = False  # Explicit version changes still rematch.
@@ -40,12 +40,12 @@ def test_qt_version_switch_clears_old_result_and_rematches_only_current_state(wi
 def test_reference_and_late_preview_follow_selected_original(window, monkeypatch):
     monkeypatch.setattr(window, 'request_work', lambda *a, **kw: None)
     window.apply_settings({**window.settings, 'registration_backend': 'template'})
-    ready = SimpleNamespace()
+    ready = SimpleNamespace(run_directory=None)
     window.last_result = ready
     generation, session = window.map_generation, window.session_id
     window.route_combo.setCurrentIndex(window.route_combo.findData('route_lhp_solo'))
     monkeypatch.setattr(window, '_set_preview', lambda *a: pytest.fail('late screenshot'))
-    window._receive_work_event(('preview', generation, session, ready, SimpleNamespace()))
+    window._receive_work_event(('preview', generation, session, ready, SimpleNamespace(run_directory=None)))
     assert window.last_result is None
     seen = []
     monkeypatch.setattr(window.reference_overlay, 'show_map', lambda *a: seen.append(a))

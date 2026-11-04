@@ -175,7 +175,7 @@ def test_close_does_not_weaken_context_invalidation_or_new_busy(window, source, 
             window.difficulty_var.set('困难')
             window._profile_changed()
         elif change == 'version':
-            window.route_combo.setCurrentIndex(window.route_combo.findData('route_clean'))
+            window.route_combo.setCurrentIndex(window.route_combo.findData('clean'))
         elif change == 'settings':
             window.open_settings()
         else:

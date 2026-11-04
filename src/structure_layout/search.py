@@ -14,43 +14,13 @@ from .correlation import CorrelationWorkspace
 R=.3
 SIGMA=3.0
 PENALTY=.5
-MINIMUM_SCALES=(1.46666667,1.51666667)
-RESPONSE_CACHE_POLICY=dict(version='fixed_float32_v1', max_bytes=1536*1024*1024)
 
 
 def response_maps(target, scale):
     """Read immutable fixed responses, or use the original uncached expression."""
-    if 'response_maps' in target:
-        return target['response_maps'][scale]
     ratio=target.get('coarse_resize', R)
     return [np.exp(-.5*(d/(SIGMA*scale*ratio))**2) for d in target['dist']]
 
-
-def prepare_response_cache(targets, *, cancelled=None, max_bytes=None):
-    """Cache a private, unpublished normalized index within a fixed byte budget.
-
-    Responses retain the original float32 expression and operation order. The
-    replaced coarse distances are no longer needed; full-resolution distances
-    used for pose scoring remain untouched. Cancellation discards this private
-    index at the caller, without publishing a partially prepared snapshot.
-    """
-    check_cancelled(cancelled)
-    if max_bytes is None:
-        max_bytes=RESPONSE_CACHE_POLICY['max_bytes']
-    required=sum(sum(d.nbytes for d in t['dist'])*len(t['scales']) for t in targets)
-    if required > max_bytes:
-        return False
-    for target in targets:
-        maps={}
-        for scale in target['scales']:
-            check_cancelled(cancelled)
-            maps[scale]=response_maps(target, scale)
-            for field in maps[scale]:
-                field.setflags(write=False)
-        target['response_maps']=maps
-        del target['dist']
-    check_cancelled(cancelled)
-    return True
 
 def visible_interior(im, edges=None):
     """Conservative observed floor interiors, never template-dependent."""
@@ -149,7 +119,7 @@ def search_target(t, *, templates, qpoints, negative, box, query_geometry, cance
     if workspace is None:workspace=CorrelationWorkspace()
     ratio=t.get('coarse_resize', R)
     for s,chs,neg,total in templates:
-        if s not in t.get('scales', MINIMUM_SCALES):continue
+        if s not in t['scales']:continue
         check_cancelled(cancelled)
         if chs[0].shape[0]>=t['low'].shape[0] or chs[0].shape[1]>=t['low'].shape[1]:continue
         maps=response_maps(t,s)
@@ -169,11 +139,11 @@ def search_target(t, *, templates, qpoints, negative, box, query_geometry, cance
     return poses
 
 
-def search(im, targets, executor=None, *, cancelled=None):
+def prepare_query(im, targets, *, cancelled=None):
     check_cancelled(cancelled)
-    start=time.perf_counter();edges=wall_edges(im,True)
+    edges=wall_edges(im,True)
     y,x=np.where(edges.sum(0)>0)
-    if not len(x):return dict(floor_candidates=[],reason='no wall structure',elapsed_s=time.perf_counter()-start)
+    if not len(x):return None
     box=[int(x.min()),int(y.min()),int(x.max()+1),int(y.max()+1)]
     interior=visible_interior(im,edges);negative=cv2.GaussianBlur(interior.astype(np.float32),(5,5),1)
     crop=edges[:,box[1]:box[3],box[0]:box[2]]
@@ -187,7 +157,7 @@ def search(im, targets, executor=None, *, cancelled=None):
         raise ValueError('同一识别索引不能混用不同的粗采样比例')
     ratio=next(iter(ratios),R)
     # Build each fixed scale once, then restrict each source to its own records.
-    scales = dict.fromkeys(s for t in targets for s in t.get('scales', MINIMUM_SCALES))
+    scales = dict.fromkeys(s for t in targets for s in t['scales'])
     for s in scales:
         check_cancelled(cancelled)
         chs=[cv2.resize(ch.astype(np.float32),None,fx=s*ratio,fy=s*ratio,interpolation=cv2.INTER_AREA) for ch in crop]
@@ -195,9 +165,18 @@ def search(im, targets, executor=None, *, cancelled=None):
         templates.append((s,chs,neg,sum(ch.sum() for ch in chs)))
     origin=np.array(box[:2],np.float32)
     geometry=(origin,[p-origin for p in qpoints],sum(len(p) for p in qpoints))
+    return dict(templates=templates,qpoints=qpoints,negative=negative,box=box,
+                query_geometry=geometry,query_edges=edges,
+                visible_interior_pixels=int(interior.sum()))
+
+
+def search(im, targets, executor=None, *, cancelled=None):
+    start=time.perf_counter()
+    query=prepare_query(im,targets,cancelled=cancelled)
+    if query is None:return dict(floor_candidates=[],reason='no wall structure',elapsed_s=time.perf_counter()-start)
     workspace=CorrelationWorkspace()
-    task=partial(search_target,templates=templates,qpoints=qpoints,negative=negative,
-                 box=box,query_geometry=geometry, cancelled=cancelled,workspace=workspace)
+    task=partial(search_target,**{k:query[k] for k in ('templates','qpoints','negative','box','query_geometry')},
+                 cancelled=cancelled,workspace=workspace)
     # Consume futures in input order, preserving same-score floor/seed ties.
     futures=[] if executor is None else [executor.submit(task,t) for t in targets]
     results=map(task,targets) if executor is None else (f.result() for f in futures)
@@ -210,4 +189,6 @@ def search(im, targets, executor=None, *, cancelled=None):
     finally:
         for future in futures:
             future.cancel()
-    return dict(box=box,query_edges=edges,visible_interior_pixels=int(interior.sum()),floor_candidates=candidates,elapsed_s=time.perf_counter()-start)
+    return dict(box=query['box'],query_edges=query['query_edges'],
+                visible_interior_pixels=query['visible_interior_pixels'],
+                floor_candidates=candidates,elapsed_s=time.perf_counter()-start)

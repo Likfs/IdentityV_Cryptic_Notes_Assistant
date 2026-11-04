@@ -18,9 +18,9 @@ def test_latest_request_coalesces_old_work_and_never_marks_old_session_ready(mon
     monkeypatch.setattr(prewarm.floors,'prewarm',prepare)
     warmer=prewarm.FloorPrewarmer()
     try:
-        warmer.request(('s1','map/diff','layout_01','route_clean'))
+        warmer.request(('s1','map/diff','layout_01','clean'))
         assert entered.wait(3)
-        warmer.request(('s2','map/diff','layout_02','route_clean'))
+        warmer.request(('s2','map/diff','layout_02','clean'))
         key=('s3','map/diff','layout_03','route_lhp_solo')
         warmer.request(key)
         thread=warmer._thread
@@ -28,7 +28,7 @@ def test_latest_request_coalesces_old_work_and_never_marks_old_session_ready(mon
         assert finished.wait(3)
         thread.join(3)
         assert not thread.is_alive()
-        assert seen==[('map/diff','layout_01','route_clean'),key[-3:]]
+        assert seen==[('map/diff','layout_01','clean'),key[-3:]]
         assert warmer.ready_key==key
     finally:
         release.set();warmer.close()
@@ -64,7 +64,7 @@ def test_live_match_lock_takes_precedence_over_background_loading():
     thread.start()
     try:
         assert entered.wait(3)
-        assert not prewarm.floors.prewarm('not-read','not-read','route_clean')
+        assert not prewarm.floors.prewarm('not-read','not-read','clean')
     finally:
         release.set();thread.join(3)
 

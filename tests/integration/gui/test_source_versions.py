@@ -4,7 +4,7 @@ import pytest
 from src.registration.template_matching import direct
 
 
-@pytest.mark.parametrize('variant', ['route_lhp_solo_clean', 'route_zhanshi_fast_clean'])
+@pytest.mark.parametrize('variant', ['route_custom_a', 'route_custom_b'])
 def test_reference_uses_selected_source_version(window, monkeypatch, variant):
     monkeypatch.setattr(window, 'request_work', lambda *a, **kw: None)
     window.apply_settings({**window.settings, 'registration_backend': 'template'})
@@ -15,6 +15,6 @@ def test_reference_uses_selected_source_version(window, monkeypatch, variant):
     window.reference_visible = True
     window._refresh_reference_map()
     wait_for(lambda: bool(seen))
-    assert seen and '底图版' in seen[-1][2]
+    assert seen and window.profile.version_names[variant] in seen[-1][2]
     expected = direct.floors.load(window.profile.key, window.locked_layout, variant, 'b1')[3]
     np.testing.assert_array_equal(seen[-1][0], expected)

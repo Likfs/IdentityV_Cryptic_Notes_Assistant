@@ -36,6 +36,23 @@ def main():
     paths.LOG_ROOT = args.output / 'logs'
     paths.DIAGNOSTIC_ROOT = args.output / 'diagnostics'
     from src import __main__ as entry
+    if args.mode in ('recognize', 'project'):
+        from src.app_catalog import MapCatalog
+        from src.projection_workflow import process_screenshot
+        catalog = MapCatalog()
+        profile = next(iter(catalog.profiles.values()))
+        if profile.asset_status == 'pending':
+            image = entry._read_image(args.root / 'tests/fixtures/registration/game2.png')
+            try:
+                process_screenshot(image, catalog=catalog, profile=profile, opacity=.5,
+                    recognize_only=args.mode == 'recognize', layout_override='layout_05')
+            except ValueError as exc:
+                assert '待配置' in str(exc)
+            else:
+                raise AssertionError('Pending assets must reject work')
+            assert not any(name == p or name.startswith(p + '.') for name in sys.modules for p in FORBIDDEN)
+            print(json.dumps(dict(pending=True, accepted=False)))
+            return
     if args.mode == 'recognize':
         from src.app_catalog import MapCatalog
         from src.layout_retrieval import LayoutRetriever
@@ -56,8 +73,13 @@ def main():
         if args.mode == 'check':
             sys.argv = ['src', '--check']
         elif args.mode == 'project':
+            from src.app_catalog import MapCatalog
+            catalog = MapCatalog()
+            profile = next(iter(catalog.profiles.values()))
+            variant = next(version['id'] for version in profile.asset_versions
+                           if version['kind'] == 'route' and version['id'] in profile.template_versions)
             sys.argv = ['src', '--project-once', str(args.root / 'tests/fixtures/registration/game2.png'),
-                        '--layout', 'layout_05', '--route-version', 'route_lhp_solo',
+                        '--layout', 'layout_05', '--route-version', variant,
                         '--output', str(args.output / 'projection')]
         else:
             from types import SimpleNamespace

@@ -5,6 +5,23 @@ from src.app_catalog import MapCatalog, load_settings, save_settings, selected_t
 from src.chest_counter import CHEST_HOTKEY_FIELDS
 
 
+@pytest.fixture
+def preference_catalog():
+    """Valid historical preferences are independent of the user's current route folders."""
+    catalog = MapCatalog()
+    data = json.loads(catalog.path.read_text(encoding='utf-8-sig'))
+    definition = next(d for m in data['maps'] if m['id'] == 'a_bringer_of_doom'
+                      for d in m['difficulties'] if d['id'] == 'nightmare')
+    known = {v['id'] for v in definition['asset_versions']}
+    for identifier in ('route_zhanshi_fast', 'route_lhp_solo'):
+        if identifier not in known:
+            definition['asset_versions'].append(dict(id=identifier, name=identifier, kind='route',
+                source_root=definition['clean_root']))
+        if identifier not in definition['template_versions']:
+            definition['template_versions'].append(identifier)
+    return MapCatalog(catalog.path, data=data)
+
+
 def test_combination_preferences_normalize_and_roundtrip_without_changing_single_keys(tmp_path):
     path = tmp_path / 'settings.json'
     path.write_text(json.dumps({'recognize_hotkey': 'ctrl+1', 'project_hotkey': 'shift+ctrl+1',
@@ -105,15 +122,15 @@ def test_settings_default_to_structure_and_preserve_explicit_choices(tmp_path, v
 
 
 @pytest.mark.parametrize('backend', ['cpu', 'auto', 'legacy', 'template'])
-def test_old_settings_migrate_without_touching_user_preferences(tmp_path, backend):
+def test_old_settings_migrate_without_touching_user_preferences(tmp_path, backend, preference_catalog):
     path = tmp_path / 'settings.json'
     old = dict(registration_backend=backend, layout_recognition_backend='cnn',
                opacity=.41, map_capture_delay_ms=78, recognize_hotkey='F7',
-               template_route_versions={'a_bringer_of_doom/nightmare': 'route_lhp_solo_clean'},
+               template_route_versions={'a_bringer_of_doom/nightmare': 'route_lhp_solo'},
                template_motion_tracking=False, skip_layout_confirmation=True, auto_floor=True)
     path.write_text(json.dumps(old), encoding='utf-8')
     before = path.read_bytes()
-    settings = load_settings(MapCatalog(), path)
+    settings = load_settings(preference_catalog, path)
     assert path.read_bytes() == before  # Reading never rewrites personal settings.
     assert settings['registration_backend'] == 'template'
     assert settings['layout_recognition_backend'] == 'pure_structure'
@@ -122,21 +139,50 @@ def test_old_settings_migrate_without_touching_user_preferences(tmp_path, backen
     for name in ('opacity', 'map_capture_delay_ms', 'recognize_hotkey', 'template_route_versions', 'template_motion_tracking'):
         assert settings[name] == old[name]
     save_settings(settings, path)
-    assert load_settings(MapCatalog(), path) == settings
+    assert load_settings(preference_catalog, path) == settings
 
 
-def test_old_settings_default_to_zhanshi_and_preferences_remain_independent(tmp_path):
-    catalog = MapCatalog()
+def test_retired_route_version_uses_available_default_without_rewriting_settings(tmp_path):
+    path = tmp_path/'settings.json'
+    profile = MapCatalog().profile('a_bringer_of_doom','nightmare')
+    path.write_text(json.dumps(dict(map_id=profile.map_id, difficulty_id=profile.difficulty_id,
+        template_route_versions={profile.key:'route_lhp_solo_clean'})), encoding='utf-8')
+    before = path.read_bytes()
+    settings = load_settings(MapCatalog(), path)
+    assert settings['template_route_versions'][profile.key] == profile.template_versions[0]
+    assert path.read_bytes() == before
+
+
+def test_missing_template_preference_uses_declared_default_and_preferences_remain_independent(tmp_path, preference_catalog):
+    catalog = preference_catalog
     path = tmp_path/'settings.json'
     profile = next(iter(catalog.profiles.values()))
     path.write_text(json.dumps(dict(route_versions={profile.key: {'layout_01': 'route_clean'}})))
     settings = load_settings(catalog, path)
-    assert selected_template_variant(settings, profile.key) == 'route_zhanshi_fast'
+    assert selected_template_variant(settings, profile.key) == profile.template_versions[0]
     settings['template_route_versions'][profile.key] = 'route_lhp_solo'
     save_settings(settings, path)
     reloaded = load_settings(catalog, path)
     assert selected_template_variant(reloaded, profile.key) == 'route_lhp_solo'
     assert reloaded['route_versions'] == settings['route_versions']
+
+
+def test_template_preferences_are_validated_per_difficulty_without_writing_settings(tmp_path, preference_catalog):
+    catalog = preference_catalog
+    nightmare = catalog.profile('a_bringer_of_doom', 'nightmare')
+    hard = catalog.profile('a_bringer_of_doom', 'hard')
+    path = tmp_path/'settings.json'
+    path.write_text(json.dumps(dict(map_id=nightmare.map_id, difficulty_id=nightmare.difficulty_id,
+        template_route_versions={nightmare.key: 'route_lhp_solo', hard.key: 'route_lhp_solo'})))
+    before = path.read_bytes()
+    settings = load_settings(catalog, path)
+    assert selected_template_variant(settings, nightmare.key) == 'route_lhp_solo'
+    assert hard.key not in settings['template_route_versions']
+    assert path.read_bytes() == before
+
+
+def test_unset_template_preference_does_not_assume_a_named_route():
+    assert selected_template_variant({}, 'sample/hard') is None
 
 
 def test_old_version_settings_migrate_without_losing_user_preferences(tmp_path):
@@ -149,9 +195,9 @@ def test_old_version_settings_migrate_without_losing_user_preferences(tmp_path):
     loaded = load_settings(catalog, path)
     assert loaded['registration_backend'] == 'template'
     assert loaded['map_capture_delay_ms'] == 77 and loaded['opacity'] == .42
-    assert loaded['route_versions'][profile.key] == {'layout_01': 'route_lhp_solo', 'layout_02': 'route_clean'}
+    assert loaded['route_versions'][profile.key] == {'layout_01': 'route_01', 'layout_02': 'route_clean'}
     save_settings(old, path)
-    assert json.loads(path.read_text(encoding='utf-8'))['route_versions'][profile.key]['layout_01'] == 'route_lhp_solo'
+    assert json.loads(path.read_text(encoding='utf-8'))['route_versions'][profile.key]['layout_01'] == 'route_01'
     assert old['route_versions'][profile.key]['layout_01'] == 'route_01'
 
 

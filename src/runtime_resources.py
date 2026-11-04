@@ -1,13 +1,12 @@
 """Published runtime data. Detailed calibration evidence belongs to offline export."""
 import hashlib
 import json
-import math
 from pathlib import Path
 
 from src.paths import PROJECT_ROOT
+from src.scale_config import SCALE_PATH, load_scales, profile_settings, profile_keys, validate_scales
 
 BUNDLE_PATH = 'configs/runtime_resources.json'
-SCALE_PATH = 'configs/scale_config.json'
 
 
 def digest(value):
@@ -19,7 +18,7 @@ def read_bundle(root=None):
     root = Path(root) if root is not None else PROJECT_ROOT
     path = root/BUNDLE_PATH
     if not path.exists():
-        return None  # Standalone maintenance/test inputs use the evidence format.
+        return None  # Startup discovery may publish a new bundle.
     data = json.loads(path.read_text(encoding='utf-8'))
     payload = data.get('payload')
     if (data.get('schema_version') != 2 or not isinstance(payload, dict)
@@ -28,45 +27,48 @@ def read_bundle(root=None):
     return payload
 
 
-def _unique_keys(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError(f'尺度配置存在重复键：{key}')
-        result[key] = value
-    return result
-
-
 def expand_template(template, scales):
-    """Adapt the flat public scale table to unchanged matcher records, without rounding."""
-    if not isinstance(scales, dict) or set(scales) != {'maps'} or not isinstance(scales['maps'], dict):
-        raise ValueError('尺度配置必须为 maps 下每张图片一个 scale')
-    images = template['images']
-    groups = template['groups']
+    """Resolve grouped user scales to the matcher's existing per-image records."""
+    validate_scales(scales)
+    images, groups = template['images'], template['groups']
+    if profile_keys(scales) != set(groups):
+        raise ValueError('尺度配置与地图／难度清单不一致，请重新发布')
     used = {path for layouts in groups.values() for versions in layouts.values()
             for floors in versions.values() for path in floors.values()}
-    if set(scales['maps']) != set(images) or set(images) != used:
-        raise ValueError('尺度配置与图片清单不一致，请重新导出')
-    records = {}
-    for path, metadata in images.items():
-        entry = scales['maps'][path]
-        if not isinstance(entry, dict) or set(entry) != {'scale'}:
-            raise ValueError('每张图片只能配置一个 scale')
-        if 'saved_scale' in metadata or 'source_image' in metadata:
-            raise ValueError('自动资源清单不能重复保存图片路径或尺度')
-        scale = entry['scale']
-        if scale is None:
-            if metadata.get('scale_status') != 'pending':
-                raise ValueError('未标为待标定的图片缺少 scale')
-        elif type(scale) not in (float, int) or not math.isfinite(scale) or scale <= 0:
-            raise ValueError('scale 必须是有限正数；待标定图片使用 null')
-        records[path] = dict(metadata, source_image=path, saved_scale=scale)
-    config = {k: template[k] for k in ('perf_mode', 'capture') if k in template}
-    config['floor_variants'] = {
-        profile: {layout: {version: {floor: dict(records[path]) for floor, path in floors.items()}
-                           for version, floors in versions.items()} for layout, versions in layouts.items()}
-        for profile, layouts in groups.items()}
+    if set(images) != used:
+        raise ValueError('图片清单与地图分组不一致，请重新发布')
+    config = {k: template[k] for k in ('perf_mode', 'capture', 'asset_contract') if k in template}
+    resolved, assigned = {}, {}
+    for profile, layouts in groups.items():
+        map_id, difficulty = profile.split('/')
+        entry = profile_settings(scales, map_id, difficulty, ready=bool(layouts))
+        resolved[profile] = {}
+        for layout, versions in layouts.items():
+            scale = entry.get('layout_minimum_scales', {}).get(layout, entry['minimum_scale'])
+            resolved[profile][layout] = {}
+            for version, floors in versions.items():
+                records = {}
+                for floor, path in floors.items():
+                    metadata = images[path]
+                    if 'saved_scale' in metadata or 'source_image' in metadata or 'scale' in metadata:
+                        raise ValueError('自动资源清单不能重复保存图片路径或尺度')
+                    if path in assigned and assigned[path] != scale:
+                        raise ValueError('同一图片引用了冲突尺度，请检查地图分组')
+                    assigned[path] = scale
+                    records[floor] = dict(metadata, source_image=path, saved_scale=scale)
+                resolved[profile][layout][version] = records
+    config['floor_variants'] = resolved
     return config
+
+
+def _published_scales(root, bundle):
+    path = (root/SCALE_PATH).resolve(strict=True)
+    path.relative_to(root.resolve())
+    raw = path.read_bytes()
+    record = bundle['files'][SCALE_PATH]
+    if len(raw) != record['bytes'] or hashlib.sha256(raw).hexdigest() != record['sha256']:
+        raise ValueError('尺度配置与已发布资源不一致，请正常重启同步或重新导出')
+    return load_scales(root, raw=raw)
 
 
 def template_config(root=None):
@@ -74,14 +76,9 @@ def template_config(root=None):
     bundle = read_bundle(root)
     if bundle is None:
         return None
-    path = (root/SCALE_PATH).resolve(strict=True)
-    path.relative_to(root.resolve())
-    raw = path.read_bytes()
-    record = bundle['files'][SCALE_PATH]
-    if len(raw) != record['bytes'] or hashlib.sha256(raw).hexdigest() != record['sha256']:
-        raise ValueError('尺度配置与已发布资源不一致，请审核后重新导出')
-    scales = json.loads(raw.decode('utf-8'), object_pairs_hook=_unique_keys)
-    return expand_template(bundle['template'], scales)
+    if bundle['template'].get('asset_contract') != 'aligned_floor_images':
+        raise ValueError('运行资源必须使用 aligned_floor_images，请重新发布素材')
+    return expand_template(bundle['template'], _published_scales(root, bundle))
 
 
 def recognition_profile(clean_root):
@@ -97,7 +94,20 @@ def recognition_profile(clean_root):
     profiles = bundle['recognition']
     if relative not in profiles:
         raise ValueError('运行资源包未包含当前识别配置')
-    return profiles[relative]
+    source = profiles[relative]
+    if not source.get('source_images') or 'profile_key' not in source:
+        raise ValueError('识别资源缺少当前地图／难度分组，请重新发布')
+    scales = _published_scales(PROJECT_ROOT, bundle)
+    map_id, difficulty = source['profile_key'].split('/')
+    entry = profile_settings(scales, map_id, difficulty, ready=bool(source['targets']))
+    targets = {}
+    for name, metadata in source['targets'].items():
+        if 'scales' in metadata or 'scale_modes' in metadata:
+            raise ValueError('自动识别资源清单不能重复保存尺度，请重新发布')
+        layout = name.split('/')[0]
+        value = entry.get('layout_minimum_scales', {}).get(layout, entry['minimum_scale'])
+        targets[name] = dict(metadata, scales=[value])
+    return dict(source, targets=targets)
 
 
 def runtime_files(root=None):

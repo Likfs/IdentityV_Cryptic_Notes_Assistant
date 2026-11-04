@@ -23,7 +23,7 @@ def test_manual_choice_requires_confirmation_and_cancel_restores_lock(window, mo
     generation=window.map_generation;session=window.session_id
     activate(window, 'layout_12')
     assert len(prompts)==1 and 'layout_12' in prompts[0][0][1]
-    assert prompts[0][1]['entrance_path'].name=='layout_12.png'
+    assert prompts[0][1]['entrance_path'].name=='layout_12_2nd.png'
     expected='layout_12' if confirmed else 'layout_11'
     assert window.locked_layout==window.layout_var.get()==window.layout_combo.currentText()==expected
     assert window.map_generation==generation+1 and window.session_id!=session

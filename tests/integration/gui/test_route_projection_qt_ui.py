@@ -123,10 +123,10 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert not window.hotkeys_suspended
 
         generation = window.map_generation
-        window.route_combo.setCurrentIndex(window.route_combo.findData("route_clean"))
+        window.route_combo.setCurrentIndex(window.route_combo.findData("clean"))
         assert window.map_generation == generation + 1
         persisted = load_settings(MapCatalog(), path)
-        assert persisted["template_route_versions"][window.profile.key] == "route_clean"
+        assert persisted["template_route_versions"][window.profile.key] == "clean"
 
         window.last_result = SimpleNamespace(timings_ms={
             "capture": 18.2, "layout_retrieval": 43.3,
