@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 
 from src.runtime_resources import BUNDLE_PATH, SCALE_PATH, digest
+from src.floor_definitions import FLOORS
 
 
 def json_bytes(value):
@@ -69,7 +70,7 @@ def write_template(root, config):
         for key, layouts in config['floor_variants'].items():
             map_id, difficulty_id = key.split('/')
             versions = list(dict.fromkeys(v for items in layouts.values() for v in items))
-            floors = [floor for floor in ('2nd', '1st', 'b1')
+            floors = [floor for floor in FLOORS
                       if any(floor in records for items in layouts.values() for records in items.values())]
             definition = dict(id=difficulty_id, name=difficulty_id, clean_root=f'assets/maps/{key}/clean',
                 floors=floors, asset_contract='aligned_floor_images', asset_status='ready',

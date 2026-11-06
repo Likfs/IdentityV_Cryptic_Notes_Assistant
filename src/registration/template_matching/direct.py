@@ -23,17 +23,23 @@ def saved_scale_value(candidate):
     return scale
 
 
-def _match_floor_candidates(snapshot, screenshot, screen_factor):
+def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=False):
     """Prepare caches on the coordinator, then match at most two floors at once.
 
     Caller holds resource_lock across preparation, workers and final validation.
     Ordered collection preserves candidate order and the original tie policy.
+    Working sets exceeding the image count or byte budget decode a two-floor batch;
+    completed candidates retain metadata, and the winning pixels load at projection.
     """
     prepared = matcher.ScreenshotPreparation(screenshot)
     initial_ds = matcher.TEMPLATE_DS
-    jobs = []
+    load_failures = {}
     last_path = None
-    for floor in snapshot.entries:
+
+    def load_job(floor):
+        nonlocal last_path
+        if floor in load_failures:
+            return load_failures[floor]
         try:
             entry, path, _, image, rgba = snapshot.load(floor)
             last_path = path
@@ -41,9 +47,12 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
             scale = saved_scale * screen_factor
             options = dict(map_threshold=entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
                            map_image=image, image_fingerprint=floors.fingerprint(entry))
-            jobs.append((floor, entry, path, image, rgba, saved_scale, scale, options))
+            return floor, entry, path, image, rgba, saved_scale, scale, options
         except (ValueError, cv2.error) as exc:
-            jobs.append(dict(candidate_floor=floor, reason=str(exc)))
+            load_failures[floor] = dict(candidate_floor=floor, reason=str(exc))
+            return load_failures[floor]
+
+    jobs = list(snapshot.entries) if bounded else [load_job(floor) for floor in snapshot.entries]
 
     def match_floor(job, *, ds, expanded=False):
         if isinstance(job, dict):
@@ -75,9 +84,15 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
                         reverse=True)
         return scores[0] - scores[1] if len(scores) >= 2 else None
 
-    def run_resolution(ds, pool):
+    def run_batch(batch, ds, pool, expanded):
+        if bounded:
+            floors.retain_working_set([snapshot.entries[floor] for floor in batch if isinstance(floor, str)],
+                                     frozen=snapshot._session)
+            loaded = [load_job(floor) if isinstance(floor, str) else floor for floor in batch]
+        else:
+            loaded = batch
         ready = []
-        for job in jobs:
+        for job in loaded:
             if isinstance(job, dict):
                 ready.append(job)
                 continue
@@ -89,7 +104,26 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
                 ready.append(job)
             except (ValueError, cv2.error) as exc:
                 ready.append(dict(candidate_floor=job[0], reason=str(exc)))
-        results = list(pool.map(lambda job: match_floor(job, ds=ds), ready))
+        results = list(pool.map(lambda job: match_floor(job, ds=ds, expanded=expanded), ready))
+        if bounded:
+            # Keeping even losing RGBA arrays here would defeat the bounded decoder.
+            results = [(attempt, candidate[:6] + (None, None) if candidate is not None else None)
+                       for attempt, candidate in results]
+            ready = [job if isinstance(job, dict) else job[0] for job in ready]
+            floors.trim_uncached_templates()
+        return results, ready
+
+    def run_pass(items, ds, pool, expanded=False):
+        results, ready = [], []
+        batch_size = 2 if bounded else max(1, len(items))
+        for offset in range(0, len(items), batch_size):
+            batch_results, batch_ready = run_batch(items[offset:offset+batch_size], ds, pool, expanded)
+            results.extend(batch_results)
+            ready.extend(batch_ready)
+        return results, ready
+
+    def run_resolution(ds, pool):
+        results, ready = run_pass(jobs, ds, pool)
         best = select_best(results)
         trigger = None
         if best is not None and best[0].get('search', {}).get('boundary_edges'):
@@ -99,9 +133,9 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor):
         if trigger:
             initial = results
             # Retry every configured, scaled floor under the same search policy.
-            # The coordinator already prepared all shared inputs; workers only
-            # allocate their own temporary padded masks and response arrays.
-            results = list(pool.map(lambda job: match_floor(job, ds=ds, expanded=True), ready))
+            # Each batch's coordinator prepares shared inputs; workers only
+            # allocate their temporary padded masks and response arrays.
+            results, _ = run_pass(ready, ds, pool, expanded=True)
             for (attempt, _), (previous, _) in zip(results, initial):
                 attempt.update(initial_attempt=previous, retry_trigger=trigger)
             best = select_best(results)
@@ -148,8 +182,12 @@ def check_original_resources(profile_key, layouts):
                       resource_layouts=0, partial_layouts=0, pending_scales={}, errors=[])
                for v in versions}
     with resources.resource_lock:
+        published = floors._read_config().get('floor_variants', {}).get(profile_key, {})
         for layout in layouts:
+            choices = published.get(layout, {})
             for variant_id, item in summary.items():
+                if variant_id != CLEAN_VERSION_ID and variant_id not in choices:
+                    continue
                 try:
                     count = floors.check(profile_key, layout, variant_id)
                     item['resource_layouts'] += 1
@@ -161,7 +199,7 @@ def check_original_resources(profile_key, layouts):
 
 
 def project_original(screenshot, profile_key, layout, opacity, *, variant_id=None, defer_preview=False):
-    """Use the frozen profile's first enabled version when no version is supplied."""
+    """Match clean floors and display an available version of the selected layout."""
     started = perf_counter()
     validation = dict(registration_algorithm='fixed_scale_template', projection_scope='single_floor',
                       coordinate_space='single_floor_source_image', floor_detection_enabled=False,
@@ -185,8 +223,13 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
                 if profile is None:
                     raise ValueError(f'未配置地图难度：{profile_key}')
                 if profile.asset_status == 'pending':
-                    raise ValueError('资产待配置，请补充底图、路线图和最小缩放值')
-                variant_id = profile.template_versions[0]
+                    raise ValueError('资产待配置，请检查底图、最小缩放值及已提供路线')
+                choices = available_variants(profile_key, layout)
+                if not choices:
+                    raise ValueError(f'{layout}：没有可用的显示版本')
+                variant_id = choices[0]
+            elif variant_id not in available_variants(profile_key, layout):
+                raise ValueError(f'{layout} 不包含路线版本 {variant_id}，请改用 clean 或该布局已有路线')
             display = floors.FrozenSourceSnapshot(profile_key, layout, variant_id)
             snapshot = floors.FrozenSourceSnapshot(profile_key, layout, CLEAN_VERSION_ID)
             result.validation['pending_scale_floors'] = []
@@ -197,19 +240,27 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
                 raise ValueError('性能档位无效')
             matcher.TEMPLATE_DS = matcher.PERF_MODES[mode]['ds']
             matching_started = perf_counter()
-            floors.retain_working_set(snapshot.entries.values(), frozen=snapshot._session)
-            attempts, best, path = _match_floor_candidates(snapshot, screenshot, screen['factor'])
+            # The winning floor is unknown: reserve the largest possible route.
+            # Clean display sources share cache identities with matching sources.
+            largest_route = max(display.entries.values(), key=lambda item: item['size'][0] * item['size'][1])
+            bounded = not floors.working_set_fits([*snapshot.entries.values(), largest_route])
+            floors.retain_working_set([] if bounded else snapshot.entries.values(), frozen=snapshot._session)
+            attempts, best, path = _match_floor_candidates(snapshot, screenshot, screen['factor'], bounded=bounded)
             result.validation['fixed_candidates'] = attempts
             if best is None:
                 raise ValueError('所有固定尺度候选均不可匹配：' + '；'.join(a['reason'] for a in attempts))
             snapshot.validate()
             match, scale, saved_scale, floor, entry, path, rgba, image = best
             validation['matching_source_image'] = entry['source_image']
+            clean_working_set = [snapshot.entries[floor]] if bounded else list(snapshot.entries.values())
+            floors.retain_working_set([*clean_working_set, display.entries[floor]], frozen=display._session)
+            if image is None:
+                _, _, _, image, _ = snapshot.load(floor)
+            clean_size = image.shape[:2]
             entry, path, _, image, rgba = display.load(floor)
-            if image.shape[:2] != best[7].shape[:2] or entry['saved_scale'] != saved_scale:
+            if image.shape[:2] != clean_size or entry['saved_scale'] != saved_scale:
                 raise ValueError('路线图与底图画布或尺度不一致，请重新发布')
             display.validate()
-            floors.retain_working_set([*snapshot.entries.values(), entry], frozen=display._session)
             result.timings['matching'] = (perf_counter()-matching_started)*1000
         if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
             raise ValueError('定尺度模板匹配未返回有限分数或坐标')

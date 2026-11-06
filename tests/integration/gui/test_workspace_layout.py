@@ -48,7 +48,7 @@ def test_workspace_renders_one_screenshot_with_secondary_views_folded(window, tm
     assert not window.log.isVisible()
     assert window.capture_panel.image.width() >= 300
     assert window.capture_panel.image.height() >= 200
-    controls = window.floor_selector.parentWidget()
+    controls = window.difficulty_selector.parentWidget()
     assert controls.width() <= controls.parentWidget().width(), 'Left controls must not clip horizontally'
     for widget in (window.capture_panel, window.chest_reset_button, window.start_button,
                    window.project_button, window.reset_map_button, window.settings_button):
@@ -92,7 +92,7 @@ def test_segmented_choices_keep_existing_profile_floor_and_button_callbacks(wind
     hard = window.difficulty_combo.findText('困难')
     window.difficulty_selector.buttons[hard].click()
     assert window.profile.difficulty_id == 'hard'
-    assert len(window.floor_selector.buttons) == 2
+    assert window.floor_combo.isHidden()
     assert [window.floor_combo.itemData(i) for i in range(2)] == ['2nd', '1st']
     assert window.locked_layout is None and not window.project_button.isEnabled()
 

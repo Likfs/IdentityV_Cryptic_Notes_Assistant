@@ -41,7 +41,7 @@ import math
 from src.paths import CACHE_ROOT, LOG_ROOT
 from src.app_catalog import (
     DEFAULT_SETTINGS_PATH, FLOOR_NAMES, MapCatalog, load_settings, save_settings,
-    map_capture_delay_ms, selected_template_variant, load_default_settings,
+    map_capture_delay_ms, selected_template_variant, effective_template_variant, load_default_settings,
 )
 from src.capture.map_keys import GlobalMapKeys
 from src.layout_retrieval import create_layout_retriever, BACKEND_LABELS, normalize_recognition_backend
@@ -337,7 +337,7 @@ class RouteProjectionApp(QWidget):
         body.setSpacing(16)
         home.addLayout(body, 1)
         left = self._card('本局地图')
-        left.setFixedWidth(224)
+        left.setFixedWidth(248)
         body.addWidget(left)
         self._build_left(left.layout())
         center = QWidget()
@@ -421,6 +421,11 @@ class RouteProjectionApp(QWidget):
         self.route_combo.setAccessibleName('路线版本')
         self.route_combo.currentTextChanged.connect(self._route_changed)
         form.addWidget(self.route_combo)
+        self.route_availability_hint = QLabel()
+        self.route_availability_hint.setWordWrap(True)
+        self.route_availability_hint.setStyleSheet(f'color: {AMBER};')
+        self.route_availability_hint.hide()
+        form.addWidget(self.route_availability_hint)
         form.addWidget(self._heading('布局选择'))
         self.layout_combo = QComboBox()
         self.layout_combo.setAccessibleName('布局选择')
@@ -432,20 +437,13 @@ class RouteProjectionApp(QWidget):
             combo.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
             combo.setMinimumContentsLength(1)
             combo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self._separator(form)
-        form.addWidget(self._heading('参考图'))
+        # Retain the reference state model for H/J without a main-window control.
         self.floor_combo = QComboBox(content)
         for floor in self.profile.floors:
             self.floor_combo.addItem(FLOOR_NAMES[floor], floor)
         self.floor_combo.setCurrentIndex(self.floor_combo.findData(self.settings['reference_floor']))
         self.floor_combo.currentIndexChanged.connect(self._reference_floor_changed)
         self.floor_combo.hide()
-        self.floor_selector = SegmentedSelector(self.floor_combo)
-        self.floor_selector.setToolTip('仅选择参考图楼层，投影自动比较有效楼层。')
-        form.addWidget(self.floor_selector)
-        self.reference_toggle_button = QPushButton('显示参考图')
-        self.reference_toggle_button.clicked.connect(self._toggle_reference_map)
-        form.addWidget(self.reference_toggle_button)
         self._separator(form)
         self.display_section = CollapsibleSection('显示设置')
         form.addWidget(self.display_section)
@@ -773,7 +771,12 @@ class RouteProjectionApp(QWidget):
             Path(path).write_text("\n".join(line for _level, line in self.log_lines), encoding="utf-8")
 
     def _fill_difficulties(self):
-        choices = [p.difficulty_name for p in self.catalog.difficulties(next(key for key, value in self.catalog.map_names.items() if value == self.map_var.get()))]
+        map_id = next(key for key, value in self.catalog.map_names.items() if value == self.map_var.get())
+        order = ('novice', 'easy', 'normal', 'hard', 'nightmare')
+        profiles = sorted(self.catalog.difficulties(map_id),
+                          key=lambda profile: order.index(profile.difficulty_id)
+                          if profile.difficulty_id in order else len(order))
+        choices = [profile.difficulty_name for profile in profiles]
         self.difficulty_combo.blockSignals(True)
         self.difficulty_combo.clear()
         self.difficulty_combo.addItems(choices)
@@ -855,7 +858,6 @@ class RouteProjectionApp(QWidget):
         self.layout_description.setText(f'{self.locked_layout} · 本局已选定' if self.locked_layout else '识别后确认本局布局')
         self.brand_subtitle.setText(self.profile.map_name)
         self.difficulty_selector.refresh()
-        self.floor_selector.refresh()
         self.status_rows['reference'].setText(
             FLOOR_NAMES[self.settings['reference_floor']] + ' · 开启' if self.reference_visible else '未显示')
         self.status_rows['selection'].setText('自动选择' if self.settings.get('auto_select_layout') else '人工确认')
@@ -892,7 +894,7 @@ class RouteProjectionApp(QWidget):
         if self.profile.asset_status == 'pending':
             self.run_badge.setText('●  待配置')
             self.session_label.setText('资产待配置')
-            self.layout_description.setText('补充底图、路线图和最小缩放值后启用')
+            self.layout_description.setText('补充有效底图和尺度后启用；路线可选')
             self.action_title.setText('当前地图难度的资产待配置')
             self.action_hint.setText('请接入同画布楼层图片和最小缩放值，审核发布后重启程序')
             self.start_button.setEnabled(False)
@@ -1006,9 +1008,20 @@ class RouteProjectionApp(QWidget):
                 self._set_status("已取消手动选择，保留原布局" if valid else "地图状态已变化，请重新选择布局", MUTED)
         self._update_assets()
 
+    def _effective_template_variant(self):
+        preferred = selected_template_variant(self.settings, self.profile.key)
+        if preferred not in self.profile.template_versions:
+            preferred = next(iter(self.profile.template_versions), None)
+        choices = self.profile.template_versions
+        if self.locked_layout:
+            from src.registration.template_matching.direct import available_variants
+            choices = available_variants(self.profile.key, self.locked_layout)
+        return effective_template_variant(preferred, choices)
+
     def _update_assets(self):
         if self.profile.asset_status == 'pending':
-            self.asset_var.set('资产待配置：请补充底图、路线图和最小缩放值')
+            self.asset_var.set('资产待配置：请检查底图、最小缩放值及已提供路线')
+            self.route_availability_hint.hide()
             for combo in (self.route_combo, self.floor_combo):
                 combo.blockSignals(True)
                 combo.clear()
@@ -1025,23 +1038,31 @@ class RouteProjectionApp(QWidget):
             self.layout_combo.blockSignals(True)
             self.layout_combo.setCurrentText(layout)
             self.layout_combo.blockSignals(False)
-            choice_layout = layout if layout != AUTO else (layouts[0] if layouts else "")
             self.route_combo.blockSignals(True)
             from src.registration.template_matching.direct import available_variants
             self.route_combo.clear()
-            try:
-                choices = available_variants(self.profile.key, choice_layout)
-            except (OSError, ValueError, KeyError):
-                choices = []
+            choices = (available_variants(self.profile.key, self.locked_layout)
+                       if self.locked_layout else list(self.profile.template_versions))
             preferred = selected_template_variant(self.settings, self.profile.key)
-            choices = [v for v in choices if v in self.profile.template_versions]
-            if preferred not in self.profile.template_versions or (choices and preferred not in choices):
-                preferred = next((v for v in self.profile.template_versions if v in choices), self.profile.template_versions[0])
+            if preferred not in self.profile.template_versions:
+                preferred = self.profile.template_versions[0]
                 self.settings.setdefault('template_route_versions', {})[self.profile.key] = preferred
-            for variant_id in dict.fromkeys([*choices, preferred]):
-                self.route_combo.addItem(self.profile.version_names[variant_id], variant_id)
-            self.route_combo.setCurrentIndex(self.route_combo.findData(preferred))
-            self.asset_var.set(f'{layout} / {self.profile.version_names[preferred]} · 单层图片 · 自动匹配楼层')
+            effective = self._effective_template_variant()
+            for variant_id in choices:
+                label = self.profile.version_names[variant_id]
+                if not self.locked_layout:
+                    covered = sum(variant_id in available_variants(self.profile.key, item) for item in layouts)
+                    if covered < len(layouts):
+                        label += f'（{covered}/{len(layouts)} 布局）'
+                self.route_combo.addItem(label, variant_id)
+            self.route_combo.setCurrentIndex(self.route_combo.findData(effective))
+            description = f'{layout} / {self.profile.version_names[effective]} · 单层图片 · 自动匹配楼层'
+            fallback = preferred in self.profile.template_versions and preferred != effective
+            self.route_availability_hint.setVisible(fallback)
+            self.route_availability_hint.setText('本布局无所选路线，已使用干净底图。路线偏好已保留。' if fallback else '')
+            if fallback:
+                description += f'；本布局未提供「{self.profile.version_names[preferred]}」，使用原版干净底图（已保留路线偏好）'
+            self.asset_var.set(description)
             self.route_combo.setEnabled(True)
             self.floor_combo.setEnabled(True)
             self.floor_combo.blockSignals(True)
@@ -1066,7 +1087,7 @@ class RouteProjectionApp(QWidget):
             return
         layout = getattr(self, 'locked_layout', None)
         key = ((self.session_id, self.profile.key, layout,
-                selected_template_variant(self.settings, self.profile.key))
+                self._effective_template_variant())
                if layout and not self.closed else None)
         prewarmer.request(key)
 
@@ -1089,7 +1110,7 @@ class RouteProjectionApp(QWidget):
         self.feature_status_label.clear()
         self._feature_preparation_context = None
         if self.profile.asset_status == 'pending':
-            self._set_status('资产待配置：请补充底图、路线图和最小缩放值', AMBER)
+            self._set_status('资产待配置：请检查底图、最小缩放值及已提供路线', AMBER)
             return
         profile_key, retriever = self.profile.key, self._layout_retriever()
         backend = self.settings['layout_recognition_backend']
@@ -1342,7 +1363,7 @@ class RouteProjectionApp(QWidget):
         settings = self.settings
         return (self.profile.key, settings['layout_recognition_backend'],
                 tuple(settings['capture_roi']), tuple(settings['capture_reference_size']),
-                tuple(settings['game_window_titles']), selected_template_variant(settings, self.profile.key))
+                tuple(settings['game_window_titles']), self._effective_template_variant())
 
     def _invalidate_recognition(self):
         request = getattr(self, '_recognition_request', None)
@@ -1456,7 +1477,7 @@ class RouteProjectionApp(QWidget):
         window_titles = list(self.settings["game_window_titles"])
         capture_delay_configured = map_capture_delay_ms(self.settings)
         clean_capture = not self.settings.get('capture_exclusion_enabled', True)
-        template_variant_id = selected_template_variant(self.settings, profile.key)
+        template_variant_id = self._effective_template_variant()
         opacity = float(self.settings["opacity"])
         recognition = None
         if mode == 'recognize':
@@ -1727,7 +1748,7 @@ class RouteProjectionApp(QWidget):
             generation, session, layout, variant = version_pending
             if (not self.closed and generation == self.map_generation and session == self.session_id
                     and layout == self.locked_layout and self.settings.get('registration_backend') == 'template'
-                    and variant == selected_template_variant(self.settings, self.profile.key)
+                    and variant == self._effective_template_variant()
                     and self.map_state.is_open and game_window_is_foreground(self.settings['game_window_titles'])):
                 self.request_work('project', auto=False)
                 return
@@ -2012,7 +2033,7 @@ class RouteProjectionApp(QWidget):
         floors = self.profile.floors_for_layout(self.locked_layout)
         if floor not in floors:
             floor = self.settings['reference_floor'] = next(iter(floors), None)
-        variant = selected_template_variant(self.settings, self.profile.key)
+        variant = self._effective_template_variant()
         identity = (self.profile.key, self.locked_layout, variant, floor)
         previous = self._reference_identity
         if identity != previous:
@@ -2028,9 +2049,6 @@ class RouteProjectionApp(QWidget):
             self.reference_overlay.hide()
         self.reference_context = ((self.reference_revision, list(self.settings['capture_roi']), floor,
                                    self.profile.key, self.locked_layout) if self.locked_layout else None)
-        self.reference_toggle_button.setText(
-            f'{"隐藏" if self.reference_visible else "显示"}参考图 ({self.settings["reference_hotkey"]})')
-        self.floor_selector.refresh()
         self.status_rows['reference'].setText(
             FLOOR_NAMES.get(floor, '待配置') + ' · 开启' if self.reference_visible and self.locked_layout else '未显示')
 
@@ -2040,7 +2058,7 @@ class RouteProjectionApp(QWidget):
         context = self.reference_context
         if context is None:
             return None
-        return (context[0], context[3], context[4], selected_template_variant(self.settings, self.profile.key), context[2])
+        return (context[0], context[3], context[4], self._effective_template_variant(), context[2])
 
     def _toggle_reference_map(self, _checked=False):
         self._sync_reference_context()
@@ -2096,7 +2114,7 @@ class RouteProjectionApp(QWidget):
             self.reference_overlay.hide()
             return
         _, roi, floor, _, layout = context
-        variant = selected_template_variant(self.settings, self.profile.key)
+        variant = self._effective_template_variant()
         key = self._reference_image_key()
         cached = getattr(self, '_floor_reference_image', None)
         image = cached[1] if cached is not None and cached[0] == key else None
@@ -2139,7 +2157,7 @@ class RouteProjectionApp(QWidget):
             return
         if (result.accepted and getattr(result, 'layer', None) is not None
                 and result.profile_key == self.profile.key and result.selected_layout == self.locked_layout
-                and getattr(result, 'variant_id', None) == selected_template_variant(self.settings, self.profile.key)
+                and getattr(result, 'variant_id', None) == self._effective_template_variant()
                 and result.floor in self.profile.floors):
             self._set_reference_floor(result.floor, source='最近配准', reveal=False)
         label = f"{result.selected_layout or '布局待确认'} · {FLOOR_NAMES.get(result.floor, '未取得楼层候选')}"

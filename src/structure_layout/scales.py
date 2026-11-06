@@ -1,6 +1,7 @@
 """Fixed per-image scales from the published source-image contract."""
 import hashlib
 import math
+from src.floor_definitions import FLOORS
 
 
 def read_scale_overrides(clean_root):
@@ -12,7 +13,7 @@ def read_scale_overrides(clean_root):
         parts = name.split('/')
         scales = record.get('scales', [])
         if (len(parts) != 2 or not parts[0].startswith('layout_')
-                or parts[1] not in [f'{parts[0]}_{f}.png' for f in ('2nd', '1st', 'b1')]
+                or parts[1] not in [f'{parts[0]}_{f}.png' for f in FLOORS]
                 or not (clean_root/name).is_file()
                 or not isinstance(scales, list) or len(scales) != 1
                 or type(scales[0]) not in (int, float) or not math.isfinite(scales[0]) or scales[0] <= 0

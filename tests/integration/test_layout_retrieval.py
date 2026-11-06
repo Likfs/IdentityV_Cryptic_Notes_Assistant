@@ -102,6 +102,7 @@ def test_confirmed_icon_layout_enters_template_projection_without_retrieval(monk
         registration = SimpleNamespace(accepted=True, rejection_reasons=[], validation={'template': {'candidate_floor': 'b1'}})
         return registration, Path('original.png'), image, image, {'registration': 1.}
     monkeypatch.setattr(direct, 'project_original', project)
+    monkeypatch.setattr(direct, 'available_variants', lambda *_: ['测试路线'])
     profile = SimpleNamespace(key='test', template_versions=('测试路线',), version_names={'测试路线': '测试路线'})
     result = workflow.process_screenshot(np.zeros((80, 80, 3), np.uint8), catalog=None, profile=profile, layout_override='layout_27', opacity=1.0, layout_recognition_backend='icon_structure', registration_backend='template')
     assert result.accepted and result.floor == 'b1' and calls == [('test', 'layout_27')]

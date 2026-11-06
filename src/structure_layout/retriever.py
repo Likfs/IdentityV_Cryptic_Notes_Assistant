@@ -1,5 +1,6 @@
 """Thread-safe CPU index and manual-confirmation layout candidates."""
 from pathlib import Path
+from src.floor_definitions import FLOORS, DEFAULT_FLOORS
 import hashlib
 import importlib.util
 import json
@@ -73,14 +74,14 @@ class PureStructureRetriever:
     Published source-image profiles keep only metadata and verified disk handles.
     The lock serializes preparation, recognition and mapped-file closure.
     """
-    def __init__(self, clean_root, cache_root=None, *, workers=None, floors=('2nd', '1st', 'b1'),
+    def __init__(self, clean_root, cache_root=None, *, workers=None, floors=DEFAULT_FLOORS,
                  fixed_resources=True):
         self.clean_root = Path(clean_root)
         self.cache_root = Path(cache_root) if cache_root is not None else None
         self._feature_store = None
         self.fixed_resources = bool(fixed_resources)
         self.floors = tuple(floors)
-        if not self.floors or len(set(self.floors)) != len(self.floors) or any(f not in ('2nd', '1st', 'b1') for f in self.floors):
+        if not self.floors or len(set(self.floors)) != len(self.floors) or any(f not in FLOORS for f in self.floors):
             raise ValueError('识别楼层配置无效')
         self._lock = threading.RLock()
         self._fingerprint = ''

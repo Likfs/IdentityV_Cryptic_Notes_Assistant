@@ -53,7 +53,7 @@ def test_reference_and_prewarm_do_not_evict_active_projection(scene):
     count = len(scene[2])
     assert_identical(first, project(scene))
     assert len(scene[2]) == count, 'Reference/prewarm evicted active source pixels'
-    assert len(floors._images) <= 4
+    assert len(floors._images) <= floors.DECODED_IMAGE_LIMIT
 
 
 def test_version_switch_reuses_clean_floors_and_layout_switch_releases_old_set(scene):
@@ -67,5 +67,6 @@ def test_version_switch_reuses_clean_floors_and_layout_switch_releases_old_set(s
     count = len(scene[2])
     assert_identical(switched, project(scene, layout='layout_13', variant='route_lhp_solo'))
     assert len(scene[2]) == count
-    assert len(floors._images) == 4
-    assert all('/layout_13/' in key[0].replace('\\','/') for key in floors._images)
+    assert len(floors._images) <= floors.DECODED_IMAGE_LIMIT
+    assert len(floors._retained_keys) == 4
+    assert all('/layout_13/' in key[0].replace('\\','/') for key in floors._retained_keys)

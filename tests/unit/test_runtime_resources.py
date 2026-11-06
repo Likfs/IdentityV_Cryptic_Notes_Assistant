@@ -21,7 +21,7 @@ def package(tmp_path, monkeypatch):
     item = dict(source_image=name, source_sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                 size=[40,30], saved_scale=1., scale_status='verified_capture')
     payload = dict(template=dict(perf_mode=2,asset_contract='aligned_floor_images',floor_variants={'map/diff':{'layout_01':{
-        'clean':{f:dict(item) for f in floors.FLOORS}}}}),
+        'clean':{f:dict(item) for f in floors.DEFAULT_FLOORS}}}}),
         files={name:dict(bytes=path.stat().st_size,sha256=item['source_sha256'])},
         recognition={'assets/maps/map/diff/clean':dict(source_images=True,profile_key='map/diff',targets={
             'layout_01/layout_01_1st.png':dict(source_sha256=item['source_sha256'])})})

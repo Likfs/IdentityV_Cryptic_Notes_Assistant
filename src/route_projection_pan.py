@@ -7,7 +7,6 @@ import numpy as np
 from PyQt6.QtCore import QObject, QTimer, Qt, pyqtSignal
 
 from src import route_projection_core as core
-from src.app_catalog import selected_template_variant
 from src.capture.mouse_pan import MousePanHook
 from src.registration.template_matching.floors import load as load_floor
 
@@ -55,7 +54,7 @@ class MousePanSession(QObject):
     def _key(self):
         app = self.app
         return (app.session_id, app.map_generation, app.profile.key, app.locked_layout,
-                selected_template_variant(app.settings, app.profile.key),
+                app._effective_template_variant(),
                 app.settings.get('registration_backend'), float(app.settings['opacity']))
 
     @property

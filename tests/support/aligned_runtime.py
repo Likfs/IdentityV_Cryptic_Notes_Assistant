@@ -39,6 +39,40 @@ def write_png(path, image):
     cv2.imencode('.png', image)[1].tofile(str(path))
 
 
+def build_multifloor_package(root, *, layout_floors=None, image_size=(360, 450)):
+    """Synthetic independent floor geometry; no claim about real Phosphorescence layouts."""
+    from src.floor_definitions import FLOORS
+    layout_floors = layout_floors or {
+        'layout_01': ('b1', 'b2', 'b3', 'b4'), 'layout_02': FLOORS}
+    base = 'assets/maps/phosphorescence_disease/hard'
+    definition = dict(id='hard', name='困难', asset_contract='aligned_floor_images', asset_status='ready',
+        clean_root=base+'/clean', floors=[f for f in FLOORS if any(f in v for v in layout_floors.values())],
+        layout_floors={layout: [f for f in FLOORS if f in values] for layout, values in layout_floors.items()},
+        asset_versions=[dict(id='clean', name='原版干净底图', kind='clean', source_root=base+'/clean'),
+                        dict(id='测试路线', name='测试路线', kind='route', source_root=base+'/clean-with-route/测试路线')],
+        template_versions=['测试路线', 'clean'])
+    height, width = image_size
+    for number, (layout, values) in enumerate(layout_floors.items(), 1):
+        for floor in values:
+            rng = np.random.default_rng(number*100+FLOORS.index(floor))
+            image = np.full((height, width, 3), 35, np.uint8)
+            for row in range(3):
+                for column in range(3):
+                    x = int(width*(.07+column*.3+rng.uniform(0,.04)))
+                    y = int(height*(.07+row*.3+rng.uniform(0,.04)))
+                    right = x+int(width*rng.uniform(.12,.2))
+                    bottom = y+int(height*rng.uniform(.12,.2))
+                    cv2.rectangle(image, (x,y), (right,bottom), (170,170,170), max(3,width//180))
+                    cv2.line(image, (x,y), (right,y if rng.integers(2) else bottom), (100,100,100), 3)
+            for version in definition['asset_versions']:
+                pixels = image.copy()
+                if version['kind'] == 'route':
+                    cv2.line(pixels, (width//6,height//6), (width*5//6,height*5//6), (0,0,255), max(3,width//150))
+                write_png(root/version['source_root']/layout/f'{layout}_{floor}.png', pixels)
+    return publish(root, dict(schema_version=2, maps=[dict(id='phosphorescence_disease', name='测试多楼层地图',
+                                                         difficulties=[definition])]))
+
+
 def build_hard_replay_package(root):
     """Pin the original 29-layout candidate atlas for already labelled historical captures."""
     import hashlib

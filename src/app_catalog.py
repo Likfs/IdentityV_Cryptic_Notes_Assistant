@@ -6,6 +6,7 @@ from pathlib import Path
 from src.layout_retrieval import normalize_recognition_backend
 from src.chest_counter import CHEST_ACTIONS
 from src.scale_config import load_scales, profile_settings, validate_scales
+from src.floor_definitions import FLOORS, FLOOR_NAMES, DEFAULT_FLOORS
 from src.hotkeys import (HOTKEYS, MAP_KEYS, ACTION_KEYS, key_to_vk, normalize_hotkey,
                          conflicts_with_map)
 
@@ -13,14 +14,22 @@ from src.hotkeys import (HOTKEYS, MAP_KEYS, ACTION_KEYS, key_to_vk, normalize_ho
 from src.paths import PROJECT_ROOT, CONFIG_ROOT, SETTINGS_PATH
 DEFAULT_CATALOG_PATH = PROJECT_ROOT / 'configs/map_catalog.json'
 DEFAULT_SETTINGS_PATH = SETTINGS_PATH
-FLOORS = ("2nd", "1st", "b1")
-FLOOR_NAMES = {"2nd": "2 楼", "1st": "1 楼", "b1": "地下室"}
 CLEAN_VERSION_ID = 'clean'
 LEGACY_CLEAN_VERSION_ID = 'route_clean'
 
 
 def selected_template_variant(settings: dict, profile_key: str) -> str | None:
     return settings.get('template_route_versions', {}).get(profile_key)
+
+
+def effective_template_variant(preferred: str | None, available) -> str | None:
+    """Resolve a display version without overwriting the user's route preference."""
+    choices = tuple(available)
+    if preferred in choices:
+        return preferred
+    if preferred is not None and CLEAN_VERSION_ID in choices:
+        return CLEAN_VERSION_ID
+    return next(iter(choices), None)
 
 
 @dataclass(frozen=True)
@@ -32,7 +41,7 @@ class DifficultyProfile:
     clean_root: Path | None
     asset_versions: tuple[dict, ...] = ()
     entrance_root: Path | None = None
-    floors: tuple[str, ...] = FLOORS
+    floors: tuple[str, ...] = DEFAULT_FLOORS
     template_versions: tuple[str, ...] = ()
     asset_status: str = 'ready'
     minimum_scale: float | None = None
@@ -102,7 +111,7 @@ class MapCatalog:
                 if len(names) != len(definitions) or any(not isinstance(key, str) or not key
                     or not isinstance(value, str) or not value for key, value in names.items()):
                     raise ValueError('路线版本 ID 或名称无效、重复')
-                floors = tuple(difficulty.get('floors', [] if status == 'pending' else FLOORS))
+                floors = tuple(difficulty.get('floors', [] if status == 'pending' else DEFAULT_FLOORS))
                 if (not floors and status != 'pending') or len(set(floors)) != len(floors) or any(f not in FLOORS for f in floors):
                     raise ValueError('地图难度的楼层配置无效')
                 layout_floors = difficulty.get('layout_floors', {})
@@ -170,7 +179,8 @@ class MapCatalog:
         if not variants:
             return None
         preferred = saved.get(profile.key)
-        return next((item for item in variants if item.variant_id == preferred), variants[0])
+        effective = effective_template_variant(preferred, (item.variant_id for item in variants))
+        return next(item for item in variants if item.variant_id == effective)
 
     def clean_template(self, profile: DifficultyProfile, layout: str, floor: str) -> Path:
         if floor not in profile.floors_for_layout(layout):

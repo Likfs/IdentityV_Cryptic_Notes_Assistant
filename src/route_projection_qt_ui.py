@@ -19,6 +19,7 @@ from PyQt6.QtWidgets import (
 )
 
 from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings
+from src.floor_definitions import FLOOR_NAMES
 from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
 from src.capture.region import CaptureRegion
 from src.layout_retrieval import BACKEND_LABELS
@@ -46,7 +47,7 @@ QFrame#card {{ background: {CARD}; border: 1px solid #303944; border-radius: 10p
 QFrame#subcard {{ background: #202831; border: 1px solid #3c4753; border-radius: 8px; }}
 QFrame#separator {{ background: #333d48; border: none; min-height: 1px; max-height: 1px; }}
 QFrame#segmented {{ background: #151b22; border: 1px solid #313b47; border-radius: 6px; }}
-QFrame#segmented QPushButton {{ border: 1px solid transparent; background: transparent; padding: 5px 4px; min-height: 22px; color: {MUTED}; }}
+QFrame#segmented QPushButton {{ border: 1px solid transparent; background: transparent; padding: 6px 8px; min-height: 24px; color: {MUTED}; }}
 QFrame#segmented QPushButton:checked {{ background: #35423f; border-color: #576d65; color: #e3f0eb; }}
 QLabel#section {{ font-size: 15px; font-weight: 600; }}
 QLabel#subheading {{ font-size: 13px; font-weight: 600; }}
@@ -130,9 +131,9 @@ class SegmentedSelector(QFrame):
         super().__init__(parent)
         self.combo = combo
         self.setObjectName('segmented')
-        self.row = QHBoxLayout(self)
-        self.row.setContentsMargins(3, 3, 3, 3)
-        self.row.setSpacing(3)
+        self.row = QGridLayout(self)
+        self.row.setContentsMargins(4, 4, 4, 4)
+        self.row.setSpacing(8)
         self.buttons = []
         combo.currentIndexChanged.connect(self.refresh)
         self.refresh()
@@ -145,13 +146,20 @@ class SegmentedSelector(QFrame):
                 button.hide()
                 button.deleteLater()
             self.buttons = []
+            for column in range(self.row.columnCount()):
+                self.row.setColumnStretch(column, 0)
+            columns = min(3, max(1, len(labels)))
             for index, label in enumerate(labels):
                 button = QPushButton(label)
                 button.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
                 button.setCheckable(True)
                 button.setAccessibleName(label)
-                button.clicked.connect(lambda _checked=False, i=index: self.combo.setCurrentIndex(i))
-                self.row.addWidget(button, 1)
+                button.clicked.connect(lambda _checked=False, i=index: (self.combo.setCurrentIndex(i), self.refresh()))
+                row, column = divmod(index, columns)
+                if len(labels) == 5 and index == 4:
+                    column = 2  # Keep the second row's middle cell empty.
+                self.row.addWidget(button, row, column)
+                self.row.setColumnStretch(column, 1)
                 self.buttons.append(button)
         for index, button in enumerate(self.buttons):
             button.setChecked(index == self.combo.currentIndex())
@@ -320,7 +328,7 @@ class LayoutConfirmationDialog(QDialog):
             preview.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
             card_body.addWidget(preview, 1)
             if item.get('preview_path'):
-                floor_name = {'1st': '一楼', '2nd': '二楼', 'b1': '地下室'}.get(item.get('preview_floor'), '对应楼层')
+                floor_name = FLOOR_NAMES.get(item.get('preview_floor'), '对应楼层')
                 card_body.addWidget(QLabel(f'入口图待补，当前展示{floor_name}底图（匹配候选）'))
             def update(checked, *, choice=layout, indicator=radio, badge=score):
                 indicator.setChecked(checked)

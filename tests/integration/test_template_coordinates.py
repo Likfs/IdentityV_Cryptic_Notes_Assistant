@@ -17,7 +17,7 @@ def test_original_projection_matches_any_floor_without_clean_coordinates(monkeyp
     original[:20,:20]=(70,90,180);original[:20,20:]=(200,80,60);original[20:,:20]=(90,190,70)
     rgba=np.dstack((original,np.uint8(np.any(original>0,axis=2))*255))
     entry={'saved_scale':scale,'source_sha256':'verified','source_image':'original.png'}
-    install_floor_inputs(monkeypatch, entry, original, rgba)
+    install_floor_inputs(monkeypatch, entry, original, rgba, variants=('route_zhanshi_fast', 'clean'))
     monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
     monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=3.,location=origin))
     monkeypatch.setattr(direct.matcher,'find_best_scale',lambda *a:pytest.fail('scale search was called'))
@@ -47,7 +47,7 @@ def test_negative_score_still_projects_candidate_with_explicit_warning(monkeypat
     original = np.full((40, 40, 3), 120, np.uint8)
     rgba = np.dstack((original, np.full((40, 40), 255, np.uint8)))
     install_floor_inputs(monkeypatch, dict(saved_scale=1., source_sha256='verified',
-        source_image='original.png'), original, rgba)
+        source_image='original.png'), original, rgba, variants=('route_zhanshi_fast', 'clean'))
     monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1.))
     monkeypatch.setattr(direct.matcher, '_match_template', lambda *a, **kw:
         dict(score=-3., location=(4, 8), search={'boundary_edges': []}))

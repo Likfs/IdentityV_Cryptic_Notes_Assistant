@@ -1,9 +1,8 @@
 {
-  "description": "当前定尺度模板模块源码指纹；构建前核对文件集合与内容，不包含历史算法。",
   "files": {
     "__init__.py": "cb91ededcf59847da462345d55c23ddeaed4ec44c123a67342f54c1c0c85660f",
-    "direct.py": "3046888c16ec458f392502e8f75b5e5ee5d1500f216f792e079d0beaeb22ef79",
-    "floors.py": "12387d4e5641961ee32cf8de732e87c190da653972649bac72f3c50c65993f85",
+    "direct.py": "27011c75a286e03abd1a7e49fe502f5400fa52b8e4509c27dae0d90985bc27f6",
+    "floors.py": "1155771f40f39adfc74e7c53c2303bc171ce68b3b9915585f5fba28393304397",
     "fog_crop.py": "a57cc58b9c9d0b79662e1d7d36363e297ec15eeab6e0d3a6cb3bb82642033e7c",
     "frozen.py": "df83babf8ffeff0507f9bc642bf1555f44cbc017ddefb3dbbe1251c8b433aca6",
     "matcher.py": "eabea0690f77d522f44a2c55ffd54086722fb12c1343dc3babe57e8d216ac5e6",

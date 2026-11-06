@@ -26,6 +26,7 @@ def test_release_manifest_contains_only_live_dependencies():
         expected.update(
             f"{versions[version]['source_root']}/{layout}/{layout}_{floor}.png"
             for layout in layouts for version in profile.template_versions
+            if (PROJECT_ROOT/versions[version]['source_root']/layout).is_dir()
             for floor in profile.floors_for_layout(layout)
         )
     assert declared == expected

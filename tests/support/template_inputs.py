@@ -3,8 +3,11 @@ from pathlib import Path
 from src.registration.template_matching import floors
 
 
-def install_floor_inputs(monkeypatch, entry, image, rgba):
-    records = {floor: dict(entry) for floor in floors.FLOORS}
+def install_floor_inputs(monkeypatch, entry, image, rgba, *, variants=None):
+    if variants is not None:
+        from src.registration.template_matching import direct
+        monkeypatch.setattr(direct, 'available_variants', lambda *_: list(variants))
+    records = {floor: dict(entry, size=list(image.shape[1::-1])) for floor in floors.DEFAULT_FLOORS}
     monkeypatch.setattr(floors, 'sources', lambda *a, **kw: (records, {'perf_mode': 2}))
     monkeypatch.setattr(floors, 'FrozenSourceSnapshot', floors.SourceSnapshot)
     monkeypatch.setattr(floors, 'retain_working_set', lambda *args, **kwargs: None)

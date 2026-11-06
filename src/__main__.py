@@ -157,7 +157,8 @@ def _run(args, parser, sync_messages=()):
             parser.error('暂无地图素材，请放入素材并正常启动后再配准')
         if profile.asset_status == 'pending':
             parser.error(f'{profile.map_name}／{profile.difficulty_name}：资产待配置')
-        from src.app_catalog import selected_template_variant
+        from src.app_catalog import effective_template_variant, selected_template_variant
+        from src.registration.template_matching.direct import available_variants
         backend = args.registration_backend or settings['registration_backend']
         template_variant = selected_template_variant(settings, profile.key)
         if template_variant not in profile.template_versions:
@@ -165,9 +166,11 @@ def _run(args, parser, sync_messages=()):
         recognition_backend = settings.get('layout_recognition_backend', 'icon_structure')
         if args.layout is None:
             parser.error('布局识别需要人工确认，请通过 --layout 指定已确认的布局后离线投影')
+        choices = available_variants(profile.key, args.layout)
+        template_variant = effective_template_variant(template_variant, choices)
         if args.route_version:
-            if args.route_version not in profile.template_versions:
-                parser.error('--route-version 必须为：' + '、'.join(profile.template_versions))
+            if args.route_version not in choices:
+                parser.error(f'{args.layout} 的 --route-version 必须为：' + '、'.join(choices))
             template_variant = args.route_version
         screenshot = _read_image(args.project_once)
         result = process_screenshot(

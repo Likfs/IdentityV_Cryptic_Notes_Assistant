@@ -1,6 +1,7 @@
 import pytest
 from PyQt6.QtWidgets import QLabel
 from src.app_catalog import selected_template_variant
+from src.floor_definitions import FLOOR_NAMES
 from src.route_projection_qt_ui import LayoutConfirmationDialog, EntrancePreview
 
 
@@ -116,8 +117,8 @@ def test_close_scores_explain_local_ambiguity_without_blocking_manual_choice(qt_
     texts=[label.text() for label in dialog.findChildren(QLabel)]
     assert any('分数接近' in text for text in texts)
     assert not any('50%' in text for text in texts)
-    assert any('一楼底图' in text for text in texts)
-    assert not any('二楼底图' in text for text in texts)
+    assert any(FLOOR_NAMES['1st']+'底图' in text for text in texts)
+    assert not any(FLOOR_NAMES['2nd']+'底图' in text for text in texts)
     assert dialog.confirm_button.isEnabled()
     dialog.show()
     qt_app.processEvents()

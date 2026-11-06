@@ -5,10 +5,10 @@
 ## 当前正式范围
 
 - 正式入口 `python -m src`，Qt 调用 `src/projection_workflow.py`；CPU 纯结构识别为基础能力，图标识别保留供具备对应条件的地图使用；不训练或加载模型，不依赖 torch/CUDA，不恢复旧功能。
-- 新资产采用 `aligned_floor_images`：每个地图／难度设置默认 `minimum_scale`，特殊布局由 `layout_minimum_scales` 覆盖，只适配游戏最小缩放。同一布局全部楼层及版本共用有效尺度，识别与配准一致。每个楼层独立 PNG；layout_floors 可声明逐布局实际楼层，floors 为难度楼层并集，未声明 layout_floors 的旧配置沿用统一 floors；对应干净底图与完整路线图画布、地图位置、裁剪完全一致。
+- 新资产采用 `aligned_floor_images`：每个地图／难度设置默认 `minimum_scale`，特殊布局由 `layout_minimum_scales` 覆盖，只适配游戏最小缩放。同一布局全部楼层及版本共用有效尺度，识别与配准一致。支持 3rd、2nd、1st、b1～b4；只接入实际提供的楼层，不补空图。每个楼层独立 PNG；layout_floors 可声明逐布局实际楼层，floors 为难度楼层并集，未声明 layout_floors 的旧配置沿用统一 floors；对应干净底图与完整路线图画布、地图位置、裁剪完全一致。
 - 干净底图用于识别和固定尺度平移配准；路线图只用于显示。自动比较已声明楼层，坐标为 single_floor_source_image，保留双向矩阵。匹配分数不是概率，保留人工确认与核对提示。
-- `configs/map_catalog.json` schema_version 2 声明地图、难度、楼层、动态路线版本和 asset_status；configs/scale_config.json 按 maps／地图／难度唯一声明 minimum_scale 和 layout_minimum_scales。pending 素材校验通过后自动启用；pending 允许运行版本、楼层为空且没有 clean_root，不生成 clean 占位。空地图目录配置有效，界面禁用识别／配准。ready 必须有真实楼层和有效尺度。
-- 《厄运之女》novice、easy、normal、hard 和 nightmare 均已接入，minimum_scale 均为 1.5；布局数量、实际楼层及路线版本以启动校验后的配置为准。layout_floors 声明每个布局的实际楼层，floors 是难度内的并集，不要求单层布局补二楼。《磷光症》目录为 phosphorescence_disease，简单、普通、困难和噩梦均已登记为 ready；实际游戏识别与对齐仍需对应地图验收。正式素材放 assets/maps/，merged 预览不参与发布。
+- `configs/map_catalog.json` schema_version 2 声明地图、难度、楼层、动态路线版本和 asset_status；configs/scale_config.json 按 maps／地图／难度唯一声明 minimum_scale 和 layout_minimum_scales。pending 素材校验通过后自动启用；pending 允许运行版本、楼层为空且没有 clean_root，不生成 clean 占位。空地图目录配置有效，界面禁用识别／配准。ready 必须有真实楼层和有效尺度；路线可选，只有 clean 时 asset_versions／template_versions 仅含 clean，允许识别、配准与参考图。
+- 《厄运之女》novice、easy、normal、hard 和 nightmare 均已接入，minimum_scale 均为 1.5；布局数量、实际楼层及路线版本以启动校验后的配置为准。layout_floors 声明每个布局的实际楼层，floors 是难度内的并集，不要求单层布局补二楼。《磷光症》目录为 phosphorescence_disease，当前接入普通、困难和噩梦，均使用 b1、b2、b3 及默认尺度 1.5；普通和困难仅底图，噩梦的「小宸全图路线」覆盖 layout_01～layout_05。本次资源包不包含其旧简单难度，实际清单以启动校验后的配置为准；实际游戏识别与对齐仍需对应地图验收。正式素材放 assets/maps/，merged 预览不参与发布。
 - minimum_scale 是 2560×1440 参考画面的截图到源图比例，运行时沿用物理屏幕尺寸换算。离线尺度工具输出参考分辨率与候选，人工核对后导入；不得接入实时连续尺度搜索。
 - layout_minimum_scales 可省略或为空，使用 layout_XX 为键、有限正数为值；未提供素材的布局覆盖保留为备用，运行时只应用当前已发布布局的覆盖。未覆盖布局沿用 minimum_scale。启动同步保留人工覆盖，运行时为全部楼层、底图与路线解析相同有效尺度；只编辑 scale_config.json，资源清单不重复保存数值；覆盖变更后重启及增量更新识别特征。
 
@@ -26,7 +26,7 @@
 ## 资源和归档
 
 - 模板配准按用户确认的固定资源策略运行：配置与逐布局楼层声明在进程首次使用时固定，各布局/版本首次加载时校验发布配置与实际运行图片并保存压缩字节快照；后续配准及缓存淘汰后的解码只用已验证快照，修改素材/尺度/模板配置后重启生效。原图像素、保存尺度和匹配算法保持不变；不得恢复逐帧全量磁盘校验。`--check` 和离线维护接口仍检查磁盘当前内容，初次校验失败不得发布半批快照。临时快照由进程自动清理，不随发行包分发。
-- 模板解码缓存上限为四张，保护当前配准的所有楼层底图及选中的路线图；参考图和预热读取不得挤掉该工作集，满额时允许返回未缓存图片。新配准更新保护集合，资源会话关闭时清除保护。保护对象为带指纹的图片与模板，不是历史配准姿态；匹配算法及数值顺序不变。
+- 模板解码缓存同时限制八张和 256 MiB。解码前按 BGR＋BGRA 七字节／像素估算全部底图加最大可能单张路线；工作集可容纳时保护全部底图及所选路线，底图版本重复来源去重。超过张数或字节预算时按两层一批加载和准备模板，候选仅保留元数据，最终保护胜出底图及路线。超字节预算的图片可返回调用方临时使用而不缓存；参考图和预热读取不得挤掉该工作集，满额时允许返回未缓存图片。新配准更新保护集合，资源会话关闭时清除保护。楼层 ID、顺序及标签统一来自 src/floor_definitions.py；b1 显示地下1层。首页不提供参考图选层或显隐按钮，保留默认 H 显隐、J 循环实际楼层及个人快捷键设置。难度最多三列，五项时首行新手／简单／普通，第二行困难居左、噩梦居右，中间留空；只排序界面显示，不改配置顺序。图标模式仍要求二楼，地下多层使用纯结构识别。保护对象为带指纹的图片与模板，不是历史配准姿态；匹配算法及数值顺序不变。
 - 新资产纯结构识别首次完整核验并固定磁盘特征索引：每层特征独立生成，按底图指纹、尺度记录、算法源码／参数及库版本自动复用或重建；仅保留元数据和已验证文件句柄，逐层只读映射、比较后关闭映射。Windows 会话期间禁止改写或删除已验证特征文件，不逐请求全量校验。缓存位于 runtime/cache/structure_features（显式 cache_root 用于测试／维护），不随运行包分发；仅清理本功能拥有且未被会话引用的旧特征。显式 fixed_resources=False 只用于新契约的即时核验；取消或失败不得发布半批索引。修改资源后重新发布并重启生效。旧识别小图、双尺度及原内存适配器已移除，缺发布记录明确失败。
 
 - 正式素材位于 assets/maps/<map>/<difficulty>/clean 和 clean-with-route/<版本>/，只发布对应楼层 PNG；不再加载 calibration_root、维护标定、旧整图或校正依赖。个人历史、备份和本机制作资料不随代码清理删除。maintenance/ 已退出版本管理并忽略，E 盘既有本地制作资料继续保留，不恢复为运行或测试依赖。
@@ -64,7 +64,7 @@
 
 - 地图配置是新契约的声明入口；正常 GUI 启动在实例检查后自动发现 assets/maps 下的新地图、难度及 clean-with-route 版本，经审核增量更新配置；新地图使用目录名作为 ID 和初始显示名。新发现或启用的难度在无有效尺度时使用 1.5；待配置难度素材齐全后自动启用，已有名称和有效尺度保留；clean-with-route 整组校验通过后接管路线，更新同名路径并移除不存在版本的引用，按文件夹名同步路线显示名称，保留个人设置；地图／难度目录删除后移除地图、难度、对应尺度和运行引用；无难度的地图也移除。目录仍在但缺图时保留 pending，清空运行楼层／路线清单并移除 clean_root 和 clean 占位。完整布局一致删除时更新清单，恢复后重新接入。未知目录素材不完整时不登记。损坏图片、尺寸错误和越界仍明确失败。运行中不热更新；--check／--project-once 只读。`tools/assets/imports/export_runtime_resources.py` 调用 `export_aligned_assets.py`，与 src/asset_sync.py 共用 src/aligned_assets.py 审核同画布 PNG 和公共尺度，读取唯一尺度入口 `configs/scale_config.json`，生成 `configs/runtime_resources.json`；启动接入或启用难度时补充缺失的默认尺度。正式运行不依赖 tools 或 maintenance。
 - 导出校验全部声明楼层和版本、PNG 可读性、画布尺寸、有效尺度、路径边界、源码指纹和导出期间输入变化。尺寸一致不能证明地图位置一致，素材仍需人工核对。
-- 启动同步将目录、尺度和运行清单成组发布，清单最后替换；runtime/cache/asset_sync 中保留上一组配置和中断标记，恢复后再加载运行资源；失败不可发布半批。不移动或删除图片；无 clean-with-route 时保留既有路线配置。
+- 启动同步将目录、尺度和运行清单成组发布，清单最后替换；runtime/cache/asset_sync 中保留上一组配置和中断标记，恢复后再加载运行资源；失败不可发布半批。不移动或删除图片；clean-with-route 缺省或为空时允许只发布 clean；整个目录或最后一个版本删除时清理该目录下旧路线引用。显式配置在其他位置的既有路线仍按原路径校验；每个路线版本可以只覆盖部分布局，但已提供的布局必须包含对应底图的全部实际楼层且同画布；不静默补层或忽略无效素材。路线不能引用不存在的底图布局。未覆盖布局回退 clean，界面、配准、预热和参考图共用有效版本，同时保留个人路线偏好；切回支持布局时恢复偏好版本。asset_versions／template_versions 保留难度级版本声明和顺序，资源清单按布局记录实际可用版本。
 - 经校验的 clean-with-route 版本以文件夹名作为 ID 和显示名称，启动时同步已有路线名称；底图保留 clean 版本 ID，显示名称为「原版干净底图」。正式名称与支持版本以 asset_versions 为准，template_versions 控制启用集合与顺序；不再使用旧名称映射或旧格式离线接口。
 - 离线 `--publish` 审核并保留唯一尺度源文件，更新运行清单；`--check` 完整审核新契约输入并比较生成结果；`python -m src --check` 审核运行包并报告 pending。不能只改指纹绕过验证。
 - 正式输入只接受 schema_version 2 的 aligned_floor_images。缺少或损坏的运行包直接失败，不回退 maintenance，不恢复旧格式离线接口。历史几何截图、标签和独立回放 PNG 保留，用新发布包回放。

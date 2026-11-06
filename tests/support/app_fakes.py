@@ -22,6 +22,9 @@ class FakeApp:
         self.catalog=object()
         self.capture_policy=SimpleNamespace(begin_capture=lambda _token: None, end_capture=lambda _token: None)
     def _log(self,*args):pass
+    def _effective_template_variant(self):
+        # Delivery tests inject their resource choice; asset coverage is tested separately.
+        return self.settings['template_route_versions'].get(self.profile.key)
     def _refresh_status(self):pass
     def _gui_diagnostic_snapshot(self):return {'log_entries': 0, 'activity': {}}
     def _set_status(self,*args):pass

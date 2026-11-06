@@ -19,7 +19,7 @@ from tests.support.frozen_resources import restart_template_resources
 def frozen_inputs(tmp_path, monkeypatch):
     monkeypatch.setattr(floors, 'PROJECT_ROOT', tmp_path)
     entries = {}
-    for index, floor in enumerate(floors.FLOORS):
+    for index, floor in enumerate(floors.DEFAULT_FLOORS):
         pixels = np.full((40,50,4), (100+index,130,170,255), np.uint8)
         path = tmp_path/f'{floor}.png'
         cv2.imencode('.png',pixels)[1].tofile(path)
@@ -49,7 +49,7 @@ def test_concurrent_requests_and_versions_share_one_full_verification(frozen_inp
         results=list(pool.map(load,['clean','route_lhp_solo']))
     np.testing.assert_array_equal(*results)
     assert calls[config_path] == 1
-    assert all(calls[root/f'{floor}.png']==1 for floor in floors.FLOORS)
+    assert all(calls[root/f'{floor}.png']==1 for floor in floors.DEFAULT_FLOORS)
     before=calls.copy()
     floors._images.clear()
     matcher._map_cache.clear()
@@ -115,7 +115,7 @@ def test_catalog_and_version_list_change_only_after_restart(frozen_inputs):
     catalog['maps'][0]['difficulties'][0]['floors']=['2nd','1st']
     write_template(path.parent.parent, config);catalog_path.write_text(json.dumps(catalog))
     assert direct.available_variants('map/diff','layout_01')==['route_lhp_solo','clean']
-    assert list(floors.FrozenSourceSnapshot('map/diff','layout_01','clean').entries)==list(floors.FLOORS)
+    assert list(floors.FrozenSourceSnapshot('map/diff','layout_01','clean').entries)==list(floors.DEFAULT_FLOORS)
     restart_template_resources()
     assert direct.available_variants('map/diff','layout_01')==['clean']
     assert list(floors.FrozenSourceSnapshot('map/diff','layout_01','clean').entries)==['2nd','1st']

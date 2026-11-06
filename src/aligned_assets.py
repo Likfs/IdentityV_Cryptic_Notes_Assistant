@@ -10,13 +10,14 @@ from PIL import Image
 from src.app_catalog import CLEAN_VERSION_ID, MapCatalog
 from src.runtime_resources import digest, SCALE_PATH
 from src.scale_config import load_scales, profile_keys
+from src.floor_definitions import FLOORS
 
 
 class IncompleteAssets(ValueError):
     """Missing images may become available again on a later startup."""
 
 
-def floor_images(root, directory, floors=None, *, progress=None, strict_names=True, audit=None):
+def floor_images(root, directory, floors=None, *, progress=None, strict_names=True, audit=None, read_size=None):
     """Validate each layout's actual floors, or enforce an explicit uniform floor set."""
     root = Path(root).resolve()
     directory = (root/directory).resolve(strict=True)
@@ -26,7 +27,7 @@ def floor_images(root, directory, floors=None, *, progress=None, strict_names=Tr
         raise IncompleteAssets(f'{directory.relative_to(root)}：没有布局')
     layout_paths = {
         layout: [path for path in sorted(layout.glob('*.png')) if strict_names or path.name in
-                 {f'{layout.name}_{floor}.png' for floor in ('2nd', '1st', 'b1')}]
+                 {f'{layout.name}_{floor}.png' for floor in FLOORS}]
         for layout in layouts
     }
     total = sum(len(paths) for paths in layout_paths.values())
@@ -47,10 +48,12 @@ def floor_images(root, directory, floors=None, *, progress=None, strict_names=Tr
                 progress(f'校验素材 · {path.relative_to(root).as_posix()}', len(images), total)
             path.resolve(strict=True).relative_to(directory)
             floor = path.stem.removeprefix(layout.name+'_')
-            if floor not in ('2nd', '1st', 'b1') or path.name != f'{layout.name}_{floor}.png':
+            if floor not in FLOORS or path.name != f'{layout.name}_{floor}.png':
                 raise ValueError(f'分层 PNG 命名无效：{path.relative_to(root)}')
             if audit is not None:
                 size = audit.image(path)['size']
+            elif read_size is not None:
+                size = read_size(path)
             else:
                 with Image.open(path) as image:
                     if image.format != 'PNG':
@@ -68,7 +71,23 @@ def floor_images(root, directory, floors=None, *, progress=None, strict_names=Tr
         raise IncompleteAssets(f'{directory.relative_to(root)}：楼层不完整，缺少 {missing}，多余 {extra}')
     if progress is not None:
         progress(f'校验素材 · {directory.relative_to(root).as_posix()}', len(images), total)
-    return images, [floor for floor in ('2nd', '1st', 'b1') if floor in expected_floors]
+    return images, [floor for floor in FLOORS if floor in expected_floors]
+
+
+def validate_route_coverage(clean_images, route_images, version):
+    """Whole layouts are optional; every provided layout has exactly its clean floors."""
+    layouts = {name.split('/')[0] for name in route_images}
+    unknown = layouts - {name.split('/')[0] for name in clean_images}
+    if unknown:
+        raise ValueError(f'{version}：路线引用了不存在的底图布局：{", ".join(sorted(unknown))}')
+    expected = {name for name in clean_images if name.split('/')[0] in layouts}
+    missing, extra = expected-set(route_images), set(route_images)-expected
+    if missing or extra:
+        raise IncompleteAssets(f'{version}：已提供布局的楼层不完整，缺少 {sorted(missing)}，多余 {sorted(extra)}')
+    for name, size in route_images.items():
+        if size != clean_images[name]:
+            raise ValueError(f'{version}/{name}：路线图与底图画布尺寸不一致')
+    return layouts
 
 
 def image_inventory(root, catalog_data):
@@ -83,7 +102,7 @@ def image_inventory(root, catalog_data):
                     names.update(path.relative_to(root).as_posix()
                                  for path in (root/version['source_root']).glob('layout_*/*.png')
                                  if path.name in {f'{path.parent.name}_{floor}.png'
-                                                  for floor in ('2nd', '1st', 'b1')})
+                                                  for floor in FLOORS})
     return names
 
 
@@ -177,9 +196,19 @@ def generate(root, *, catalog_bytes=None, scale_bytes=None, progress=None, audit
                 raise ValueError('显示版本必须在 asset_versions 声明，并包含 clean')
             if versions[CLEAN_VERSION_ID]['source_root'] != definition['clean_root']:
                 raise ValueError('clean 必须引用 clean_root')
+            def read_size(path):
+                return tuple(image(path.relative_to(root).as_posix())['size'])
+            clean_images, _ = floor_images(root, definition['clean_root'], audit=audit, read_size=read_size)
+            coverage = {CLEAN_VERSION_ID: {layout.name for layout in layouts}}
+            for version in profile.template_versions:
+                if version != CLEAN_VERSION_ID:
+                    route_images, _ = floor_images(root, versions[version]['source_root'],
+                                                   audit=audit, read_size=read_size)
+                    coverage[version] = validate_route_coverage(clean_images, route_images, version)
             for layout in layouts:
                 groups[profile.key][layout.name] = {}
-                for version in profile.template_versions:
+                available = [version for version in profile.template_versions if layout.name in coverage[version]]
+                for version in available:
                     variant = versions[version]
                     records = {}
                     for floor in profile.floors_for_layout(layout.name):
@@ -198,7 +227,7 @@ def generate(root, *, catalog_bytes=None, scale_bytes=None, progress=None, audit
                 statuses[profile.key][layout.name] = [dict(
                     variant_id=v, source_name=v, floor_status={f:'PASS' for f in profile.floors_for_layout(layout.name)},
                     display_name=versions[v]['name'], asset_kind=versions[v].get('kind', 'route'))
-                    for v in profile.template_versions]
+                    for v in available]
     files = {p.relative_to(root).as_posix(): dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
              for p, raw in inputs.items()}
     files.update(audited_files)

@@ -11,10 +11,11 @@ import numpy as np
 from PIL import Image
 
 from src.app_catalog import PROJECT_ROOT, MapCatalog
+from src.floor_definitions import FLOORS, DEFAULT_FLOORS
 from . import resources, matcher
 
-FLOORS = ('2nd', '1st', 'b1')
-DECODED_IMAGE_LIMIT = 4
+DECODED_IMAGE_LIMIT = 8
+DECODED_IMAGE_BYTES = 256 * 1024 * 1024
 _images = OrderedDict()
 _retained_keys = frozenset()
 _fixed_session = None
@@ -159,6 +160,13 @@ def load(profile_key, layout, variant_id, floor, *, expected_fingerprint=None):
         return snapshot.load(floor)
 
 
+def working_set_fits(records):
+    """Estimate verified BGR + BGRA pixels before decoding the active sources."""
+    sizes = {(item['source_image'], fingerprint(item)): item['size'][0] * item['size'][1] * 7
+             for item in records}
+    return len(sizes) <= DECODED_IMAGE_LIMIT and sum(sizes.values()) <= DECODED_IMAGE_BYTES
+
+
 def retain_working_set(records, *, frozen):
     """Caller holds resource_lock; reference/prewarm reads cannot displace these sources."""
     global _retained_keys
@@ -168,6 +176,14 @@ def retain_working_set(records, *, frozen):
     if len(keys) > DECODED_IMAGE_LIMIT:
         raise ValueError('当前配准工作集超出解码缓存容量')
     _retained_keys = keys
+
+
+def trim_uncached_templates():
+    """After workers join, drop masks whose decoded source was returned uncached."""
+    paths = {key[0] for key in _images}
+    for key in list(matcher._map_cache):
+        if key[0] in ('template', 'gray') and key[1] not in paths:
+            del matcher._map_cache[key]
 
 
 def _load_verified(item, config, *, cancelled=lambda: False, frozen=None):
@@ -198,10 +214,12 @@ def _load_verified(item, config, *, cancelled=lambda: False, frozen=None):
         for cache_key in list(matcher._map_cache):
             if str(path) in cache_key:
                 del matcher._map_cache[cache_key]
-        while len(_images) > DECODED_IMAGE_LIMIT:
+        while (len(_images) > DECODED_IMAGE_LIMIT
+               or sum(image.nbytes + rgba.nbytes for image, rgba in _images.values()) > DECODED_IMAGE_BYTES):
             # When all slots are retained, an unrelated reference is returned
-            # to its caller without caching it. Never evict live matching pixels.
-            old_key = next(k for k in _images if k not in _retained_keys)
+            # to its caller without caching it. A protected image exceeding the
+            # byte budget is also returned uncached; request-owned pixels stay valid.
+            old_key = next((k for k in _images if k not in _retained_keys), key)
             del _images[old_key]
             for cache_key in list(matcher._map_cache):
                 if old_key[0] in cache_key:
@@ -241,6 +259,8 @@ def prewarm(profile_key, layout, variant_id, *, cancelled=lambda: False):
             if loaded is None or cancelled():
                 return False
             item, path, _, image, _ = loaded
+            if (str(path), fingerprint(item)) not in _images:
+                continue  # Uncached prewarm pixels must not leave orphaned template masks.
             matcher.prepare_map(str(path), ds, map_threshold=item.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
                                 map_image=image, image_fingerprint=fingerprint(item))
         finally:

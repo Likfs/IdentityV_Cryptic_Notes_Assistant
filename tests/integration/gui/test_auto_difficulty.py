@@ -2,13 +2,15 @@
 import json
 
 import numpy as np
+import pytest
 
 from src.asset_sync import synchronize
 from src import route_projection_app as app
 from tests.support.aligned_runtime import activate, difficulty, publish, write_png
 
 
-def test_new_difficulty_and_route_appear_on_startup(qt_app, tmp_path, monkeypatch):
+@pytest.mark.parametrize('size', [(1080,680), (1280,800)])
+def test_new_difficulty_and_route_appear_on_startup(qt_app, tmp_path, monkeypatch, size):
     root = tmp_path/'package'
     image = np.full((80, 100, 3), 100, np.uint8)
     definitions = [difficulty(identifier, name, ('1st',), {'clean': '底图', 'old_route': '原有路线'})
@@ -30,7 +32,19 @@ def test_new_difficulty_and_route_appear_on_startup(qt_app, tmp_path, monkeypatc
         qt_app.processEvents()
         assert window.profile.difficulty_id == 'novice'
         assert window.difficulty_combo.currentText() == '新手'
-        assert {button.text() for button in window.difficulty_selector.buttons} == {'新手', '简单', '普通', '困难', '噩梦'}
+        window.resize(*size)
+        window.show()
+        qt_app.processEvents()
+        buttons = window.difficulty_selector.buttons
+        assert [button.text() for button in buttons] == ['新手', '简单', '普通', '困难', '噩梦']
+        assert len({button.y() for button in buttons[:3]}) == 1
+        assert buttons[3].y() == buttons[4].y() > buttons[0].y()
+        assert buttons[3].x() == buttons[0].x() and buttons[4].x() == buttons[2].x()
+        assert len({button.width() for button in buttons}) <= 2
+        for button in buttons:
+            assert button.width() >= button.fontMetrics().horizontalAdvance(button.text()) + 16
+            assert button.height() >= 36
+            assert window.difficulty_selector.rect().contains(button.geometry())
         assert window.route_combo.currentData() == '我的单人路线'
         assert window.route_combo.currentText() == '我的单人路线'
         assert window.route_combo.itemText(window.route_combo.findData('clean')) == '原版干净底图'
@@ -39,6 +53,10 @@ def test_new_difficulty_and_route_appear_on_startup(qt_app, tmp_path, monkeypatc
         assert window.route_combo.currentData() == '我的单人路线'
         assert settings.read_bytes() == before
         assert window.grab().save(str(tmp_path/'automatic_difficulty.png'))
+        for name, identifier in [('新手','novice'),('简单','easy'),('普通','normal'),('困难','hard'),('噩梦','nightmare')]:
+            next(button for button in window.difficulty_selector.buttons if button.text()==name).click()
+            assert window.profile.difficulty_id == identifier
+            assert next(button for button in window.difficulty_selector.buttons if button.text()==name).isChecked()
     finally:
         window.close()
         qt_app.processEvents()

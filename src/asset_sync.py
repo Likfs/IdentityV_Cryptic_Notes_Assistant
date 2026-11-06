@@ -8,7 +8,7 @@ from pathlib import Path
 import stat
 import tempfile
 
-from src.aligned_assets import IncompleteAssets, floor_images, generate, image_inventory
+from src.aligned_assets import IncompleteAssets, floor_images, generate, image_inventory, validate_route_coverage
 from src.asset_audit import AssetAudit
 from src.app_catalog import CLEAN_VERSION_ID, LEGACY_CLEAN_VERSION_ID, MapCatalog
 from src.runtime_resources import BUNDLE_PATH, SCALE_PATH, read_bundle
@@ -104,7 +104,6 @@ def discover(root, original, *, progress=None, audit=None):
                 continue
             pending = definition is not None and definition.get('asset_status') == 'pending'
             route_root = difficulty/'clean-with-route'
-            canonical = route_root.exists() or definition is None or pending
             try:
                 _inside(difficulty, route_root)
                 if route_root.exists() and not route_root.is_dir():
@@ -112,6 +111,11 @@ def discover(root, original, *, progress=None, audit=None):
                 base = ((definition.get('clean_root') if definition else None)
                         or (difficulty/'clean').relative_to(root).as_posix())
                 configured = {version['id']: version for version in definition['asset_versions']} if definition else {}
+                # A removed optional canonical tree must not keep stale route references.
+                # Explicit routes configured elsewhere still use their existing paths.
+                canonical = (route_root.exists() or definition is None or pending or all(
+                    (root/version['source_root']).resolve().is_relative_to(route_root.resolve())
+                    for version in configured.values() if version['id'] != CLEAN_VERSION_ID))
                 clean_images, floors = floor_images(root, base, progress=progress, strict_names=canonical, audit=audit)
                 layout_floors = {}
                 for name in clean_images:
@@ -121,8 +125,6 @@ def discover(root, original, *, progress=None, audit=None):
                                  for layout, values in layout_floors.items()}
                 if canonical:
                     routes = sorted(p for p in route_root.iterdir() if p.is_dir()) if route_root.is_dir() else []
-                    if not routes:
-                        raise IncompleteAssets('需要 clean 底图和至少一个完整的 clean-with-route 路线版本')
                     versions = []
                     for route in routes:
                         _inside(difficulty, route)
@@ -135,10 +137,7 @@ def discover(root, original, *, progress=None, audit=None):
                 for version in versions:
                     route_images, _ = floor_images(root, version['source_root'], progress=progress,
                                                    strict_names=canonical, audit=audit)
-                    if set(route_images) != set(clean_images):
-                        raise IncompleteAssets(f'{version["id"]}：路线与底图的布局或楼层不完整')
-                    if route_images != clean_images:
-                        raise ValueError(f'{version["id"]}：路线图与底图画布尺寸不一致')
+                    validate_route_coverage(clean_images, route_images, version['id'])
                 if definition is None:
                     definition = dict(id=difficulty.name,
                         name=DIFFICULTY_NAMES.get(difficulty.name, difficulty.name),

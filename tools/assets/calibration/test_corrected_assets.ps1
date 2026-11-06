@@ -2,7 +2,7 @@
 param(
     [ValidateSet('Coarse', 'Fine', 'Manual')]
     [string]$Mode = 'Coarse',
-    [ValidateSet('1st', '2nd')]
+    [ValidateSet('1st', '2nd', '3rd', 'b1', 'b2', 'b3', 'b4')]
     [string]$Floor = '1st',
     [ValidateRange(1, 32768)]
     [int]$ReferenceWidth = 2560,

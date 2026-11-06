@@ -47,7 +47,7 @@ def originals(tmp_path, monkeypatch, request):
     config = dict(perf_mode=0)
     floor_records = {floor: dict(source_image=f'{floor}.png', source_sha256=parts[i]['sha256'],
         size=[300, 240], saved_scale=candidates[i]['saved_scale'], map_threshold=48)
-        for i, floor in enumerate(floors.FLOORS)}
+        for i, floor in enumerate(floors.DEFAULT_FLOORS)}
     config['floor_variants'] = {'map/diff': {'layout_01': {
         variant: json.loads(json.dumps(floor_records)) for variant in ('route_lhp_solo', 'clean')}}}
     config_path = write_template(tmp_path, config)
@@ -68,7 +68,7 @@ def test_three_fixed_candidates_recover_known_original_pose(originals, monkeypat
     profile = SimpleNamespace(key='map/diff', version_names={variant_id: variant_id})
     result = workflow.process_screenshot(shot, catalog=object(), profile=profile, layout_override='layout_01', opacity=0.6, registration_backend='template', template_variant_id=variant_id)
     assert result.accepted, result.reasons
-    assert result.floor == floors.FLOORS[floor_index] and result.variant_id == variant_id
+    assert result.floor == floors.DEFAULT_FLOORS[floor_index] and result.variant_id == variant_id
     template = result.registration.validation['template']
     assert template['candidate_floor'] == ('2nd', '1st', 'b1')[floor_index]
     assert len(result.registration.validation['fixed_candidates']) == 3
@@ -344,7 +344,7 @@ def test_directory_retarget_keeps_fixed_projection_and_is_checked_on_restart(ori
     first.mkdir()
     second = tmp_path_factory.mktemp('external_source') if outside else root/'second'
     second.mkdir(exist_ok=True)
-    for floor in floors.FLOORS:
+    for floor in floors.DEFAULT_FLOORS:
         for directory in (first, second):
             shutil.copy2(root/f'{floor}.png', directory/f'{floor}.png')
     if not outside:

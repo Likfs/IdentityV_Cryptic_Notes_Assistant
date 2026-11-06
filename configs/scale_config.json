@@ -31,10 +31,6 @@
         "minimum_scale": 1.5,
         "layout_minimum_scales": {}
       },
-      "easy": {
-        "minimum_scale": 1.5,
-        "layout_minimum_scales": {}
-      },
       "nightmare": {
         "minimum_scale": 1.5,
         "layout_minimum_scales": {}

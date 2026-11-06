@@ -24,24 +24,35 @@ def test_runtime_asset_references_are_portable_and_exist():
 
 def test_all_published_floor_sources_are_verified_without_maintenance_dependencies():
     catalog = MapCatalog()
-    profile = catalog.profile('a_bringer_of_doom', 'hard')
-    layouts = catalog.layouts(profile)
-    summary = direct.check_original_resources(profile.key, layouts)
-    assert set(summary) == set(profile.template_versions)
-    for item in summary.values():
-        assert item['layouts'] == len(layouts)
-        assert item['fixed_candidates'] == sum(len(profile.floors_for_layout(layout)) for layout in layouts)
-        assert not item['errors']
-    for layout in layouts:
-        clean, _ = direct.floors.sources(profile.key, layout, 'clean')
-        for version in profile.template_versions:
-            records, config = direct.floors.sources(profile.key, layout, version)
-            assert config['asset_contract'] == 'aligned_floor_images'
-            for floor, record in records.items():
-                assert (PROJECT_ROOT/record['source_image']).is_file()
-                assert record['size'] == clean[floor]['size']
-                assert record['saved_scale'] == clean[floor]['saved_scale'] == 1.5
-                assert not record.get('dependencies')
+    for profile in catalog.profiles.values():
+        if profile.asset_status == 'pending':
+            continue
+        layouts = catalog.layouts(profile)
+        versions = {version['id']: version for version in profile.asset_versions}
+        coverage = {version: {layout for layout in layouts
+                    if (PROJECT_ROOT/versions[version]['source_root']/layout).is_dir()}
+                    for version in profile.template_versions}
+        assert coverage['clean'] == set(layouts)
+        summary = direct.check_original_resources(profile.key, layouts)
+        assert set(summary) == set(profile.template_versions)
+        for version, item in summary.items():
+            assert item['layouts'] == len(coverage[version])
+            assert item['fixed_candidates'] == sum(len(profile.floors_for_layout(layout))
+                                                   for layout in coverage[version])
+            assert not item['errors']
+        for layout in layouts:
+            clean, _ = direct.floors.sources(profile.key, layout, 'clean')
+            for version in profile.template_versions:
+                if layout not in coverage[version]:
+                    continue
+                records, config = direct.floors.sources(profile.key, layout, version)
+                assert config['asset_contract'] == 'aligned_floor_images'
+                assert set(records) == set(profile.floors_for_layout(layout))
+                for floor, record in records.items():
+                    assert (PROJECT_ROOT/record['source_image']).is_file()
+                    assert record['size'] == clean[floor]['size']
+                    assert record['saved_scale'] == clean[floor]['saved_scale'] == profile.minimum_scale_for_layout(layout)
+                    assert not record.get('dependencies')
 
 
 def test_every_published_single_floor_source_is_shipped():
@@ -66,8 +77,11 @@ def test_every_published_single_floor_source_is_shipped():
         assert set(config['floor_variants'][profile.key]) == layouts
         versions = {version['id']: version for version in profile.asset_versions}
         for layout in layouts:
-            assert set(config['floor_variants'][profile.key][layout]) == set(profile.template_versions)
-            for version in profile.template_versions:
+            expected_versions = {version for version in profile.template_versions
+                if (PROJECT_ROOT/versions[version]['source_root']/layout).is_dir()}
+            assert 'clean' in expected_versions
+            assert set(config['floor_variants'][profile.key][layout]) == expected_versions
+            for version in expected_versions:
                 entries, _ = direct.floors.sources(profile.key, layout, version)
                 assert set(entries) == set(profile.floors_for_layout(layout))
                 for floor, entry in entries.items():

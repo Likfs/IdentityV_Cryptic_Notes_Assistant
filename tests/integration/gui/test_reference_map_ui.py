@@ -3,9 +3,9 @@ from types import SimpleNamespace
 from dataclasses import replace
 import threading
 import time
-from PyQt6.QtWidgets import QApplication, QLabel
+from PyQt6.QtWidgets import QApplication, QLabel, QPushButton
 from src import route_projection_app as app
-from src.app_catalog import load_settings
+from src.app_catalog import load_settings, FLOOR_NAMES
 from src.route_projection_qt_ui import LayoutConfirmationDialog
 import numpy as np
 import pytest
@@ -29,7 +29,7 @@ def feedback(window, *, accepted=False, floor="b1"):
 
 
 def press_h(window, monkeypatch):
-    # Button-level tests use the same action as H; Raw Input delivery has dedicated cases below.
+    # Lifecycle tests invoke the H action; Raw Input delivery has dedicated cases below.
     window._toggle_reference_map()
 
 
@@ -46,10 +46,62 @@ def test_reference_without_layout_passes_capture_region_to_game_guidance(window,
     assert messages == ([('布局尚未选定', False, window.settings['capture_roi'])] if foreground else [])
 
 
+def test_multifloor_reference_hotkeys_work_without_main_window_controls(qt_app, tmp_path, monkeypatch, source):
+    from src.floor_definitions import FLOORS
+    from tests.support.aligned_runtime import activate, build_multifloor_package
+    from tests.support.key_events import install, record
+    root = build_multifloor_package(tmp_path/'multifloor')
+    activate(root, monkeypatch)
+    monkeypatch.setattr(app, 'game_window_is_foreground', lambda _: True)
+    monkeypatch.setattr(app, 'own_window_is_foreground', lambda: False)
+    window = app.RouteProjectionApp(settings_path=tmp_path/'settings.json')
+    source.configure('G', ['IdentityV'], action_keys={'reference_toggle': 'H', 'reference_next_floor': 'J'})
+    install(window, source)
+    monkeypatch.setattr(window, 'request_work', lambda *a, **kw: pytest.fail('Reference hotkey requested projection'))
+    def press(key):
+        record(source, True, vk=ord(key))
+        record(source, False, vk=ord(key))
+        window._handle_map_key()
+    try:
+        window.resize(1080,680)
+        for layout, expected in [('layout_02',FLOORS),('layout_01',('b1','b2','b3','b4'))]:
+            window.locked_layout = layout
+            window.layout_var.set(layout)
+            window._update_assets()
+            window._set_reference_floor(expected[0], source='手动', reveal=False)
+            assert [window.floor_combo.itemData(i) for i in range(window.floor_combo.count())] == list(expected)
+            window.show()
+            qt_app.processEvents()
+            assert window.floor_combo.isHidden()
+            texts = [button.text() for button in window.findChildren(QPushButton)]
+            assert not set(FLOOR_NAMES.values()).intersection(texts)
+            assert not any(text.startswith(('显示参考图', '隐藏参考图')) for text in texts)
+            press('H')
+            wait_for(lambda: window.reference_overlay.visible)
+            for index, floor in enumerate(expected):
+                assert window.settings['reference_floor'] == floor
+                assert FLOOR_NAMES[floor] in window.reference_overlay.caption.text()
+                press('J')
+                next_floor = expected[(index+1)%len(expected)]
+                wait_for(lambda: window.reference_overlay.visible and
+                         FLOOR_NAMES[next_floor] in window.reference_overlay.caption.text())
+            assert window.settings['reference_floor'] == expected[0]
+            press('H')
+            assert not window.reference_overlay.visible
+            assert window.grab().save(str(tmp_path/(layout+'_hotkeys_only.png')))
+        for _ in range(3):
+            press('J')
+        wait_for(lambda: window.reference_overlay.visible and '地下4层' in window.reference_overlay.caption.text())
+        assert load_settings(window.catalog,window.settings_path)['reference_floor']=='b4'
+    finally:
+        window.close()
+        qt_app.processEvents()
+
+
 def test_reference_lifecycle_and_user_hide_survives_result(window, monkeypatch):
     ready(window)
     assert window.reference_overlay.visible
-    assert "地下室" in window.reference_overlay.caption.text()
+    assert FLOOR_NAMES['b1'] in window.reference_overlay.caption.text()
     press_h(window, monkeypatch)
     assert not window.reference_overlay.visible
     feedback(window)
@@ -188,7 +240,7 @@ def test_hidden_by_default_and_hotkeys_work_with_map_closed_without_capture(wind
 def test_successful_projection_syncs_reference_floor_and_j_can_override(window):
     ready(window, floor='1st')
     feedback(window, accepted=True, floor='b1')
-    wait_for(lambda: '地下室' in window.reference_overlay.caption.text())
+    wait_for(lambda: FLOOR_NAMES['b1'] in window.reference_overlay.caption.text())
     assert window.settings['reference_floor'] == 'b1'
     assert window.floor_combo.currentData() == 'b1'
     assert '最近配准' in window.reference_overlay.caption.text()

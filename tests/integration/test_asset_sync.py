@@ -140,12 +140,20 @@ def test_pending_difficulty_waits_for_complete_assets_then_activates(package, mi
     publish(root, catalog, scales=scales)
     settings = (root/'runtime/settings.json').read_bytes()
     before = config_snapshot(root)
-    write_png(root/pending_root/'layout_01/layout_01_1st.png', image)
+    (root/pending_root/'layout_01').mkdir(parents=True)
     assert any('暂未接入' in message for message in sync.synchronize(root))
     assert config_snapshot(root) == before
 
-    add_assets(root, 'normal')
+    write_png(root/pending_root/'layout_01/layout_01_1st.png', image)
     assert any('已启用待配置难度' in message for message in sync.synchronize(root))
+    clean_profile = MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'normal')
+    assert clean_profile.asset_status == 'ready' and clean_profile.template_versions == ('clean',)
+    assert clean_profile.floors == ('1st',)
+    assert clean_profile.minimum_scale == (1.5 if minimum_scale is None else minimum_scale)
+    assert clean_profile.layout_minimum_scales == {'layout_02': 2.0}
+    runtime_files(root)
+    add_assets(root, 'normal')
+    assert sync.synchronize(root)
     profile = MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'normal')
     assert (profile.difficulty_name, profile.asset_status, profile.floors) == ('自定义普通', 'ready', ('2nd', '1st'))
     assert profile.minimum_scale == (1.5 if minimum_scale is None else minimum_scale)
@@ -285,7 +293,7 @@ def test_new_difficulty_auto_publishes_versions_and_scale(package, identifier, l
     assert config_snapshot(root) == before
 
 
-@pytest.mark.parametrize('problem', ['missing_floor', 'missing_layout', 'dimensions', 'corrupt', 'extra_file'])
+@pytest.mark.parametrize('problem', ['missing_floor', 'dimensions', 'corrupt', 'extra_file'])
 def test_incomplete_new_difficulty_is_reported_without_publication(package, problem):
     root, _, _ = package
     before = config_snapshot(root)
@@ -293,10 +301,6 @@ def test_incomplete_new_difficulty_is_reported_without_publication(package, prob
     image = base/'clean-with-route/route_lhp_solo/layout_02/layout_02_2nd.png'
     if problem == 'missing_floor':
         image.unlink()
-    elif problem == 'missing_layout':
-        for path in image.parent.iterdir():
-            path.unlink()
-        image.parent.rmdir()
     elif problem == 'dimensions':
         write_png(image, np.zeros((20, 30, 3), np.uint8))
     elif problem == 'corrupt':
@@ -322,7 +326,8 @@ def test_authoritative_route_directory_updates_paths_and_preserves_profile_metad
     sync.synchronize(root)
     actual = json.loads((root/sync.CATALOG_PATH).read_text(encoding='utf-8'))
     hard, normal = actual['maps'][0]['difficulties']
-    assert normal == pending
+    assert normal['asset_status'] == 'ready' and normal['template_versions'] == ['clean']
+    assert normal['name'] == pending['name'] and normal['layout_floors'] == {'layout_01': ['1st']}
     assert hard['name'] == '人工困难'
     assert MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'hard').minimum_scale == 1.25
     assert hard['asset_versions'][0] == dict(original['maps'][0]['difficulties'][0]['asset_versions'][0], name='原版干净底图')
@@ -348,24 +353,26 @@ def test_missing_legacy_version_and_renamed_folder_no_longer_block_startup(packa
     assert settings.read_bytes() == before
 
 
-def test_empty_route_tree_becomes_pending_and_complete_routes_restore_it(package):
+def test_empty_route_tree_keeps_clean_ready_and_complete_routes_join_later(package):
     root, _, image = package
     base = root/'assets/maps/a_bringer_of_doom/hard/clean-with-route'
     base.mkdir()
     scales = (root/sync.SCALE_PATH).read_bytes()
-    assert any('已转为待配置' in message for message in sync.synchronize(root))
+    assert sync.synchronize(root)
     profile = MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'hard')
-    assert profile.asset_status == 'pending' and not profile.floors and not profile.layout_floors
-    assert profile.template_versions == () and profile.clean_root is None and not profile.asset_versions
+    assert profile.asset_status == 'ready' and profile.floors == ('1st',)
+    assert profile.template_versions == ('clean',) and profile.clean_root.is_dir()
+    assert {v['id'] for v in profile.asset_versions} == {'clean'}
+    runtime_files(root)
     write_png(base/'good/layout_01/layout_01_1st.png', image)
-    assert any('已启用待配置难度' in message for message in sync.synchronize(root))
+    assert sync.synchronize(root)
     profile = MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'hard')
     assert profile.asset_status == 'ready' and profile.template_versions == ('good', 'clean')
     assert (root/sync.SCALE_PATH).read_bytes() == scales
     runtime_files(root)
 
 
-@pytest.mark.parametrize('missing', ['map', 'difficulty', 'clean', 'route', 'floor'])
+@pytest.mark.parametrize('missing', ['map', 'difficulty', 'clean', 'route', 'route_tree', 'floor'])
 def test_deleted_directories_are_pruned_and_incomplete_materials_remain_pending(package, missing):
     root, _, _ = package
     base = add_assets(root)
@@ -379,7 +386,7 @@ def test_deleted_directories_are_pruned_and_incomplete_materials_remain_pending(
     scales = scale_path.read_bytes()
     personal = (root/'runtime/settings.json').read_bytes()
     targets = dict(map=base.parent, difficulty=base, clean=base/'clean',
-                   route=base/'clean-with-route/route_lhp_solo',
+                   route=base/'clean-with-route/route_lhp_solo', route_tree=base/'clean-with-route',
                    floor=base/'clean/layout_01/layout_01_1st.png')
     source = targets[missing]
     backup = root/'temporarily_removed'
@@ -396,6 +403,13 @@ def test_deleted_directories_are_pruned_and_incomplete_materials_remain_pending(
             assert json.loads((root/sync.CATALOG_PATH).read_bytes())['maps'] == []
             assert json.loads(scale_path.read_bytes()) == {'maps': {}}
             assert not payload['recognition'] and not payload['template']['images']
+    elif missing in ('route', 'route_tree'):
+        profile = catalog.profile('a_bringer_of_doom', 'easy')
+        assert profile.asset_status == 'ready' and profile.template_versions == ('clean',)
+        assert set(profile.layout_floors) == {'layout_01', 'layout_02'}
+        assert set(payload['template']['groups'][key]['layout_01']) == {'clean'}
+        assert any('/easy/' in path for path in payload['recognition'])
+        assert scale_path.read_bytes() == scales
     else:
         profile = catalog.profile('a_bringer_of_doom', 'easy')
         assert profile.asset_status == 'pending' and profile.floors == () and not profile.layout_floors
@@ -750,3 +764,33 @@ def test_scale_edit_during_sync_is_preserved_without_partial_publication(package
     assert (root/sync.SCALE_PATH).read_bytes() == edited
     for name in (sync.CATALOG_PATH, sync.BUNDLE_PATH):
         assert (root/name).read_bytes() == before[name][0]
+
+
+@pytest.mark.parametrize('empty_route_tree', [False, True])
+def test_new_map_with_only_clean_is_discovered_and_later_routes_are_optional(package, empty_route_tree):
+    root, _, image = package
+    base = root/'assets/maps/仅底图地图/normal'
+    write_png(base/'clean/layout_01/layout_01_b4.png', image)
+    if empty_route_tree:
+        (base/'clean-with-route').mkdir()
+    personal = (root/'runtime/settings.json').read_bytes()
+    assert sync.synchronize(root)
+    profile = MapCatalog(root/sync.CATALOG_PATH).profile('仅底图地图','normal')
+    assert profile.asset_status == 'ready' and profile.minimum_scale == 1.5
+    assert profile.floors == ('b4',) and profile.layout_floors == {'layout_01': ('b4',)}
+    assert profile.version_names == {'clean': '原版干净底图'} and profile.template_versions == ('clean',)
+    assert set(read_bundle(root)['template']['groups'][profile.key]['layout_01']) == {'clean'}
+    runtime_files(root)
+    assert not sync.synchronize(root)
+    # With no routes, every subsequently added clean layout is available by itself.
+    write_png(base/'clean/layout_02/layout_02_1st.png', image)
+    assert sync.synchronize(root)
+    profile = MapCatalog(root/sync.CATALOG_PATH).profile('仅底图地图','normal')
+    assert profile.floors_for_layout('layout_02') == ('1st',)
+    for layout, floor in [('layout_01','b4'),('layout_02','1st')]:
+        write_png(base/f'clean-with-route/后加路线/{layout}/{layout}_{floor}.png', image)
+    assert sync.synchronize(root)
+    profile = MapCatalog(root/sync.CATALOG_PATH).profile('仅底图地图','normal')
+    assert profile.template_versions == ('后加路线','clean') and profile.minimum_scale == 1.5
+    assert (root/'runtime/settings.json').read_bytes() == personal
+    runtime_files(root)

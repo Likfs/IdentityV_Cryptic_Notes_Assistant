@@ -8,6 +8,7 @@ import cv2
 import numpy as np
 from src.paths import DIAGNOSTIC_ROOT
 from src.app_catalog import DifficultyProfile, MapCatalog
+from src.floor_definitions import DEFAULT_FLOORS
 from src.layout_retrieval import create_layout_retriever, LayoutRetriever, LayoutRetrievalResult
 from src.projection.route_overlay import composite_route_layer
 from src.registration.result import OriginalRegistrationResult
@@ -140,7 +141,7 @@ def process_screenshot(
 ) -> WorkflowResult:
     started = time.perf_counter()
     if getattr(profile, 'asset_status', 'ready') == 'pending':
-        raise ValueError(f'{profile.map_name}／{profile.difficulty_name}：资产待配置，请补充楼层底图、路线图和最小缩放值')
+        raise ValueError(f'{profile.map_name}／{profile.difficulty_name}：资产待配置，请检查楼层底图、最小缩放值及已提供路线')
     if screenshot_bgr.ndim != 3 or screenshot_bgr.shape[2] != 3:
         raise ValueError("截图必须为 BGR 三通道图片")
     timings: dict[str, float] = {}
@@ -154,7 +155,7 @@ def process_screenshot(
         if not recognize_only:
             raise ValueError('请先识别并确认布局，再进行配准投影')
         retriever = layout_retriever or create_layout_retriever(layout_recognition_backend, profile.clean_root,
-            floors=getattr(profile, 'floors', ('2nd', '1st', 'b1')))
+            floors=getattr(profile, 'floors', DEFAULT_FLOORS))
         try:
             retrieval = retriever.recognize(screenshot_bgr, recognition_reference_size,
                 **({'cancelled': recognition_cancelled} if recognition_cancelled is not None else {}))
@@ -195,9 +196,9 @@ def process_screenshot(
             result.reasons.extend(retrieval.reasons if retrieval else ["未返回可供选择的布局候选"])
         result.timings_ms["total"] = (time.perf_counter() - started) * 1000.0
         return result
-    from src.registration.template_matching.direct import project_original
-    if template_variant_id is None:
-        template_variant_id = profile.template_versions[0]
+    from src.registration.template_matching.direct import available_variants, project_original
+    if template_variant_id is None and selected_layout:
+        template_variant_id = next(iter(available_variants(profile.key, selected_layout)), None)
     result.floor = 'all'
     result.variant_id = template_variant_id
     names = profile.version_names

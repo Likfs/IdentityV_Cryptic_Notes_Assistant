@@ -558,11 +558,11 @@
           "asset_contract": "aligned_floor_images",
           "asset_status": "ready",
           "floors": [
-            "2nd",
-            "1st"
+            "b1",
+            "b2",
+            "b3"
           ],
           "template_versions": [
-            "展十全图路线",
             "clean"
           ],
           "clean_root": "assets/maps/phosphorescence_disease/hard/clean",
@@ -572,167 +572,78 @@
               "name": "原版干净底图",
               "kind": "clean",
               "source_root": "assets/maps/phosphorescence_disease/hard/clean"
-            },
-            {
-              "id": "展十全图路线",
-              "name": "展十全图路线",
-              "kind": "route",
-              "source_root": "assets/maps/phosphorescence_disease/hard/clean-with-route/展十全图路线"
             }
           ],
           "layout_floors": {
             "layout_01": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_02": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_03": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_04": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_05": [
-              "1st"
-            ],
-            "layout_06": [
-              "1st"
-            ],
-            "layout_07": [
-              "1st"
-            ],
-            "layout_08": [
-              "1st"
-            ],
-            "layout_09": [
-              "1st"
-            ],
-            "layout_10": [
-              "2nd",
-              "1st"
-            ],
-            "layout_11": [
-              "2nd",
-              "1st"
-            ],
-            "layout_12": [
-              "1st"
-            ],
-            "layout_13": [
-              "2nd",
-              "1st"
-            ],
-            "layout_14": [
-              "2nd",
-              "1st"
-            ],
-            "layout_15": [
-              "1st"
-            ],
-            "layout_16": [
-              "2nd",
-              "1st"
-            ],
-            "layout_17": [
-              "2nd",
-              "1st"
-            ],
-            "layout_18": [
-              "1st"
-            ]
-          }
-        },
-        {
-          "id": "easy",
-          "name": "简单",
-          "clean_root": "assets/maps/phosphorescence_disease/easy/clean",
-          "asset_contract": "aligned_floor_images",
-          "asset_status": "ready",
-          "floors": [
-            "2nd",
-            "1st"
-          ],
-          "asset_versions": [
-            {
-              "id": "clean",
-              "name": "原版干净底图",
-              "kind": "clean",
-              "source_root": "assets/maps/phosphorescence_disease/easy/clean"
-            },
-            {
-              "id": "展十全图路线",
-              "name": "展十全图路线",
-              "kind": "route",
-              "source_root": "assets/maps/phosphorescence_disease/easy/clean-with-route/展十全图路线"
-            }
-          ],
-          "template_versions": [
-            "展十全图路线",
-            "clean"
-          ],
-          "layout_floors": {
-            "layout_01": [
-              "2nd",
-              "1st"
-            ],
-            "layout_02": [
-              "1st"
-            ],
-            "layout_03": [
-              "1st"
-            ],
-            "layout_04": [
-              "1st"
-            ],
-            "layout_05": [
-              "1st"
-            ],
-            "layout_06": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_07": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_08": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_09": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_10": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_11": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_12": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_13": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_14": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_15": [
-              "1st"
-            ],
-            "layout_16": [
-              "2nd",
-              "1st"
-            ],
-            "layout_17": [
-              "2nd",
-              "1st"
-            ],
-            "layout_18": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ]
           }
         },
@@ -743,8 +654,9 @@
           "asset_contract": "aligned_floor_images",
           "asset_status": "ready",
           "floors": [
-            "2nd",
-            "1st"
+            "b1",
+            "b2",
+            "b3"
           ],
           "asset_versions": [
             {
@@ -752,243 +664,195 @@
               "name": "原版干净底图",
               "kind": "clean",
               "source_root": "assets/maps/phosphorescence_disease/normal/clean"
-            },
-            {
-              "id": "展十全图路线",
-              "name": "展十全图路线",
-              "kind": "route",
-              "source_root": "assets/maps/phosphorescence_disease/normal/clean-with-route/展十全图路线"
             }
           ],
           "template_versions": [
-            "展十全图路线",
             "clean"
           ],
           "layout_floors": {
             "layout_01": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_02": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_03": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_04": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_05": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_06": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_07": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_08": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_09": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_10": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_11": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_12": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_13": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_14": [
-              "2nd",
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_15": [
-              "1st"
-            ],
-            "layout_16": [
-              "2nd",
-              "1st"
-            ],
-            "layout_17": [
-              "2nd",
-              "1st"
-            ],
-            "layout_18": [
-              "1st"
+              "b1",
+              "b2",
+              "b3"
             ]
           }
         },
         {
           "id": "nightmare",
           "name": "噩梦",
-          "clean_root": "assets/maps/phosphorescence_disease/nightmare/clean",
           "asset_contract": "aligned_floor_images",
           "asset_status": "ready",
           "floors": [
-            "2nd",
-            "1st",
-            "b1"
+            "b1",
+            "b2",
+            "b3"
           ],
           "asset_versions": [
             {
               "id": "clean",
-              "name": "原版干净底图",
               "kind": "clean",
-              "source_root": "assets/maps/phosphorescence_disease/nightmare/clean"
+              "source_root": "assets/maps/phosphorescence_disease/nightmare/clean",
+              "name": "原版干净底图"
             },
             {
-              "id": "展十速刷路线",
-              "name": "展十速刷路线",
+              "id": "小宸全图路线",
+              "name": "小宸全图路线",
               "kind": "route",
-              "source_root": "assets/maps/phosphorescence_disease/nightmare/clean-with-route/展十速刷路线"
+              "source_root": "assets/maps/phosphorescence_disease/nightmare/clean-with-route/小宸全图路线"
             }
           ],
           "template_versions": [
-            "展十速刷路线",
+            "小宸全图路线",
             "clean"
           ],
           "layout_floors": {
             "layout_01": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_02": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_03": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_04": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_05": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_06": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_07": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_08": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_09": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_10": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_11": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_12": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_13": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_14": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ],
             "layout_15": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_16": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_17": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_18": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_19": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_20": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_21": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_22": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_23": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_24": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_25": [
-              "2nd",
-              "1st",
-              "b1"
-            ],
-            "layout_26": [
-              "2nd",
-              "1st",
-              "b1"
+              "b1",
+              "b2",
+              "b3"
             ]
-          }
+          },
+          "clean_root": "assets/maps/phosphorescence_disease/nightmare/clean"
         }
       ]
     }

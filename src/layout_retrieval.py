@@ -5,6 +5,7 @@ from dataclasses import dataclass, field, asdict
 import hashlib
 import json
 from pathlib import Path
+from src.floor_definitions import DEFAULT_FLOORS
 import threading
 import time
 
@@ -92,7 +93,7 @@ class LayoutRetrievalResult:
         }
 
 
-def create_layout_retriever(backend, clean_root, *, floors=('2nd', '1st', 'b1'), **kwargs):
+def create_layout_retriever(backend, clean_root, *, floors=DEFAULT_FLOORS, **kwargs):
     if backend == 'pure_structure':
         from .structure_layout import PureStructureRetriever
         kwargs.setdefault('fixed_resources', True)

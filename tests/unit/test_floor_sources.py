@@ -14,7 +14,7 @@ from tests.support.frozen_resources import restart_template_resources
 def records(tmp_path, monkeypatch):
     monkeypatch.setattr(floors, 'PROJECT_ROOT', tmp_path)
     entries = {}
-    for i, floor in enumerate(floors.FLOORS):
+    for i, floor in enumerate(floors.DEFAULT_FLOORS):
         image = np.full((40, 50, 4), (100+i, 120, 130, 255), np.uint8)
         image[0, 0] = (255, 0, 0, 0)
         image[0, 1] = (255, 0, 0, 128)
@@ -93,10 +93,10 @@ def test_prewarm_populates_three_bounded_images_and_match_templates(records, mon
     write_template(path.parent.parent, config)
     assert floors.prewarm('map/diff','layout_01','clean')
     assert len(floors._images)==3
-    cached=[floors.load('map/diff','layout_01','clean',f)[3] for f in floors.FLOORS]
+    cached=[floors.load('map/diff','layout_01','clean',f)[3] for f in floors.DEFAULT_FLOORS]
     monkeypatch.setattr(floors.Image,'open',lambda *a:pytest.fail('Already warmed pixels decoded again'))
     assert floors.prewarm('map/diff','layout_01','clean')
-    assert all(floors.load('map/diff','layout_01','clean',f)[3] is im for f,im in zip(floors.FLOORS,cached))
+    assert all(floors.load('map/diff','layout_01','clean',f)[3] is im for f,im in zip(floors.DEFAULT_FLOORS,cached))
 
 
 def test_cancelled_prewarm_never_publishes_decoded_pixels(records, monkeypatch):
@@ -182,3 +182,13 @@ def test_dangling_directory_link_rejects_missing_resource(tmp_path, monkeypatch)
             floors.source_path('linked/image.png')
     finally:
         remove_directory_link(link, root=tmp_path)
+
+
+def test_working_set_budget_uses_decoded_pixels_and_unique_sources(monkeypatch):
+    entry = dict(source_image='same.png', source_sha256='verified', size=[100, 100])
+    monkeypatch.setattr(floors, 'DECODED_IMAGE_BYTES', 100 * 100 * 7)
+    assert floors.working_set_fits([entry, dict(entry)])
+    assert not floors.working_set_fits([entry, dict(entry, source_image='another.png')])
+    monkeypatch.setattr(floors, 'DECODED_IMAGE_BYTES', 1024 * 1024)
+    assert floors.working_set_fits([dict(entry, source_image=str(i)) for i in range(8)])
+    assert not floors.working_set_fits([dict(entry, source_image=str(i)) for i in range(9)])
