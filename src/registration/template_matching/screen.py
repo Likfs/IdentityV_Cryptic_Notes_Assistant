@@ -1,12 +1,6 @@
 """Physical monitor dimensions for the original 2560 x 1440 convention."""
 import ctypes
-from ctypes import wintypes
-
-
-# POINTER retains its target type, so monitor queries must reuse this class.
-class _MonitorInfo(ctypes.Structure):
-    _fields_=[('size',wintypes.DWORD),('monitor',wintypes.RECT),('work',wintypes.RECT),
-              ('flags',wintypes.DWORD),('device',wintypes.WCHAR*32)]
+from src.capture.monitors import MonitorInfo, MonitorEnumProc, monitor_api
 
 
 def factor_for_size(width,height):
@@ -17,16 +11,14 @@ def screen_info(name=''):
     try:
         from src.capture.region import enable_physical_pixel_coordinates
         enable_physical_pixel_coordinates()
-        user=ctypes.windll.user32
-        user.GetMonitorInfoW.argtypes=[wintypes.HANDLE,ctypes.POINTER(_MonitorInfo)]
+        user=monitor_api()
         monitors=[]
-        callback_type=ctypes.WINFUNCTYPE(wintypes.BOOL,wintypes.HANDLE,wintypes.HDC,ctypes.POINTER(wintypes.RECT),wintypes.LPARAM)
-        @callback_type
+        @MonitorEnumProc
         def visit(handle,dc,rect,param):
-            item=_MonitorInfo();item.size=ctypes.sizeof(_MonitorInfo)
+            item=MonitorInfo();item.cbSize=ctypes.sizeof(MonitorInfo)
             if user.GetMonitorInfoW(handle,ctypes.byref(item)):
-                monitors.append(dict(screen_name=item.device,width=item.monitor.right-item.monitor.left,
-                    height=item.monitor.bottom-item.monitor.top,primary=bool(item.flags&1)))
+                monitors.append(dict(screen_name=item.szDevice,width=item.rcMonitor.right-item.rcMonitor.left,
+                    height=item.rcMonitor.bottom-item.rcMonitor.top,primary=bool(item.dwFlags&1)))
             return True
         user.EnumDisplayMonitors(None,None,visit,0)
         selected=next((m for m in monitors if m['screen_name']==name),None) if name else next((m for m in monitors if m['primary']),None)

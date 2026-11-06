@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "payload_sha256": "805d6c68b2c5f0331a330f1225eac734df9d60be2b6cfd5a6670901c4d7f1782",
+  "payload_sha256": "009bd357e3ddc3d858de8caa7580aabe1803d63babeedada5d08645739435fba",
   "payload": {
     "template": {
       "groups": {
@@ -10570,7 +10570,7 @@
       },
       "src/registration/template_matching/provenance.json": {
         "bytes": 807,
-        "sha256": "b2541b2a978c72067e2d6e1189fdaf775af046b863774fde5d4777f50e7d5aa6"
+        "sha256": "e45d0bfb57fa7f745cad42fdb9751e3faa7a924783c8e3b8e7d472d03f5b3b98"
       },
       "assets/app_ui/home_wallpaper.jpg": {
         "bytes": 1232518,
@@ -12781,6 +12781,6 @@
         "sha256": "e468c154c89901834d4b18175a99b6d790b5a0b413f9237a77d16502ad6c8856"
       }
     },
-    "maintenance_revision": "84dc9ac097937664dedbafa48258b21601821c66f94cda6fca6165aea12e0816"
+    "maintenance_revision": "de61f771701ffdacad1cd91471fd9e3d11eb18dbcaf477524562d118b7258edd"
   }
 }

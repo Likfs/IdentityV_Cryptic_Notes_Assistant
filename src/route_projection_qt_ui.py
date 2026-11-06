@@ -22,6 +22,7 @@ from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings
 from src.floor_definitions import FLOOR_NAMES
 from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
 from src.capture.region import CaptureRegion
+from src.capture.monitors import MonitorInfo, monitor_api
 from src.layout_retrieval import BACKEND_LABELS
 from src.chest_counter import CHEST_ACTIONS, CHEST_HOTKEY_FIELDS
 from src.capture.visibility import apply_window_capture_policy
@@ -708,29 +709,16 @@ def exclude_window_from_capture(widget: QWidget) -> bool:
     return apply_window_capture_policy(widget)
 
 
-# POINTER retains its target type; defining it per refresh grows the global cache.
-class _MonitorInfo(ctypes.Structure):
-    _fields_ = (("cbSize", wintypes.DWORD), ("rcMonitor", wintypes.RECT),
-                ("rcWork", wintypes.RECT), ("dwFlags", wintypes.DWORD),
-                ("szDevice", wintypes.WCHAR * 32))
-
-
 def physical_to_qt_geometry(left: int, top: int, width: int, height: int):
     """Translate MSS physical pixels to Qt logical coordinates on each monitor."""
     if sys.platform != "win32":
         return left, top, width, height, 1.0
 
-    user32 = ctypes.windll.user32
-    monitor_from_point = user32.MonitorFromPoint
-    monitor_from_point.argtypes = (wintypes.POINT, wintypes.DWORD)
-    monitor_from_point.restype = wintypes.HANDLE
-    get_monitor_info = user32.GetMonitorInfoW
-    get_monitor_info.argtypes = (wintypes.HANDLE, ctypes.POINTER(_MonitorInfo))
-    get_monitor_info.restype = wintypes.BOOL
-    monitor = monitor_from_point(wintypes.POINT(left + width // 2, top + height // 2), 2)
-    info = _MonitorInfo()
-    info.cbSize = ctypes.sizeof(_MonitorInfo)
-    if not monitor or not get_monitor_info(monitor, ctypes.byref(info)):
+    user32 = monitor_api()
+    monitor = user32.MonitorFromPoint(wintypes.POINT(left + width // 2, top + height // 2), 2)
+    info = MonitorInfo()
+    info.cbSize = ctypes.sizeof(MonitorInfo)
+    if not monitor or not user32.GetMonitorInfoW(monitor, ctypes.byref(info)):
         raise ctypes.WinError()
     name = info.szDevice.casefold().removeprefix("\\\\.\\")
     screens = QGuiApplication.screens()
