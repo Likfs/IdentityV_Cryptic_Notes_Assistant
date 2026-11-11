@@ -102,7 +102,6 @@ def test_published_hard_crop_keeps_pose_across_route_versions(monkeypatch, case,
     screenshot = replay_image(case)
     x, y = case['expected_source_origin']
     expected = np.float64([[1.5,0,x], [0,1.5,y], [0,0,1]])
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     from src.registration.template_matching import matcher
     monkeypatch.setattr(matcher, 'find_best_scale', lambda *a, **k: pytest.fail('Live scale search'))
     results = []

@@ -14,9 +14,11 @@ from tests.support.projection_results import result_for
 
 def enable_template(window,monkeypatch):
     monkeypatch.setattr(window,'_handle_map_key',lambda:None)
+    # Captures are simulated; real desktop focus must not change their HWND.
+    monkeypatch.setattr(app.ctypes.windll.user32, 'GetForegroundWindow', lambda:42)
     monkeypatch.setattr(app,'floor_control_mouse_down',lambda *a:False)
     window.apply_settings({**window.settings,'registration_backend':'template'})
-    window.show_overlay_check.setChecked(True)
+    window.settings['show_projection'] = True
 
 
 def test_deferred_preview_keeps_identical_layer_and_composite(window,direct_inputs,monkeypatch):
@@ -35,11 +37,18 @@ def test_deferred_preview_keeps_identical_layer_and_composite(window,direct_inpu
 
 
 def test_real_worker_displays_before_slow_preview_and_saves_complete_result(window,direct_inputs,monkeypatch):
+    from tests.support.floor_ui import projection_frame, template_control
     enable_template(window,monkeypatch)
     from src.capture.region import CaptureRegion
     monkeypatch.setattr(app,'foreground_game_client',lambda _:CaptureRegion(0,0,2560,1440))
     monkeypatch.setattr(app,'ensure_region_on_screen',lambda _:None)
-    monkeypatch.setattr(app,'capture_bgr',lambda _:direct_inputs.copy())
+    window.settings['capture_roi'] = [100, 100, 40, 40]
+    monkeypatch.setattr(app, 'map_match_region', lambda client, view:view)
+    # Tiny injected viewport isolates layer delivery from full-map geometry.
+    monkeypatch.setattr(app, 'map_viewport', lambda c:app.game_capture_region(
+        c, window.settings['capture_roi'], [2560, 1440]))
+    monkeypatch.setattr(app,'capture_bgr',lambda region:projection_frame(
+        region, direct_inputs, (100, 100), control=template_control(4)))
     shown=[];saved=[];entered=threading.Event();release=threading.Event();done=threading.Event()
     owner=threading.get_ident()
     monkeypatch.setattr(window.overlay,'show',lambda *a:shown.append(threading.get_ident()))
@@ -71,10 +80,63 @@ def test_real_worker_displays_before_slow_preview_and_saves_complete_result(wind
         assert shown==[owner]  # Preview does not submit the overlay a second time.
         assert window.last_result.projection is not None
         assert saved[0].projection is not None and not saved[0].projection_preview_pending
+        assert saved[0].floor_detection['floor'] == '2nd'
+        assert window._floor_buttons == saved[0].floor_detection['buttons']
+        assert saved[0].capture_context['game_client_size'] == [2560, 1440]
+        assert saved[0].capture_context['map_roi_screen'] == [100, 100, 40, 40]
+        assert saved[0].floor_ui_image is not None and saved[0].floor_ui_normalized is not None
         assert 'overlay_submit' in saved[0].timings_ms
         assert saved[0].diagnostics()['gui_diagnostics']['at_request']['log_entries'] >= 0
     finally:
         release.set();done.wait(2)
+
+
+@pytest.mark.parametrize('failure', ['no_match', 'template_error'])
+def test_real_worker_saves_ui_crop_and_client_context_when_floor_detection_fails(window, monkeypatch, tmp_path, failure):
+    from src.capture.region import CaptureRegion
+    from src import floor_indicator
+    from tests.support.floor_ui import projection_frame
+    from tests.support.qt_wait import wait_for
+    enable_template(window, monkeypatch)
+    window.settings['capture_roi'] = [100, 100, 40, 40]
+    monkeypatch.setattr(app, 'map_match_region', lambda client, view:view)
+    # Tiny injected viewport isolates layer delivery from full-map geometry.
+    monkeypatch.setattr(app, 'map_viewport', lambda c:app.game_capture_region(
+        c, window.settings['capture_roi'], [2560, 1440]))
+    client = CaptureRegion(240, 100, 1920, 1080)
+    map_region = app.game_capture_region(client, window.settings['capture_roi'], [2560, 1440])
+    monkeypatch.setattr(app, 'foreground_game_client', lambda _:client)
+    monkeypatch.setattr(app, 'ensure_region_on_screen', lambda _:None)
+    monkeypatch.setattr(app, 'capture_bgr', lambda region:projection_frame(region,
+        np.full((30, 30, 3), 120, np.uint8), (map_region.left, map_region.top),
+        client=client, control=np.full((510, 140, 3), 100, np.uint8)))
+    if failure == 'template_error':
+        def broken_templates():
+            raise ValueError('测试模板无法读取')
+        monkeypatch.setattr(floor_indicator, '_templates', broken_templates)
+    directory = tmp_path/'failed_ui'
+    saved = threading.Event()
+    def save(result):
+        path = workflow.save_workflow_result(result, directory)
+        saved.set()
+        return path
+    monkeypatch.setattr(app, 'save_workflow_result', save)
+    window.request_work('project', auto=False)
+    wait_for(saved.is_set)
+    import json
+    import cv2
+    data = json.loads((directory/'result.json').read_text(encoding='utf-8'))
+    assert not data['accepted'] and data['registration'] is None
+    assert data['capture_context']['game_client_size'] == [1920, 1080]
+    assert data['capture_context']['game_client_screen'] == [240, 100, 1920, 1080]
+    assert data['capture_context']['floor_ui_roi_screen'] == [1867, 235, 106, 383]
+    assert cv2.imread(str(directory/'02_floor_ui_raw.png')).shape == (383, 106, 3)
+    if failure == 'no_match':
+        assert len(data['floor_detection']['candidates']) == 7
+        assert (directory/'03_floor_ui_normalized.png').is_file()
+    else:
+        assert '模板无法读取' in data['floor_detection']['error']
+        assert data['floor_ui_images']['normalized'] is None
 
 
 @pytest.mark.parametrize('change',['closed','generation','session','new_result','backend'])

@@ -12,6 +12,7 @@ import tempfile
 from threading import Lock
 
 from PIL import Image, ImageFile, __version__ as pillow_version
+from src.paths import published_resource_path
 
 
 def _digest(value):
@@ -166,7 +167,7 @@ class AssetAudit:
     def verify(self, files, *, progress=None, stage='核验已发布资源'):
         """Always read and hash current bytes again, including same-stat replacements."""
         def check(name):
-            _, actual = _read(self.path(name))
+            _, actual = _read(published_resource_path(self.root, name))
             if actual != files[name]:
                 raise ValueError(f'启动同步期间文件发生变化：{name}')
         self._jobs(files, check, stage, progress)

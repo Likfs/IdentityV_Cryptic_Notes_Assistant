@@ -42,7 +42,7 @@ def test_map_key_opens_on_release_and_closes_early_on_next_press(monkeypatch, so
     record(source, False)
     app_module.RouteProjectionApp._handle_map_key(app)  # release starts opening delay
     assert app.map_state.is_open and app.hidden == 1 and app.map_generation == 1
-    assert app.scheduled[0][0] == 150  # Delay starts only after release.
+    assert app.scheduled[0][0] == 30  # Delay starts only after release.
     assert app.projection_delay_pending
     record(source, True)
     app_module.RouteProjectionApp._handle_map_key(app)
@@ -126,7 +126,7 @@ def test_all_settings_are_persisted_without_save_button(tmp_path) -> None:
         "chest_gold_add_hotkey": "U", "chest_gold_subtract_hotkey": "I",
         "chest_purple_add_hotkey": "O", "chest_purple_subtract_hotkey": "P",
         "chest_counter_visible": False, "capture_exclusion_enabled": False,
-        "auto_project": False, "auto_floor": True, "opacity": 83.0,
+        "auto_project": False, "auto_floor": True, "opacity": 83.0, "reference_opacity": 47.0,
         "layout_recognition_backend": "pure_structure",
         "roi": "900, 180, 1180, 1050", "reference_size": "2560, 1440",
     }

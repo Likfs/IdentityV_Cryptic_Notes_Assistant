@@ -3,17 +3,21 @@ from __future__ import annotations
 import ctypes
 import os
 import sys
-from dataclasses import dataclass
+from time import perf_counter
+from dataclasses import dataclass, replace
 from ctypes import wintypes
 
 import numpy as np
+import cv2
 
 from src.app_catalog import key_to_vk
 from src.hotkeys import polling_vks
 from src.capture.region import CaptureRegion
 from src.capture.runtime import capture_region, pil_to_bgr
-FLOOR_CONTROL_ROI = (1870, 70, 390, 66)
+from src.floor_indicator import DEFAULT_BUTTONS, REFERENCE_SIZE, SEARCH_ROI, detect_floor, FloorDetection
 from src.projection_workflow import WorkflowResult
+from src.game_geometry import (map_viewport, floor_sample_region, floor_slot_regions,
+                               reference_region, reference_floor_slots)
 
 
 AUTO = "自动判断"
@@ -23,19 +27,90 @@ def capture_bgr(roi: list[int]) -> np.ndarray:
     return pil_to_bgr(capture_region(CaptureRegion.from_value(roi)))
 
 
-def floor_control_mouse_down(titles: list[str], reference_size: list[int]) -> bool:
+def floor_control_regions(client, buttons=None):
+    """Use the same individual button rectangles for clicks and drag exclusions."""
+    reference_slots, physical_slots = reference_floor_slots(), floor_slot_regions(client)
+    regions = []
+    for rect in (DEFAULT_BUTTONS if buttons is None else buttons):
+        if tuple(rect) in reference_slots:
+            # Recompute from design floats, avoiding a second round of reference-pixel rounding.
+            physical = physical_slots[reference_slots.index(tuple(rect))]
+            left, top = max(client.left, physical.left), max(client.top, physical.top)
+            right = min(client.left+client.width, physical.left+physical.width)
+            bottom = min(client.top+client.height, physical.top+physical.height)
+            if right > left and bottom > top:
+                regions.append(CaptureRegion(left, top, right-left, bottom-top))
+        else:
+            regions.append(reference_region(client, rect))
+    return regions
+
+
+def floor_control_mouse_down(titles: list[str], buttons=None) -> bool:
     """Observe a click in the floor control, without capturing or classifying it."""
     if sys.platform != 'win32' or not (ctypes.windll.user32.GetAsyncKeyState(0x01) & 0x8000):
         return False
     try:
         client = foreground_game_client(titles)
-        region = game_capture_region(client, list(FLOOR_CONTROL_ROI), reference_size)
+        regions = floor_control_regions(client, buttons)
         point = wintypes.POINT()
         if not ctypes.windll.user32.GetCursorPos(ctypes.byref(point)):
             return False
-        return region.left <= point.x < region.left+region.width and region.top <= point.y < region.top+region.height
+        return any(region.left <= point.x < region.left+region.width and region.top <= point.y < region.top+region.height
+                   for region in regions)
     except (OSError, ValueError, RuntimeError):
         return False
+
+
+def projection_capture_regions(client, map_region):
+    """Enclose map and floor UI in one capture while preserving the map's origin."""
+    control = floor_sample_region(client)
+    left, top = min(map_region.left, control.left), min(map_region.top, control.top)
+    right = max(map_region.left+map_region.width, control.left+control.width)
+    bottom = max(map_region.top+map_region.height, control.top+control.height)
+    return CaptureRegion(left, top, right-left, bottom-top), control
+
+
+def split_projection_frame(frame, capture, map_region, control, *, client=None, single_floor=None, available_floors=(), timings=None):
+    if frame.shape != (capture.height, capture.width, 3):
+        raise ValueError('游戏截图尺寸与请求区域不一致，请重新截图')
+    def crop(region):
+        x, y = region.left-capture.left, region.top-capture.top
+        return frame[y:y+region.height, x:x+region.width].copy()
+    ui = crop(control)
+    if single_floor is not None:
+        if timings is not None:
+            timings['floor_ui'] = 0.
+        ui.flags.writeable = False
+        return crop(map_region), FloorDetection(single_floor, control_image=ui,
+                                                selection_source='single_floor_layout')
+    floor_started = perf_counter()
+    try:
+        detection = (detect_floor(ui, control_labels=('2nd', '1st'))
+                     if len(available_floors) == 2 and set(available_floors) == {'2nd', '1st'}
+                     else detect_floor(ui))
+    except (OSError, ValueError, cv2.error) as exc:
+        ui.flags.writeable = False
+        detection = FloorDetection(None, reason=f'楼层 UI 识别失败：{exc}', control_image=ui, error=str(exc))
+    if client is not None and detection.floor is not None:
+        # Image recognition validates labels/state. Design slots provide hit
+        # areas including transparent padding; do not use texture boxes as hits.
+        slots = floor_slot_regions(client)
+        centers = [rect.top+rect.height/2 for rect in slots]
+        selected = tuple(min(range(len(slots)), key=lambda i:abs(centers[i]-(
+            control.top + (y-SEARCH_ROI[1]+height/2)*control.height/SEARCH_ROI[3])))
+            for _, y, _, height in detection.buttons)
+        inside_slots = all(
+            slots[i].left <= control.left+(x-SEARCH_ROI[0]+width/2)*control.width/SEARCH_ROI[2] < slots[i].left+slots[i].width
+            and slots[i].top <= control.top+(y-SEARCH_ROI[1]+height/2)*control.height/SEARCH_ROI[3] < slots[i].top+slots[i].height
+            for i, (x, y, width, height) in zip(selected, detection.buttons))
+        if not inside_slots or len(set(selected)) != len(selected) or tuple(sorted(selected)) != selected:
+            detection = replace(detection, floor=None, buttons=(), reason='楼层 UI 与固定槽位不一致，请重新截图')
+        else:
+            reference_slots = reference_floor_slots()
+            detection = replace(detection, buttons=tuple(reference_slots[i] for i in selected), button_slots=selected)
+    if timings is not None:
+        timings['floor_ui'] = (perf_counter()-floor_started)*1000
+    return crop(map_region), detection
 
 
 def game_capture_region(client: CaptureRegion, roi: list[int], reference_size: list[int]) -> CaptureRegion:
@@ -214,5 +289,6 @@ def format_projection_metrics(result: WorkflowResult) -> str:
     return (f"完整原图配准：{'候选已生成' if result.accepted else '未生成候选'} · 定尺度模板匹配不分楼层\n"
             f"尺度 {template.get('scale', 0):.4f} · 原图位置 {template.get('location', '—')} · 请核对投影位置\n"
             f"耗时：截图 {timing.get('capture', 0):.0f} ms · "
+            f"楼层识别 {timing.get('floor_ui', 0):.0f} ms · "
             f"配准 {timing.get('registration', 0):.0f} ms · 投影图层 {timing.get('projection_layer', timing.get('projection', 0)):.0f} ms · "
             f"预览合成 {preview}{delivery}{scheduling}{end_to_end}")

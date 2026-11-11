@@ -4,10 +4,12 @@ from concurrent.futures import ThreadPoolExecutor
 import cv2
 import numpy as np
 from src.app_catalog import CLEAN_VERSION_ID, PROJECT_ROOT, MapCatalog
+from src.map_motion import zoom_factor, ZOOM_MIN
 from src.projection.route_overlay import composite_route_layer
 from src.registration.result import OriginalRegistrationResult
-from . import resources, matcher, floors
-from .screen import screen_info
+from . import resources, matcher, floors, walls
+from .screen import capture_info
+from src.capture.region import crop_image
 
 FLOOR_REVIEW_MARGIN = 1.0
 FLOOR_REVIEW_DS = 0.5
@@ -23,7 +25,7 @@ def saved_scale_value(candidate):
     return scale
 
 
-def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=False):
+def _match_floor_candidates(snapshot, screenshot, capture_factor, *, bounded=False, map_zoom=1., selected_floor=None):
     """Prepare caches on the coordinator, then match at most two floors at once.
 
     Caller holds resource_lock across preparation, workers and final validation.
@@ -33,6 +35,10 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=Fals
     """
     prepared = matcher.ScreenshotPreparation(screenshot)
     initial_ds = matcher.TEMPLATE_DS
+    # At large zoom, a coarse source-pixel location becomes a visible screen jump.
+    # Use the existing half-resolution level, still at one known matching scale.
+    if map_zoom > 1:
+        initial_ds = max(initial_ds, FLOOR_REVIEW_DS)
     load_failures = {}
     last_path = None
 
@@ -44,7 +50,7 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=Fals
             entry, path, _, image, rgba = snapshot.load(floor)
             last_path = path
             saved_scale = saved_scale_value(entry)
-            scale = saved_scale * screen_factor
+            scale = saved_scale * capture_factor
             options = dict(map_threshold=entry.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
                            map_image=image, image_fingerprint=floors.fingerprint(entry))
             return floor, entry, path, image, rgba, saved_scale, scale, options
@@ -52,15 +58,17 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=Fals
             load_failures[floor] = dict(candidate_floor=floor, reason=str(exc))
             return load_failures[floor]
 
-    jobs = list(snapshot.entries) if bounded else [load_job(floor) for floor in snapshot.entries]
+    candidate_floors = [selected_floor] if selected_floor is not None else list(snapshot.entries)
+    jobs = candidate_floors if bounded else [load_job(floor) for floor in candidate_floors]
 
     def match_floor(job, *, ds, expanded=False):
         if isinstance(job, dict):
             return dict(job), None
         floor, entry, path, image, rgba, saved_scale, scale, options = job
         try:
-            match = matcher._match_template(screenshot, str(path), scale, prepared=prepared,
-                                            expand_search=expanded, ds=ds, **options)
+            match_function = walls.match if selected_floor is not None else matcher._match_template
+            match = match_function(screenshot, str(path), scale, prepared=prepared,
+                                   expand_search=expanded, ds=ds, **options)
             if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
                 raise ValueError('定尺度模板匹配未返回有限分数或坐标')
             match['ds'] = ds
@@ -101,7 +109,11 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=Fals
                 # Shared caches and query groups are populated only by the coordinator.
                 matcher.prepare_map(str(path), ds, **options)
                 prepared.get(scale, ds)
-                ready.append(job)
+                if selected_floor is not None:
+                    fields = walls.prepare_map(str(path), ds, **options)
+                    ready.append(job[:-1] + ({**options, 'wall_fields': fields},))
+                else:
+                    ready.append(job)
             except (ValueError, cv2.error) as exc:
                 ready.append(dict(candidate_floor=job[0], reason=str(exc)))
         results = list(pool.map(lambda job: match_floor(job, ds=ds, expanded=expanded), ready))
@@ -123,6 +135,9 @@ def _match_floor_candidates(snapshot, screenshot, screen_factor, *, bounded=Fals
         return results, ready
 
     def run_resolution(ds, pool):
+        if selected_floor is not None:
+            results, _ = run_pass(jobs, ds, pool, expanded=True)
+            return results, select_best(results)
         results, ready = run_pass(jobs, ds, pool)
         best = select_best(results)
         trigger = None
@@ -198,7 +213,8 @@ def check_original_resources(profile_key, layouts):
     return summary
 
 
-def project_original(screenshot, profile_key, layout, opacity, *, variant_id=None, defer_preview=False):
+def project_original(screenshot, profile_key, layout, opacity, *, variant_id=None, defer_preview=False,
+                     capture_client_size=(2560, 1440), map_zoom_units=ZOOM_MIN, selected_floor=None, matching_roi=None):
     """Match clean floors and display an available version of the selected layout."""
     started = perf_counter()
     validation = dict(registration_algorithm='fixed_scale_template', projection_scope='single_floor',
@@ -212,9 +228,18 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
     layer = composite = None
     timings = {}
     try:
+        query = crop_image(screenshot, matching_roi)
+        offset_x, offset_y = matching_roi[:2] if matching_roi is not None else (0, 0)
+        if matching_roi is not None:
+            validation.update(matching_roi=list(matching_roi), matching_input_size=list(query.shape[1::-1]),
+                              candidate_location_space='matching_input_to_source_translation')
+        capture = capture_info(capture_client_size)
+        validation['capture_client'] = capture
+        map_zoom = zoom_factor(map_zoom_units)
+        validation.update(map_zoom_units=map_zoom_units, map_zoom=map_zoom)
         if not np.isfinite(opacity) or not 0 <= opacity <= 1:
             raise ValueError('投影不透明度必须在 0～1 之间')
-        if not np.any(cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY) > matcher.TEMPLATE_GAME_THRESH):
+        if not np.any(cv2.cvtColor(query, cv2.COLOR_BGR2GRAY) > matcher.TEMPLATE_GAME_THRESH):
             raise ValueError('截图中没有可匹配的可见像素，请保持地图打开后重试')
         with resources.resource_lock:
             if variant_id is None:
@@ -232,9 +257,15 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
                 raise ValueError(f'{layout} 不包含路线版本 {variant_id}，请改用 clean 或该布局已有路线')
             display = floors.FrozenSourceSnapshot(profile_key, layout, variant_id)
             snapshot = floors.FrozenSourceSnapshot(profile_key, layout, CLEAN_VERSION_ID)
+            if selected_floor is not None and (selected_floor not in snapshot.entries or selected_floor not in display.entries):
+                raise ValueError(f'{layout} 未提供楼层 {selected_floor} 的底图或显示图片')
+            matching_entries = ([snapshot.entries[selected_floor]] if selected_floor is not None
+                                else list(snapshot.entries.values()))
+            validation['selected_floor'] = selected_floor
+            validation['matching_method'] = 'directional_walls' if selected_floor is not None else 'weighted_binary'
+            validation['search_policy'] = 'direct_expanded' if selected_floor is not None else 'conditional_expansion'
             result.validation['pending_scale_floors'] = []
             config = snapshot.config
-            screen = screen_info(config.get('capture', {}).get('screen_name', ''))
             mode = int(config['perf_mode'])
             if not 0 <= mode < len(matcher.PERF_MODES):
                 raise ValueError('性能档位无效')
@@ -242,17 +273,19 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
             matching_started = perf_counter()
             # The winning floor is unknown: reserve the largest possible route.
             # Clean display sources share cache identities with matching sources.
-            largest_route = max(display.entries.values(), key=lambda item: item['size'][0] * item['size'][1])
-            bounded = not floors.working_set_fits([*snapshot.entries.values(), largest_route])
-            floors.retain_working_set([] if bounded else snapshot.entries.values(), frozen=snapshot._session)
-            attempts, best, path = _match_floor_candidates(snapshot, screenshot, screen['factor'], bounded=bounded)
+            largest_route = (display.entries[selected_floor] if selected_floor is not None else
+                             max(display.entries.values(), key=lambda item: item['size'][0] * item['size'][1]))
+            bounded = not floors.working_set_fits([*matching_entries, largest_route])
+            floors.retain_working_set([] if bounded else matching_entries, frozen=snapshot._session)
+            attempts, best, path = _match_floor_candidates(snapshot, query, capture['factor'] / map_zoom,
+                                                          bounded=bounded, map_zoom=map_zoom, selected_floor=selected_floor)
             result.validation['fixed_candidates'] = attempts
             if best is None:
                 raise ValueError('所有固定尺度候选均不可匹配：' + '；'.join(a['reason'] for a in attempts))
             snapshot.validate()
             match, scale, saved_scale, floor, entry, path, rgba, image = best
             validation['matching_source_image'] = entry['source_image']
-            clean_working_set = [snapshot.entries[floor]] if bounded else list(snapshot.entries.values())
+            clean_working_set = [snapshot.entries[floor]] if bounded else matching_entries
             floors.retain_working_set([*clean_working_set, display.entries[floor]], frozen=display._session)
             if image is None:
                 _, _, _, image, _ = snapshot.load(floor)
@@ -265,17 +298,27 @@ def project_original(screenshot, profile_key, layout, opacity, *, variant_id=Non
         if not np.isfinite(match['score']) or not np.isfinite(match['location']).all():
             raise ValueError('定尺度模板匹配未返回有限分数或坐标')
         x, y = match['location']
+        query_location = [float(x), float(y)]
+        x, y = x-scale*offset_x, y-scale*offset_y
         result.source_image = image
         result.screenshot_to_original = np.float64([[scale,0,x],[0,scale,y],[0,0,1]])
         result.original_to_screen = np.linalg.inv(result.screenshot_to_original)
         result.validation['template'] = dict(scale=scale, saved_scale=saved_scale,
-            screen=screen, score=float(match['score']), location=[int(x),int(y)],
+            capture_client=capture, score=float(match['score']),
+            location=[float(x),float(y)] if matching_roi is not None else [int(x),int(y)],
             ds=match.get('ds', matcher.PERF_MODES[mode]['ds']), perf_mode=mode,
             source_sha256=entry['source_sha256'], source_image=entry['source_image'],
-            target='single_floor_source_image', scale_policy='saved_original_scale_with_screen_factor',
+            target='single_floor_source_image', scale_policy='saved_original_scale_with_capture_client_and_map_zoom',
+            map_zoom=map_zoom, map_zoom_units=map_zoom_units,
             variant_id=variant_id, candidate_floor=floor, source_record_sha256=floors.fingerprint(entry),
             scale_provenance=entry.get('scale_provenance', 'imported_saved_scale'),
             search=match.get('search', {}))
+        if matching_roi is not None:
+            result.validation['template'].update(query_location=query_location,
+                                                location_space='viewport_to_source_translation')
+        if 'wall_match' in match:
+            result.validation['template']['wall_match'] = match['wall_match']
+            result.validation['template']['score_kind'] = 'mean_directional_wall_support'
         warnings = []
         if match.get('search', {}).get('boundary_edges'):
             warnings.append('匹配位置仍在搜索边界，候选可能错位，请核对位置')

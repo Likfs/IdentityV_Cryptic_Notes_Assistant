@@ -39,7 +39,14 @@ def no_live_input(monkeypatch, request):
     monkeypatch.setattr(app, 'GlobalActionHotkeys', lambda *_args: SimpleNamespace(
         events=Queue(), error=None, start=lambda: None, stop=lambda: None))
     monkeypatch.setattr(MousePanHook, 'start', lambda self: None)
-    monkeypatch.setattr(app.RouteProjectionApp, '_start_layout_retrieval', lambda self: None)
+    def prepared(window):
+        if window.profile.asset_status != 'pending':
+            backend = window.settings['layout_recognition_backend']
+            window._layout_retriever()
+            window.recognition_resources.fingerprints.setdefault((window.profile.key, backend), 'fixture-ready')
+            window.feature_status_label.setText('识别资源就绪')
+        window._refresh_status()
+    monkeypatch.setattr(app.RouteProjectionApp, '_start_layout_retrieval', prepared)
     # Dedicated prewarm tests exercise the real coordinator; ordinary GUI tests stay isolated.
     monkeypatch.setattr(app.RouteProjectionApp, '_prepare_template_sources', lambda self: None)
 
@@ -73,8 +80,8 @@ def window(tmp_path, monkeypatch):
     monkeypatch.setattr(app.RouteProjectionApp, "after", lambda *_: None)
     qt = QApplication.instance() or QApplication([])
     _load_offscreen_font()
-    # Ordinary windows start with current defaults; migration has dedicated tests.
-    (tmp_path / "settings.json").write_text('{}', encoding="utf-8")
+    # Shared interaction scenarios exercise explicit manual confirmation; fresh defaults have separate coverage.
+    (tmp_path / "settings.json").write_text('{"auto_select_layout": false}', encoding="utf-8")
     instance = app.RouteProjectionApp(settings_path=tmp_path / "settings.json")
     instance.locked_layout = "layout_11"
     instance.layout_var.set("layout_11")
@@ -98,12 +105,13 @@ def qt_app(monkeypatch):
 
 @pytest.fixture
 def direct_inputs(monkeypatch):
+    from src.registration.template_matching import walls
     original=np.full((40,40,3),120,np.uint8)
     rgba=np.dstack((original,np.full((40,40),180,np.uint8)))
     entry={'saved_scale':1.,'source_sha256':'verified','source_image':'original.png'}
     install_floor_inputs(monkeypatch, entry, original, rgba)
-    monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
     monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=2.,location=(0,0)))
+    monkeypatch.setattr(walls,'match',lambda *a, **kw:dict(score=2.,location=(0,0)))
     return original
 
 

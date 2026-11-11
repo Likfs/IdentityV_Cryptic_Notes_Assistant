@@ -20,6 +20,7 @@ def publish(root, catalog, *, scales=None):
                 entries.setdefault(definition['id'], dict(minimum_scale=1.5 if definition.get('asset_status') != 'pending' else None, layout_minimum_scales={}))
     for name in ('configs/app_defaults.json', 'src/registration/template_matching/provenance.json',
                  'assets/app_ui/home_wallpaper.jpg', 'assets/app_ui/icons/check.svg',
+                 'assets/app_ui/floor_controls.png',
                  'assets/layout_retrieval/icons/query.png', 'assets/layout_retrieval/icons/clean_09.png',
                  'assets/layout_retrieval/icons/clean_15.png'):
         target = root/name
@@ -150,3 +151,14 @@ def build_nightmare_replay_package(root):
     return publish(root, dict(schema_version=2, maps=[dict(id='a_bringer_of_doom', name='厄运之女',
                                                          difficulties=[definition])]), scales={'maps': {'a_bringer_of_doom': {'nightmare': {
         'minimum_scale': 1.49, 'layout_minimum_scales': {}}}}})
+
+
+def build_phosphorescence_replay_package(root):
+    base = 'assets/maps/phosphorescence_disease/nightmare'
+    definition = dict(id='nightmare', name='噩梦', floors=['b1', 'b2', 'b3'],
+        asset_status='ready', asset_contract='aligned_floor_images', clean_root=base+'/clean',
+        template_versions=['clean'], asset_versions=[dict(
+            id='clean', name='原版干净底图', kind='clean', source_root=base+'/clean')])
+    shutil.copytree(PROJECT_ROOT/'tests/fixtures/registration/aligned_phosphorescence', root/base)
+    return publish(root, dict(schema_version=2, maps=[dict(id='phosphorescence_disease',
+        name='磷光症', difficulties=[definition])]))

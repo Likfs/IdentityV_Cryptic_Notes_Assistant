@@ -62,6 +62,38 @@ def test_cached_startup_and_full_offline_audit_produce_identical_manifest(packag
     assert config_snapshot(root) == before
 
 
+def test_frozen_startup_audits_internal_metadata_and_publishes_external_configs(package, monkeypatch):
+    import sys
+    from src import paths
+    from src.aligned_assets import generate
+    from src.runtime_resources import runtime_files, read_bundle
+
+    root, _, _ = package
+    name = paths.TEMPLATE_PROVENANCE_PATH
+    internal = root/'_internal'
+    target = internal/name
+    target.parent.mkdir(parents=True)
+    (root/name).replace(target)
+    monkeypatch.setattr(paths, 'PROJECT_ROOT', root)
+    monkeypatch.setattr(sys, 'frozen', True, raising=False)
+    monkeypatch.setattr(sys, '_MEIPASS', str(internal), raising=False)
+    assert not sync.synchronize(root)
+    assert target in runtime_files(root)
+    assert generate(root)[0]['payload'] == read_bundle(root)
+
+    add_assets(root)
+    internal_before = target.read_bytes()
+    assert sync.synchronize(root)
+    assert name in read_bundle(root)['files']
+    assert not any(key.startswith('_internal/') for key in read_bundle(root)['files'])
+    assert target.read_bytes() == internal_before
+    assert not (internal/'configs').exists()
+    assert not sync.synchronize(root)
+    target.write_bytes(internal_before+b'changed')
+    with pytest.raises(ValueError, match='指纹'):
+        runtime_files(root)
+
+
 def test_cached_dimensions_do_not_hide_changed_route_canvas(package):
     root, _, _ = package
     add_assets(root)
@@ -581,7 +613,6 @@ def test_layouts_with_different_floor_counts_publish_and_match_only_actual_floor
     assert profile.floors_for_layout('layout_01') == ('1st',)
     assert profile.floors_for_layout('layout_02') == ('2nd', '1st')
     activate(root, monkeypatch)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     assert set(floors.sources(profile.key, 'layout_01', 'clean')[0]) == {'1st'}
     assert set(floors.FrozenSourceSnapshot(profile.key, 'layout_01', 'route_lhp_solo').entries) == {'1st'}
     retriever = create_layout_retriever('pure_structure', profile.clean_root, floors=profile.floors, cache_root=root/'features')
@@ -692,7 +723,11 @@ def test_normal_start_synchronizes_before_loading_gui_and_existing_instance_does
     root, _, _ = package
     add_assets(root, 'novice')
     monkeypatch.setattr(entry, 'PROJECT_ROOT', root)
-    monkeypatch.setattr(entry, '_synchronize_for_gui', sync.synchronize)
+    from src.startup import prepare_startup_recognition
+    def prepare(root, **selection):
+        return prepare_startup_recognition(root, sync.synchronize(root),
+            progress=lambda *_:None, cancelled=lambda:False, **selection)
+    monkeypatch.setattr(entry, '_synchronize_for_gui', prepare)
     monkeypatch.setattr(entry.sys, 'argv', ['src'])
     monkeypatch.setattr(entry, '_acquire_app_mutex', lambda: (None, True))
     monkeypatch.setattr(entry, '_run', lambda *_: pytest.fail('Second instance entered GUI'))
@@ -701,9 +736,9 @@ def test_normal_start_synchronizes_before_loading_gui_and_existing_instance_does
     assert config_snapshot(root) == before
     monkeypatch.setattr(entry, '_acquire_app_mutex', lambda: (None, False))
     called = []
-    def gui(_args, _parser, messages):
+    def gui(_args, _parser, state):
         called.append(MapCatalog(root/sync.CATALOG_PATH).profile('a_bringer_of_doom', 'novice'))
-        assert messages
+        assert state.messages
         runtime_files(root)
     monkeypatch.setattr(entry, '_run', gui)
     entry.main()

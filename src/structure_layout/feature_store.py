@@ -154,6 +154,14 @@ class FeatureFile:
 class FeatureStore:
     def __init__(self, root):
         self.root = Path(root).resolve()
+        # Content-addressed filenames can exceed MAX_PATH even when the cache
+        # directory fits. All cache I/O, including CreateFileW pinning, uses this path.
+        if os.name == 'nt':
+            value = str(self.root)
+            prefix = '\\\\?\\'
+            if not value.startswith(prefix):
+                value = prefix + 'UNC' + value[1:] if value.startswith('\\\\') else prefix + value
+                self.root = Path(value)
         self.files = {}
         self.built = 0
         _STORES.add(self)

@@ -12,7 +12,7 @@ def test_counter_buttons_and_short_key_taps_survive_map_close(window, source, mo
         action: window.settings[f'{action}_hotkey'] for action in CHEST_ACTIONS})
     install(window, source)
     for down in (True, True, False, True, False):
-        record(source, down, vk=0x74)
+        record(source, down, vk=0x64)
     window._handle_map_key()
     assert window.chest_counter.gold == 2 and window.chest_counter.purple == 0
     window.chest_action_buttons['chest_purple_add'].click()
@@ -37,6 +37,7 @@ def test_counter_buttons_and_short_key_taps_survive_map_close(window, source, mo
 
 
 def test_foreground_and_settings_filter_counter_keys_without_toggling_map(window, source):
+    window.settings['chest_gold_add_hotkey'] = 'F5'  # Explicit personal binding survives settings.
     source.configure('G', ['IdentityV'], action_keys={'chest_gold_add': 'F5'})
     install(window, source)
     generation = window.map_generation
@@ -61,10 +62,29 @@ def test_counter_keys_conflict_with_all_existing_keys_and_save(window):
     button = page.hotkey_buttons['chest_gold_add_hotkey']
     button.click()
     QTest.keyClick(button, Qt.Key.Key_F8)
-    assert page.vars['chest_gold_add_hotkey'].get() == 'F5'
+    assert page.vars['chest_gold_add_hotkey'].get() == 'Num4'
     QTest.keyClick(button, Qt.Key.Key_U)
     assert page.vars['chest_gold_add_hotkey'].get() == 'U'
     assert not page._capture_key('project_hotkey', 'U')
     assert page._persist_settings()
     page.close()
     assert window.settings['chest_gold_add_hotkey'] == 'U'
+
+
+def test_red_keypad_buttons_overlay_and_next_round_undo(window, source, monkeypatch):
+    monkeypatch.setattr(app, 'foreground_game_client', lambda _:CaptureRegion(0, 0, 2560, 1440))
+    source.configure('G', ['IdentityV'], action_keys={
+        action:window.settings[f'{action}_hotkey'] for action in CHEST_ACTIONS})
+    install(window, source)
+    for down in (True, True, False, True, False):
+        record(source, down, vk=0x67)
+    window._handle_map_key()
+    assert window.chest_counter.red == 2 and window.red_count_label.text() == '2'
+    window.chest_action_buttons['chest_red_subtract'].click()
+    assert window.chest_counter.red == 1
+    window._refresh_chest_overlay()
+    assert '红箱 1' in window.chest_overlay.label.text()
+    window.chest_reset_button.click()
+    assert window.chest_counter.red == 0
+    window.chest_undo_button.click()
+    assert window.chest_counter.red == 1

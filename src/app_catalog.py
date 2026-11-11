@@ -191,7 +191,7 @@ class MapCatalog:
         return matches[0]
 
 
-DEFAULT_MAP_CAPTURE_DELAY_MS = 150
+DEFAULT_MAP_CAPTURE_DELAY_MS = 30
 MAX_MAP_CAPTURE_DELAY_MS = 500
 
 
@@ -255,13 +255,13 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
         key = next(value for value in ('J', 'K', 'L', *ACTION_KEYS) if available(value))
     settings['reference_floor_hotkey'] = key
     used_keys.add(key)
-    key = normalize_hotkey(settings.get('next_round_hotkey', 'F12'), 'F12')
+    key = normalize_hotkey(settings.get('next_round_hotkey', 'Num0'), 'Num0')
     if not available(key):
-        key = next(value for value in ('F12', 'Ctrl+F12', 'Shift+F12', 'Ctrl+N', *ACTION_KEYS)
+        key = next(value for value in ('Num0', 'Ctrl+Num0', 'Shift+Num0', 'Ctrl+N', *ACTION_KEYS)
                    if available(value))
     settings['next_round_hotkey'] = key
     settings['auto_select_layout'] = settings.get('auto_select_layout') is True
-    for field in ('chest_counter_visible', 'capture_exclusion_enabled'):
+    for field in ('chest_counter_visible', 'capture_exclusion_enabled', 'reference_enabled', 'show_projection'):
         settings[field] = settings.get(field) if isinstance(settings.get(field), bool) else True
     profile = catalog.profiles.get((settings['map_id'], settings['difficulty_id']))
     floors = profile.floors if profile else ()
@@ -307,7 +307,7 @@ def load_settings(catalog: MapCatalog, path: Path = DEFAULT_SETTINGS_PATH) -> di
 
 def save_settings(settings: dict, path: Path = DEFAULT_SETTINGS_PATH) -> None:
     settings = {**settings, "registration_backend": "template", "layout_recognition_backend": normalize_recognition_backend(settings.get("layout_recognition_backend")),
-                "auto_floor": False, "auto_select_layout": settings.get('auto_select_layout') is True,
+                "auto_floor": False, "auto_select_layout": settings.get('auto_select_layout', True) is True,
                 "skip_layout_confirmation": False}
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(settings, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

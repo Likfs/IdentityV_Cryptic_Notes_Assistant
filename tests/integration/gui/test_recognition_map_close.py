@@ -26,10 +26,10 @@ class Replay:
         self.backend = window.settings['layout_recognition_backend']
         if not block_capture:
             self.release_capture.set()
-        def capture(_roi):
+        def capture(roi):
             self.capture_entered.set()
             assert self.release_capture.wait(3)
-            return np.full((80, 80, 3), 100, np.uint8)
+            return np.full((roi[3], roi[2], 3), 100, np.uint8)
         def retrieve(*_args, **_kwargs):
             gate = self.release_result if self.calls == 0 else self.release_new
             self.calls += 1
@@ -42,6 +42,7 @@ class Replay:
             finally:
                 self.returned.set()
         monkeypatch.setattr(app, 'foreground_game_client', lambda _: CaptureRegion(0, 0, 2560, 1440))
+        monkeypatch.setattr(app.ctypes.windll.user32, 'GetForegroundWindow', lambda:42)
         monkeypatch.setattr(app, 'ensure_region_on_screen', lambda _: None)
         monkeypatch.setattr(app, 'recognition_window_identity', lambda _: ['same-game'])
         monkeypatch.setattr(app, 'capture_bgr', capture)
@@ -54,7 +55,7 @@ class Replay:
         self.key('G')
 
     def key(self, name, *, drain=True, age=0):
-        vk = {'G': ord('G'), 'Esc': 0x1B, 'F8': 0x77, 'F12': 0x7B}[name]
+        vk = {'G': ord('G'), 'Esc': 0x1B, 'F8': 0x77, 'Num0': 0x60}[name]
         for down in (True, False):
             record(self.source, down, vk, age=age)
         if drain:
@@ -80,6 +81,7 @@ class Replay:
 def test_closed_map_recognition_finishes_and_confirms_only_on_user_action(
         window, source, monkeypatch, tmp_path, backend, close_key, confirmation):
     window.settings['layout_recognition_backend'] = backend
+    window._start_layout_retrieval()
     replay = Replay(window, source, monkeypatch, tmp_path)
     scheduled, prompts = [], []
     monkeypatch.setattr(window, 'after', lambda delay, callback: scheduled.append((delay, callback)) if delay != 25 else None)
@@ -168,7 +170,7 @@ def test_close_does_not_weaken_context_invalidation_or_new_busy(window, source, 
         request = window._recognition_request
         replay.key('G')
         if change == 'next_round':
-            replay.key('F12')
+            replay.key('Num0')
         elif change == 'restart':
             replay.key('F8')
         elif change == 'profile':
@@ -248,7 +250,7 @@ def test_real_modal_watcher_closes_without_locking_and_only_close_keeps_candidat
         replay.complete()
         pending = window._pending_confirmation
         replay.key('G')
-        QTimer.singleShot(10, lambda: replay.key('Esc' if transition == 'close' else 'F12'))
+        QTimer.singleShot(10, lambda: replay.key('Esc' if transition == 'close' else 'Num0'))
         # Bound the real modal loop if the watcher regresses.
         guard = QTimer()
         guard.setSingleShot(True)

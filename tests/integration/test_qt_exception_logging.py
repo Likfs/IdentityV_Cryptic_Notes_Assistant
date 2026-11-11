@@ -29,15 +29,17 @@ def test_timer_exception_is_logged_before_fatal_exit(tmp_path, mode):
             raise ValueError('qt timer traceback probe')
 
         if mode == 'bootstrap':
-            from src import __main__ as entry, runtime_resources, route_projection_app, asset_sync
+            from src import __main__ as entry, runtime_resources, route_projection_app, asset_sync, startup
             entry.LOG_ROOT = Path(output)
             asset_sync.synchronize = lambda root, **kwargs: []
             runtime_resources.read_bundle = lambda: {}
-            entry.MapCatalog = lambda: SimpleNamespace(profiles={('test', 'test'): SimpleNamespace(key='test/test')})
-            entry.load_settings = lambda catalog: dict(map_id='test', difficulty_id='test')
+            startup.prepare_startup_recognition = lambda *args, **kwargs: SimpleNamespace(
+                catalog=SimpleNamespace(profiles={('test', 'test'): SimpleNamespace(key='test/test')}),
+                settings=dict(map_id='test', difficulty_id='test'), messages=[], close=lambda: None)
             class Window(QtCore.QObject):
-                def __init__(self):
+                def __init__(self, *, startup_state):
                     super().__init__()
+                    assert startup_state.settings['map_id'] == 'test'
                     self.timer = QtCore.QTimer(self)
                     self.timer.setSingleShot(True)
                     self.timer.timeout.connect(explode_timer)

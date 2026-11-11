@@ -21,7 +21,6 @@ def partial_package(tmp_path, monkeypatch):
         'layout_01': ('1st',), 'layout_02': ('b1', 'b2', 'b3')})
     activate(root, monkeypatch)
     monkeypatch.setattr(direct, 'PROJECT_ROOT', root)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     yield root
     floors._close_fixed_session()
 

@@ -1,0 +1,40 @@
+{
+  "profile": "phosphorescence_disease/nightmare",
+  "layout": "layout_12",
+  "floor": "b3",
+  "minimum_scale": 1.5,
+  "source_size": [
+    1939,
+    1999
+  ],
+  "source_image": "assets/maps/phosphorescence_disease/nightmare/clean/layout_12/layout_12_b3.png",
+  "files": {
+    "clean_b3.png": "d61d66821ffd637e1a56faf0deaba880229ae470a7bb5d195fcfb5291a1efc67",
+    "no_text_control.png": "13edf85581ac070979ac50e95b3ae35232949c9d82305e03d4e28c21929ce549",
+    "text_prompt.png": "e078b137ff1b82a1e8aa9c83be9e22668738046b4dcad0c798f8b0eb5e5ccf8b"
+  },
+  "text_prompt": {
+    "source_run": "20261107_144526_492736_layout_12_b3",
+    "old_origin": [
+      256,
+      176
+    ],
+    "expected_origin": [
+      196,
+      -548
+    ],
+    "provenance": "Offline expanded-search and lower-crop correspondence plus visual boundary review; not an independent layout accuracy label"
+  },
+  "no_text_control": {
+    "source_run": "20261107_144528_046812_layout_12_b3",
+    "old_origin": [
+      232,
+      -536
+    ],
+    "expected_origin": [
+      232,
+      -536
+    ],
+    "provenance": "Offline expanded-search and lower-crop correspondence plus visual boundary review; not an independent layout accuracy label"
+  }
+}

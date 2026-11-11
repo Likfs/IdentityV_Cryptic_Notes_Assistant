@@ -16,6 +16,20 @@ def test_counts_clamp_at_zero_and_undo_including_new_round():
     assert (ChestCounter().gold, ChestCounter().purple) == (0, 0)
 
 
+def test_red_counts_share_reset_undo_and_nonnegative_rules():
+    counter = ChestCounter()
+    assert not counter.apply('chest_red_subtract')
+    counter.apply('chest_gold_add')
+    counter.apply('chest_purple_add')
+    counter.apply('chest_red_add')
+    counter.apply('chest_red_add')
+    counter.apply('chest_red_subtract')
+    assert (counter.gold, counter.purple, counter.red) == (1, 1, 1)
+    assert counter.undo() and counter.red == 2
+    assert counter.reset() and (counter.gold, counter.purple, counter.red) == (0, 0, 0)
+    assert counter.undo() and (counter.gold, counter.purple, counter.red) == (1, 1, 2)
+
+
 def test_counter_raw_input_records_short_taps_and_foreground_at_press(monkeypatch):
     monkeypatch.setattr(GlobalMapKeys, '_read_held', staticmethod(lambda _: set()))
     source = GlobalMapKeys('G', ['IdentityV'], lambda: None)

@@ -14,6 +14,7 @@ from tools.assets.imports.export_aligned_assets import generate
 def aligned_package(tmp_path):
     for name in ('configs/app_defaults.json', 'src/registration/template_matching/provenance.json',
                  'assets/app_ui/home_wallpaper.jpg', 'assets/app_ui/icons/check.svg',
+                 'assets/app_ui/floor_controls.png',
                  'assets/layout_retrieval/icons/query.png', 'assets/layout_retrieval/icons/clean_09.png',
                  'assets/layout_retrieval/icons/clean_15.png'):
         target = tmp_path/name
@@ -134,7 +135,6 @@ def test_mixed_layout_scales_are_shared_by_recognition_and_projection(tmp_path, 
         id='a_bringer_of_doom', name='测试地图', difficulties=[definition])]), scales={
             'maps': {'a_bringer_of_doom': {'hard': dict(minimum_scale=1.5, layout_minimum_scales={'layout_02': 2.0})}}})
     activate(tmp_path, monkeypatch)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     catalog = MapCatalog(tmp_path/'configs/map_catalog.json')
     profile = catalog.profile('a_bringer_of_doom', 'hard')
     bundle = read_bundle(tmp_path)
@@ -174,7 +174,6 @@ def test_route_pixels_do_not_change_registration(aligned_package, monkeypatch):
     from src.registration.template_matching import floors, direct
     monkeypatch.setattr(runtime_resources, 'PROJECT_ROOT', root)
     monkeypatch.setattr(floors, 'PROJECT_ROOT', root)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     screenshot = image[20:190,20:210].copy()
     clean, _, clean_layer, _, _ = direct.project_original(screenshot,'sample/hard','layout_01',1.,variant_id='clean')
     route, _, route_layer, _, _ = direct.project_original(screenshot,'sample/hard','layout_01',1.,variant_id='custom')
@@ -212,7 +211,6 @@ def test_workflow_default_route_comes_from_declared_versions(aligned_package, mo
     root, _, image = aligned_package
     publish(root)
     activate(root, monkeypatch)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     catalog = MapCatalog(root/'configs/map_catalog.json')
     profile = catalog.profile('sample', 'hard')
     try:
@@ -237,7 +235,6 @@ def test_shared_projection_default_uses_frozen_configuration(aligned_package, mo
     path.write_text(json.dumps(data), encoding='utf-8')
     publish(root)
     activate(root, monkeypatch)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     shot = image[20:190,20:210].copy()
     try:
         implicit = direct.project_original(shot, 'sample/hard', 'layout_01', .5)

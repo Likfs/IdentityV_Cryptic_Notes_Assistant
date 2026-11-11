@@ -94,10 +94,18 @@ def main():
             app.floor_control_mouse_down = lambda *_: False
             app.game_window_is_foreground = lambda *_: False
             MousePanHook.start = lambda self: None
-            app.RouteProjectionApp._start_layout_retrieval = lambda self: None
+            start_retrieval = app.RouteProjectionApp._start_layout_retrieval
+            startup_readiness = []
+            def verify_prepared_index(window):
+                ready = window._recognition_ready()
+                assert ready or window.profile.asset_status == 'pending'
+                startup_readiness.append(ready)
+                start_retrieval(window)
+            app.RouteProjectionApp._start_layout_retrieval = verify_prepared_index
             sys.argv = ['src', '--smoke']
         entry.main()
         if args.mode == 'gui':
+            assert startup_readiness, 'Main window never received its prepared index'
             print(json.dumps(dict(gui_closed=True)))
     assert not any(name == p or name.startswith(p + '.') for name in sys.modules for p in FORBIDDEN)
 

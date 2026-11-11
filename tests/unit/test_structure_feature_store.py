@@ -30,6 +30,33 @@ def test_round_trip_preserves_dtype_shape_values_and_read_only_mapping(tmp_path)
         second.close()
 
 
+@pytest.mark.parametrize('directory_length', [215, 300])
+def test_long_cache_path_publishes_maps_and_reuses_features(tmp_path, directory_length):
+    root = tmp_path/'runtime/cache/structure_features'
+    while len(str(root)) < directory_length:
+        root = root/'cache_segment'
+    original = np.arange(12, dtype=np.float32).reshape(3,4)
+    identity = {'source': 'long-path-regression'}
+    first = FeatureStore(root)
+    try:
+        key = first.ensure(identity, lambda: dict(matrix=original))
+        with first.mapped(key) as target:
+            np.testing.assert_array_equal(target['matrix'], original)
+            assert not target['matrix'].flags.writeable
+        assert first.built == 1
+    finally:
+        first.close()
+    second = FeatureStore(root)
+    try:
+        assert second.ensure(identity, lambda: pytest.fail('Rebuilt verified features')) == key
+        with second.mapped(key) as target:
+            np.testing.assert_array_equal(target['matrix'], original)
+        assert second.built == 0
+        assert not list(second.root.glob('*.tmp'))
+    finally:
+        second.close()
+
+
 def test_cancelled_write_leaves_no_partial_file_and_prune_respects_other_sessions(tmp_path):
     first=FeatureStore(tmp_path)
     second=FeatureStore(tmp_path)

@@ -18,8 +18,9 @@ from PyQt6.QtWidgets import (
     QSlider, QSpinBox, QVBoxLayout, QWidget, QTabWidget,
 )
 
-from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings
+from src.app_catalog import ACTION_KEYS, MAP_KEYS, load_settings, load_default_settings
 from src.floor_definitions import FLOOR_NAMES
+from src.paths import PROJECT_ROOT
 from src.app_catalog import map_capture_delay_ms, MAX_MAP_CAPTURE_DELAY_MS, DEFAULT_MAP_CAPTURE_DELAY_MS
 from src.capture.region import CaptureRegion
 from src.capture.monitors import MonitorInfo, monitor_api
@@ -56,6 +57,7 @@ QLabel#muted {{ color: {MUTED}; font-size: 12px; }}
 QLabel#layoutNumber {{ font-size: 30px; font-weight: 500; }}
 QLabel#counterGold {{ color: #e4c48a; font-size: 20px; font-weight: 600; }}
 QLabel#counterPurple {{ color: #c3acdb; font-size: 20px; font-weight: 600; }}
+QLabel#counterRed {{ color: #ed9b94; font-size: 20px; font-weight: 600; }}
 QLabel#good {{ color: {GREEN}; }}
 QLabel#warning {{ color: {AMBER}; }}
 QComboBox, QLineEdit, QSpinBox {{ background: {CARD_2}; border: 1px solid #46525f; border-radius: 6px; padding: 5px 9px; min-height: 24px; }}
@@ -78,7 +80,7 @@ QPushButton#disclosure:checked {{ background: transparent; }}
 QPushButton#hotkeyCapture:focus {{ border: 2px solid {ACCENT}; background: #354940; }}
 QCheckBox, QRadioButton {{ background: transparent; spacing: 8px; }}
 QCheckBox::indicator {{ width: 18px; height: 18px; background: #151b22; border: 1px solid #9baab9; border-radius: 4px; }}
-QCheckBox::indicator:checked {{ background: #597e70; border-color: #b7d9cc; image: url("{(Path(__file__).resolve().parents[1] / 'assets/app_ui/icons/check.svg').as_posix()}"); }}
+QCheckBox::indicator:checked {{ background: #597e70; border-color: #b7d9cc; image: url("{(PROJECT_ROOT / 'assets/app_ui/icons/check.svg').as_posix()}"); }}
 QCheckBox::indicator:disabled {{ border-color: #67717d; background: #303b46; }}
 QCheckBox:focus {{ color: {ACCENT}; }}
 QSlider::groove:horizontal {{ height: 4px; background: #4d5a68; border-radius: 2px; }}
@@ -829,7 +831,6 @@ class RouteOverlayWindow(QWidget):
         self._clear_before_hide = clear_before_hide
         self.capture_excluded = False
         self._pan_pixmap = None
-        self._pan_offset = (0., 0.)
         self.label = QLabel(self)
         self.label.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.visible = False
@@ -853,24 +854,24 @@ class RouteOverlayWindow(QWidget):
             super().show()
         self.visible = True
 
-    def set_pan_image(self, rgba, origin, roi):
-        """Cache the complete scaled source inside a fixed, clipping viewport."""
+    def set_pan_image(self, rgba, origin, roi, *, pixel_scale=1.):
+        """Cache one native-resolution source inside a fixed, clipping viewport."""
         height, width = rgba.shape[:2]
         image = QImage(rgba.data, width, height, rgba.strides[0], QImage.Format.Format_RGBA8888).copy()
         x, y, w, h, scale = physical_to_qt_geometry(*map(int, roi))
-        self._pan_scale = scale
+        self._pan_dpr = scale
         self._pan_origin = tuple(origin)
-        self._pan_offset = (0., 0.)
+        self._pan_pixel_scale = float(pixel_scale)
         self._pan_pixmap = QPixmap.fromImage(image)
-        self._pan_pixmap.setDevicePixelRatio(scale)
         self.label.clear()
         self.label.hide()
         self.setGeometry(x, y, w, h)
         self.update()
 
-    def set_pan_offset(self, dx, dy):
-        if self._pan_pixmap is not None and (dx, dy) != self._pan_offset:
-            self._pan_offset = (float(dx), float(dy))
+    def set_pan_transform(self, pixel_scale, origin):
+        if self._pan_pixmap is not None and (pixel_scale != self._pan_pixel_scale or tuple(origin) != self._pan_origin):
+            self._pan_pixel_scale = float(pixel_scale)
+            self._pan_origin = tuple(origin)
             self.update()
 
     def paintEvent(self, event):
@@ -879,9 +880,9 @@ class RouteOverlayWindow(QWidget):
             painter = QPainter(self)
             painter.setClipRect(self.rect())
             painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
-            x = (self._pan_origin[0] + self._pan_offset[0]) / self._pan_scale
-            y = (self._pan_origin[1] + self._pan_offset[1]) / self._pan_scale
-            painter.drawPixmap(QPointF(x, y), self._pan_pixmap)
+            painter.translate(self._pan_origin[0] / self._pan_dpr, self._pan_origin[1] / self._pan_dpr)
+            painter.scale(self._pan_pixel_scale / self._pan_dpr, self._pan_pixel_scale / self._pan_dpr)
+            painter.drawPixmap(QPointF(0, 0), self._pan_pixmap)
             painter.end()
 
     def _prepare_native_window(self):
@@ -955,12 +956,14 @@ class ChestCounterWindow(RouteOverlayWindow):
         painter.drawRoundedRect(self.rect().adjusted(1, 1, -1, -1), 7, 7)
         painter.end()
 
-    def show_counts(self, gold, purple, client):
+    def show_counts(self, gold, purple, red, client):
         x, y, width, height, _ = physical_to_qt_geometry(*client.as_list())
-        self.setGeometry(x + max(0, width - 296), y + min(100, max(0, height - 54)), 280, 54)
-        self.label.setGeometry(self.rect())
         self.label.setText(f'已开启　<span style="color:#f5c879">金箱 {gold}</span>'
-                           f'　<span style="color:#d9a0ff">紫箱 {purple}</span>')
+                           f'　<span style="color:#d9a0ff">紫箱 {purple}</span>'
+                           f'　<span style="color:#ed9b94">红箱 {red}</span>')
+        counter_width = min(width, max(380, self.label.sizeHint().width()+24))
+        self.setGeometry(x + max(0, width-counter_width-16), y + min(100, max(0, height-54)), counter_width, 54)
+        self.label.setGeometry(self.rect())
         if not self.isVisible():
             self._prepare_native_window()
             QWidget.show(self)
@@ -1012,13 +1015,13 @@ class SettingsPage(QWidget):
                     card = QFrame()
                     card.setObjectName('card')
                     column = QVBoxLayout(card)
-                    column.setContentsMargins(20, 20, 20, 20)
-                    column.setSpacing(20)
+                    column.setContentsMargins(16, 16, 16, 16)
+                    column.setSpacing(14)
                     heading = QLabel(title)
                     heading.setObjectName('subheading')
                     column.addWidget(heading)
                     fields = QFormLayout()
-                    fields.setSpacing(18)
+                    fields.setSpacing(12)
                     fields.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.AllNonFixedFieldsGrow)
                     column.addLayout(fields)
                     column.addStretch(1)
@@ -1074,7 +1077,7 @@ class SettingsPage(QWidget):
             self._update_recognition_controls(), self._schedule_settings_save()))
         form.addRow('布局识别方法', self.layout_recognition_combo)
         self.auto_select_layout_check = check('auto_select_layout', '自动选择识别布局，无需确认', settings['auto_select_layout'])
-        self.auto_select_layout_check.setToolTip('默认关闭。开启后按最高匹配分数选择，可能选错；分数不是正确概率。可重新识别或手动改选布局。')
+        self.auto_select_layout_check.setToolTip('默认开启。按最高匹配分数选择，分数不是正确概率；可关闭自动选择以手动确认，也可重新识别或改选布局。')
         form.addRow('布局选择', self.auto_select_layout_check)
         self.recognition_note = QLabel()
         self.recognition_note.setWordWrap(True)
@@ -1108,7 +1111,7 @@ class SettingsPage(QWidget):
         capture_note.setWordWrap(True)
         form.addRow('', capture_note)
         form.addRow("自动投影", check("auto_project", "地图打开时自动配准并投影", settings["auto_project"]))
-        form.addRow("地图拖动跟随（试用）", check("template_motion_tracking", "拖动地图时路线同步平移（不支持缩放）", settings.get("template_motion_tracking", True)))
+        form.addRow("地图平移／缩放跟随（试用）", check("template_motion_tracking", "拖动及滚轮缩放时路线同步跟随", settings.get("template_motion_tracking", True)))
         form = self.forms['capture']
         self.map_capture_delay_spin = QSpinBox()
         self.map_capture_delay_spin.setRange(0, MAX_MAP_CAPTURE_DELAY_MS)
@@ -1122,22 +1125,46 @@ class SettingsPage(QWidget):
         form.addRow("截图延迟", self.map_capture_delay_spin)
         form.addRow("配准方式", QLabel("定尺度模板匹配 · 单层自动匹配"))
         form.addRow("游戏窗口标题", entry("window_titles", ", ".join(settings["game_window_titles"])))
-        form.addRow("截图区域 左, 上, 宽, 高", entry("roi", ", ".join(map(str, settings["capture_roi"]))))
-        form.addRow("参考分辨率 宽, 高", entry("reference_size", ", ".join(map(str, settings["capture_reference_size"]))))
+        # Preserve historical settings on save; GUI capture now follows game geometry.
+        self.vars['roi'] = Value(", ".join(map(str, settings['capture_roi'])))
+        self.vars['reference_size'] = Value(", ".join(map(str, settings['capture_reference_size'])))
+        form.addRow("游戏地图区域", QLabel("随游戏窗口自动适配"))
         form = self.forms['general']
-        opacity_row = QWidget()
-        opacity_layout = QHBoxLayout(opacity_row)
-        opacity_layout.setContentsMargins(0, 0, 0, 0)
-        slider = QSlider(Qt.Orientation.Horizontal)
-        slider.setRange(0, 100)
-        slider.setValue(round(settings["opacity"] * 100))
-        self.vars["opacity"] = Value(slider.value())
-        slider.valueChanged.connect(lambda value: (self.vars["opacity"].set(value), self._update_opacity_text(), self._schedule_settings_save()))
-        self.opacity_label = QLabel()
+        display_heading = QLabel('显示设置')
+        display_heading.setObjectName('subheading')
+        form.addRow(display_heading)
+        self.show_overlay_check = check('show_projection', '显示路线投影', settings['show_projection'])
+        form.addRow('路线投影', self.show_overlay_check)
+        self.reference_enabled_check = check('reference_enabled', '启用参考图', settings['reference_enabled'])
+        self.reference_enabled_check.setToolTip('关闭后不加载或展示参考图，H／J 快捷键不再操作参考图；不影响路线投影。')
+        form.addRow('参考图', self.reference_enabled_check)
+        for name, title in (('opacity', '投影不透明度'), ('reference_opacity', '参考图不透明度')):
+            row = QWidget()
+            box = QHBoxLayout(row)
+            box.setContentsMargins(0, 0, 0, 0)
+            slider = QSlider(Qt.Orientation.Horizontal)
+            slider.setRange(0, 100)
+            slider.setValue(round(settings[name]*100))
+            slider.setAccessibleName(title)
+            label = QLabel(f'{slider.value()}% 不透明')
+            self.vars[name] = Value(slider.value())
+            slider.valueChanged.connect(lambda value, key=name, target=label: (
+                self.vars[key].set(value), target.setText(f'{value}% 不透明'), self._schedule_settings_save()))
+            setattr(self, name+'_slider', slider)
+            if name == 'opacity':
+                self.opacity_label = label
+            box.addWidget(slider, 1)
+            box.addWidget(label)
+            form.addRow(title, row)
+        self.reference_opacity_slider.setEnabled(settings['reference_enabled'])
+        self.reference_enabled_check.toggled.connect(self.reference_opacity_slider.setEnabled)
         self._update_opacity_text()
-        opacity_layout.addWidget(slider, 1)
-        opacity_layout.addWidget(self.opacity_label)
-        form.addRow("投影不透明度", opacity_row)
+        self.reset_button = QPushButton('恢复默认投影透明度')
+        self.reset_button.clicked.connect(lambda: self.opacity_slider.setValue(round(load_default_settings()['opacity']*100)))
+        form.addRow(self.reset_button)
+        self.hide_overlay_button = QPushButton('隐藏投影')
+        self.hide_overlay_button.clicked.connect(self.app.hide_overlay)
+        form.addRow(self.hide_overlay_button)
 
         close_button = QPushButton("←  返回首页")
         close_button.clicked.connect(self.close)
@@ -1151,9 +1178,9 @@ class SettingsPage(QWidget):
 
     def _update_recognition_controls(self):
         self.recognition_note.setText(
-            '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。默认人工确认，可开启自动选择；分数不是正确概率。'
+            '请将游戏地图缩到最小再识别；CPU 搜索当前难度的各层底图，不自动适配其他缩放。默认自动选择，可关闭后人工确认；分数不是正确概率。'
             if self.layout_recognition_combo.currentData() == 'pure_structure' else
-            '请在二楼地图识别，选定布局后可切层配准投影。默认人工确认，可开启自动选择；匹配分数不是正确概率。')
+            '请在二楼地图识别，选定布局后可切层配准投影。默认自动选择，可关闭后人工确认；匹配分数不是正确概率。')
 
     def _capture_key(self, name: str, key: str) -> bool:
         names = ("map_key", "recognize_hotkey", "project_hotkey", "reference_hotkey", 'reference_floor_hotkey', 'next_round_hotkey', *CHEST_HOTKEY_FIELDS)
@@ -1193,7 +1220,7 @@ class SettingsPage(QWidget):
         game_capture_region(CaptureRegion(0, 0, *reference), roi, reference)
         updated = dict(self.app.settings)
         updated.update({name: value.get() for name, value in self.vars.items()
-                        if name not in ("roi", "reference_size", "window_titles", "opacity")})
+                        if name not in ("roi", "reference_size", "window_titles", "opacity", "reference_opacity")})
         updated.update(shortcuts)
         updated["capture_roi"] = roi
         updated["capture_reference_size"] = reference
@@ -1201,6 +1228,7 @@ class SettingsPage(QWidget):
         if not updated["game_window_titles"]:
             raise ValueError("请填写游戏窗口标题关键词，以便只截取游戏画面")
         updated["opacity"] = percent_to_opacity(round(self.vars["opacity"].get()))
+        updated['reference_opacity'] = percent_to_opacity(round(self.vars['reference_opacity'].get()))
         updated.update(registration_backend="template", layout_recognition_backend=self.vars["layout_recognition_backend"].get(),
                        auto_floor=False, skip_layout_confirmation=False)
         return updated
@@ -1215,7 +1243,8 @@ class SettingsPage(QWidget):
             persisted = load_settings(self.app.catalog, self.app.settings_path)
             fields = ("map_key", "game_window_titles", "auto_project", "auto_floor", "template_motion_tracking", "map_capture_delay_ms", "recognize_hotkey",
                       "project_hotkey", "reference_hotkey", "reference_opacity", "capture_roi", "capture_reference_size", "route_versions", "opacity", "skip_layout_confirmation", "auto_select_layout", "layout_recognition_backend",
-                      *CHEST_HOTKEY_FIELDS, 'reference_floor_hotkey', 'next_round_hotkey', 'chest_counter_visible', 'capture_exclusion_enabled')
+                      *CHEST_HOTKEY_FIELDS, 'reference_floor_hotkey', 'next_round_hotkey', 'chest_counter_visible', 'capture_exclusion_enabled',
+                      'reference_enabled', 'show_projection')
             if any(persisted[name] != updated[name] for name in fields):
                 raise OSError(f"设置未完整写入配置文件：{self.app.settings_path}")
         except Exception as exc:

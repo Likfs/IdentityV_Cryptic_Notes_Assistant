@@ -5,10 +5,13 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime
 from pathlib import Path
 import cv2
+from src.map_motion import ZOOM_MIN
 import numpy as np
 from src.paths import DIAGNOSTIC_ROOT
+from src.capture.region import crop_image
 from src.app_catalog import DifficultyProfile, MapCatalog
 from src.floor_definitions import DEFAULT_FLOORS
+from src.floor_indicator import FloorDetection
 from src.layout_retrieval import create_layout_retriever, LayoutRetriever, LayoutRetrievalResult
 from src.projection.route_overlay import composite_route_layer
 from src.registration.result import OriginalRegistrationResult
@@ -45,6 +48,12 @@ class WorkflowResult:
     gui_diagnostics: dict = field(default_factory=dict)
     capture_window_id: int | None = None
     recognition_request_id: str | None = None
+    floor_detection: dict | None = None
+    floor_ui_image: np.ndarray | None = field(default=None, repr=False, compare=False)
+    floor_ui_normalized: np.ndarray | None = field(default=None, repr=False, compare=False)
+    capture_context: dict = field(default_factory=dict)
+    matching_input: np.ndarray | None = field(default=None, repr=False, compare=False)
+    matching_roi: tuple | None = None
 
     def diagnostics(self) -> dict:
         return {
@@ -57,7 +66,14 @@ class WorkflowResult:
             "projection_preview_pending": self.projection_preview_pending,
             "preview_error": self.preview_error,
             "floor": self.floor,
-            "floor_detection": None,  # Historical diagnostics key; floor identification is not performed.
+            "floor_detection": self.floor_detection,
+            "floor_ui_images": {
+                "raw": "02_floor_ui_raw.png" if self.floor_ui_image is not None else None,
+                "normalized": "03_floor_ui_normalized.png" if self.floor_ui_normalized is not None else None,
+            },
+            "capture_context": self.capture_context,
+            "matching_roi": list(self.matching_roi) if self.matching_roi is not None else None,
+            "matching_input_image": "04_matching_input.png" if self.matching_input is not None else None,
             "decision": self.decision,
             "layout_recognition_backend": self.layout_recognition_backend,
             "layout_retrieval": self.layout_retrieval.diagnostics() if self.layout_retrieval else None,
@@ -113,6 +129,12 @@ def save_workflow_result(result: WorkflowResult, directory: Path | None = None) 
     directory.mkdir(parents=True, exist_ok=True)
     result.run_directory = str(directory)
     _write_image(directory / "01_screenshot.png", result.screenshot)
+    if result.floor_ui_image is not None:
+        _write_image(directory / "02_floor_ui_raw.png", result.floor_ui_image)
+    if result.floor_ui_normalized is not None:
+        _write_image(directory / "03_floor_ui_normalized.png", result.floor_ui_normalized)
+    if result.matching_input is not None:
+        _write_image(directory / "04_matching_input.png", result.matching_input)
     if result.projection is not None:
         _write_image(directory / "05_projection.png", result.projection)
     if result.layer is not None:
@@ -138,12 +160,17 @@ def process_screenshot(
     recognition_reference_size: tuple[int, int] = (1180, 1050),
     template_variant_id: str | None = None,
     recognition_cancelled=None,
+    capture_client_size: tuple[int, int] = (2560, 1440),
+    map_zoom_units: int = ZOOM_MIN,
+    floor_detection: FloorDetection | None = None,
+    matching_roi: tuple | None = None,
 ) -> WorkflowResult:
     started = time.perf_counter()
     if getattr(profile, 'asset_status', 'ready') == 'pending':
         raise ValueError(f'{profile.map_name}／{profile.difficulty_name}：资产待配置，请检查楼层底图、最小缩放值及已提供路线')
     if screenshot_bgr.ndim != 3 or screenshot_bgr.shape[2] != 3:
         raise ValueError("截图必须为 BGR 三通道图片")
+    query = crop_image(screenshot_bgr, matching_roi)
     timings: dict[str, float] = {}
     decision = None
     retrieval = None
@@ -157,7 +184,7 @@ def process_screenshot(
         retriever = layout_retriever or create_layout_retriever(layout_recognition_backend, profile.clean_root,
             floors=getattr(profile, 'floors', DEFAULT_FLOORS))
         try:
-            retrieval = retriever.recognize(screenshot_bgr, recognition_reference_size,
+            retrieval = retriever.recognize(query, recognition_reference_size,
                 **({'cancelled': recognition_cancelled} if recognition_cancelled is not None else {}))
         finally:
             if layout_retriever is None and hasattr(retriever, 'close'):
@@ -186,6 +213,9 @@ def process_screenshot(
         calibration_path=None,
         layout_recognition_backend=layout_recognition_backend,
         layout_retrieval=retrieval,
+        capture_context=dict(game_client_size=capture_client_size, map_zoom_units=map_zoom_units),
+        matching_input=query if matching_roi is not None else None,
+        matching_roi=tuple(matching_roi) if matching_roi is not None else None,
     )
     if recognize_only:
         # Recognition succeeds when candidates are available. The UI chooses whether
@@ -196,19 +226,38 @@ def process_screenshot(
             result.reasons.extend(retrieval.reasons if retrieval else ["未返回可供选择的布局候选"])
         result.timings_ms["total"] = (time.perf_counter() - started) * 1000.0
         return result
+    if floor_detection is not None:
+        result.floor_detection = floor_detection.diagnostics()
+        result.floor_ui_image = floor_detection.control_image
+        result.floor_ui_normalized = floor_detection.normalized_image
+        result.floor = floor_detection.floor or 'unknown'
+        if floor_detection.floor is None:
+            result.reasons = [floor_detection.reason or '无法识别当前楼层，请重新截图']
+        elif floor_detection.floor not in profile.floors_for_layout(selected_layout):
+            result.reasons = [f'{selected_layout} 未提供 {floor_detection.floor} 楼层底图，投影已隐藏']
+        if result.reasons:
+            result.timings_ms['total'] = (time.perf_counter() - started) * 1000.
+            return result
     from src.registration.template_matching.direct import available_variants, project_original
     if template_variant_id is None and selected_layout:
         template_variant_id = next(iter(available_variants(profile.key, selected_layout)), None)
     result.floor = 'all'
     result.variant_id = template_variant_id
     names = profile.version_names
-    result.variant_source = names.get(template_variant_id, template_variant_id) + ' · 单层自动匹配'
+    selection_note = (' · 单层布局配准' if floor_detection is not None and floor_detection.selection_source == 'single_floor_layout'
+                      else ' · UI 选层配准' if floor_detection is not None else ' · 单层自动匹配')
+    result.variant_source = names.get(template_variant_id, template_variant_id) + selection_note
     if not selected_layout:
         result.reasons = ['请先识别并确认布局，再进行 定尺度模板匹配 原图配准']
     else:
         registration, source, layer, composite, direct_timings = project_original(
             screenshot_bgr, profile.key, selected_layout, opacity, variant_id=template_variant_id,
-            defer_preview=defer_projection_preview)
+            defer_preview=defer_projection_preview, capture_client_size=capture_client_size,
+            map_zoom_units=map_zoom_units,
+            selected_floor=floor_detection.floor if floor_detection is not None else None,
+            **({'matching_roi': matching_roi} if matching_roi is not None else {}))
+        registration.validation['floor_detection_enabled'] = floor_detection is not None and floor_detection.selection_source == 'floor_ui'
+        registration.validation['floor_selection_source'] = floor_detection.selection_source if floor_detection is not None else 'map_comparison'
         result.registration = registration
         result.floor = registration.validation.get('template', {}).get('candidate_floor', 'unknown')
         result.layer, result.projection = layer, composite

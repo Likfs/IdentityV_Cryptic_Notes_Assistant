@@ -643,6 +643,46 @@
       "pose_provenance": "Visible room protrusion, corridor and doors correspond to basement room 3; independent offline fixed-scale 0.5 and 1.0 resolution checks agree on origin. Saved scale remains 1.49. New clean fixture removes the historical 128-pixel padding on each side, so source origin is translated by (-128,-128). The 1.49 scale is an offline hypothesis for the pending nightmare profile; this fixture does not publish it.",
       "expected_clean_sha256": "0ab30e648482fe58daaff3666966596d1add15d2ebec5cc6a401394bb56ceeb9",
       "minimum_scale": 1.49
+    },
+    {
+      "id": "phosphorescence_layout13_b2_windowed",
+      "screenshot": "tests/fixtures/registration/phosphorescence_layout13_b2_1920x1080.png",
+      "sha256": "ad16e5bfd3eee9746afedfb1cde1ff53a96b0e3af9a439f794489a779556fbc0",
+      "source_run": "20261109_200609_460559_layout_13_b3",
+      "profile": "phosphorescence_disease/nightmare",
+      "selected_layout": "layout_13",
+      "variant_id": "clean",
+      "expected_floor": "b2",
+      "expected_origin": [
+        396,
+        40
+      ],
+      "minimum_scale": 1.5,
+      "capture_client_size": [
+        1920,
+        1080
+      ],
+      "desktop_size": [
+        3072,
+        1920
+      ],
+      "source_sha256": {
+        "layout_13_b1.png": "c0140867cf53b7df7feea12fbd99bae0e604677cc16d0087c2b5e32b24cfd97d",
+        "layout_13_b2.png": "dfaef791366bf758fcda60f707839ed26cad3fa2c5f59ce1fa3a59b13dadb875",
+        "layout_13_b3.png": "76c2883305957e931cb901ba6ae84b7b3fe85fe3bbe8be18af15a0d37244abf4"
+      },
+      "label_provenance": "User confirmed layout 13, basement 2 and game/desktop resolutions; floor regression, not recognition accuracy.",
+      "pose_provenance": "Offline fixed scale 2.0 (1.5 at 1920x1080) aligns visible room boundaries and corridor; not a new in-game acceptance."
+    }
+  ],
+  "floor_ui_regressions": [
+    {
+      "cases": "tests/fixtures/floor_ui/cases.json",
+      "label_basis": "Original E-drive observed floor controls and runtime atlas provenance"
+    },
+    {
+      "cases": "tests/fixtures/registration/directional_walls/cases.json",
+      "label_basis": "Original E-drive directional wall replay provenance; no new in-game validation"
     }
   ]
 }

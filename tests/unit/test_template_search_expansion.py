@@ -4,7 +4,7 @@ from types import SimpleNamespace
 import numpy as np
 import pytest
 
-from src.registration.template_matching import matcher, direct
+from src.registration.template_matching import matcher, direct, walls
 
 
 @pytest.mark.parametrize('origin', [(100, 40), (-40, 40), (40, -35), (40, 105)])
@@ -106,3 +106,33 @@ def test_retry_keeps_load_failure_diagnostic_serializable(monkeypatch):
     assert best[3] == '1st'
     assert attempts[0]['initial_attempt']['reason'] == 'source unavailable'
     assert json.loads(json.dumps(attempts)) == attempts
+
+
+@pytest.mark.parametrize('outcome', ['interior', 'boundary', 'too_large', 'invalid'])
+def test_ui_selected_floor_uses_one_expanded_pass_and_preserves_failures(monkeypatch, outcome):
+    image = np.full((80,80,3), 200, np.uint8)
+    rgba = np.dstack((image,np.full((80,80),255,np.uint8)))
+    loaded, calls = [], []
+    def load(floor):
+        loaded.append(floor)
+        return dict(saved_scale=1.5), Path(floor), {}, image, rgba
+    snapshot = SimpleNamespace(entries={'b1': {}, 'b2': {}}, load=load)
+    def match(_game, path, scale, *, expand_search, ds, **kwargs):
+        calls.append((path,scale,expand_search,ds))
+        if outcome == 'too_large':
+            raise matcher.TemplateSizeError('query too large')
+        if outcome == 'invalid':
+            raise ValueError('invalid pixels')
+        return dict(score=10.,location=(-20,-40),search=dict(expanded=expand_search,
+                    boundary_edges=['left'] if outcome == 'boundary' else []))
+    monkeypatch.setattr(matcher, 'TEMPLATE_DS', .25)
+    monkeypatch.setattr(walls, 'match', match)
+    monkeypatch.setattr(matcher, '_match_template', lambda *a, **kw: pytest.fail('binary fallback'))
+    attempts,best,_ = direct._match_floor_candidates(snapshot,image[:20,:20],1.,selected_floor='b2')
+    assert loaded == ['b2'] and calls == [('b2',1.5,True,.25)]
+    assert len(attempts) == 1 and 'initial_attempt' not in attempts[0]
+    if outcome in ('too_large','invalid'):
+        assert best is None and attempts[0]['reason']
+    else:
+        assert best[3] == 'b2'
+        assert best[0]['search']['boundary_edges'] == (['left'] if outcome == 'boundary' else [])

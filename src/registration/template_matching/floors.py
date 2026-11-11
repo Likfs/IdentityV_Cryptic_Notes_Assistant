@@ -10,9 +10,9 @@ import cv2
 import numpy as np
 from PIL import Image
 
-from src.app_catalog import PROJECT_ROOT, MapCatalog
+from src.app_catalog import PROJECT_ROOT, MapCatalog, CLEAN_VERSION_ID
 from src.floor_definitions import FLOORS, DEFAULT_FLOORS
-from . import resources, matcher
+from . import resources, matcher, walls
 
 DECODED_IMAGE_LIMIT = 8
 DECODED_IMAGE_BYTES = 256 * 1024 * 1024
@@ -182,7 +182,7 @@ def trim_uncached_templates():
     """After workers join, drop masks whose decoded source was returned uncached."""
     paths = {key[0] for key in _images}
     for key in list(matcher._map_cache):
-        if key[0] in ('template', 'gray') and key[1] not in paths:
+        if key[0] in ('template', 'gray', 'walls') and key[1] not in paths:
             del matcher._map_cache[key]
 
 
@@ -263,6 +263,8 @@ def prewarm(profile_key, layout, variant_id, *, cancelled=lambda: False):
                 continue  # Uncached prewarm pixels must not leave orphaned template masks.
             matcher.prepare_map(str(path), ds, map_threshold=item.get('map_threshold', matcher.TEMPLATE_MAP_THRESH),
                                 map_image=image, image_fingerprint=fingerprint(item))
+            if variant_id == CLEAN_VERSION_ID and not cancelled():
+                walls.prepare_map(str(path), ds, map_image=image, image_fingerprint=fingerprint(item))
         finally:
             resources.resource_lock.release()
     if cancelled() or not resources.resource_lock.acquire(blocking=False):

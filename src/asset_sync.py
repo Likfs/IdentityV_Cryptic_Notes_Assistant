@@ -13,6 +13,7 @@ from src.asset_audit import AssetAudit
 from src.app_catalog import CLEAN_VERSION_ID, LEGACY_CLEAN_VERSION_ID, MapCatalog
 from src.runtime_resources import BUNDLE_PATH, SCALE_PATH, read_bundle
 from src.scale_config import load_scales
+from src.paths import published_resource_path
 
 CATALOG_PATH = 'configs/map_catalog.json'
 CONFIG_FILES = (CATALOG_PATH, SCALE_PATH, BUNDLE_PATH)
@@ -258,7 +259,7 @@ def _current(root, catalog_data, *, progress=None, audit=None):
         for index, (name, record) in enumerate(bundle['files'].items(), 1):
             if progress is not None:
                 progress('核验已发布资源', index, len(bundle['files']))
-            path = _inside(root, root/name)
+            path = published_resource_path(root, name)
             if path.stat().st_size != record['bytes'] or hashlib.sha256(path.read_bytes()).hexdigest() != record['sha256']:
                 return False
         return True

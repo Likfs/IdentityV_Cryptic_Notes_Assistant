@@ -17,7 +17,6 @@ def test_fixed_scale_compares_all_floors_and_delivers_basement_pixels(monkeypatc
     case = next(c for c in cases['projection_regressions'] if c['id'] == 'layout19_floor_ambiguity')
     path = root/case['screenshot']
     assert hashlib.sha256(path.read_bytes()).hexdigest() == case['sha256']
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1.))
     monkeypatch.setattr(matcher, 'find_best_scale', lambda *_: pytest.fail('continuous scale search'))
     catalog = MapCatalog()
     game = matcher.read_image(path)

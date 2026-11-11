@@ -16,6 +16,8 @@ from tests.support.projection_results import result_for
 def test_capture_setting_never_creates_diagnostic_window_or_entry(window, monkeypatch):
     monkeypatch.setattr(visibility, 'set_capture_excluded', lambda *_: True)
     assert not window.findChildren(QDialog)
+
+
     window.details_section.toggle.click()
     assert not any('诊断图像' in button.text() for button in window.findChildren(QPushButton))
     window.open_settings()
@@ -34,6 +36,31 @@ def test_capture_setting_never_creates_diagnostic_window_or_entry(window, monkey
     assert not window.findChildren(QDialog)
 
 
+
+def test_display_controls_live_in_settings_and_persist(window, tmp_path):
+    assert not hasattr(window, 'opacity_slider') and not hasattr(window, 'display_section')
+    window.open_settings()
+    page = window.settings_page
+    assert page.isAncestorOf(page.opacity_slider) and page.isAncestorOf(page.reference_opacity_slider)
+    page.opacity_slider.setValue(62)
+    page.reference_opacity_slider.setValue(73)
+    page.show_overlay_check.setChecked(False)
+    page.reference_enabled_check.setChecked(False)
+    assert page._persist_settings()
+    page.close()
+    assert window.settings['opacity'] == .62 and window.settings['reference_opacity'] == .73
+    assert not window.settings['show_projection'] and not window.settings['reference_enabled']
+    window.open_settings()
+    assert window.settings_page.opacity_slider.value() == 62
+    assert not window.settings_page.reference_enabled_check.isChecked()
+    QApplication.processEvents()
+    scroll = window.settings_page.tabs.widget(0)
+    scroll.verticalScrollBar().setValue(scroll.verticalScrollBar().maximum())
+    QApplication.processEvents()
+    assert window.grab().save(str(tmp_path/'settings_display.png'))
+    window.settings_page.close()
+
+
 @pytest.mark.parametrize('size', [(1280, 800), (1080, 680)])
 def test_workspace_renders_one_screenshot_with_secondary_views_folded(window, tmp_path, size):
     image = cv2.imdecode(np.fromfile(PROJECT_ROOT / 'tests/fixtures/registration/layout18_extra_right_room.png',
@@ -43,7 +70,7 @@ def test_workspace_renders_one_screenshot_with_secondary_views_folded(window, tm
     QApplication.processEvents()
     visible_images = [panel for panel in window.findChildren(ImagePanel) if panel.isVisible()]
     assert visible_images == [window.capture_panel]
-    assert not window.display_section.content.isVisible()
+    assert not hasattr(window, 'display_section')
     assert not window.details_section.content.isVisible()
     assert not window.log.isVisible()
     assert window.capture_panel.image.width() >= 300
@@ -69,8 +96,11 @@ def test_projection_and_opacity_never_replace_or_dim_screenshot_and_round_clears
     completed = workflow.complete_projection_preview(ready)
     window._receive_work_event(('preview', window.map_generation, window.session_id, ready, completed))
     assert window.last_result is completed and completed.projection is not None
-    window.opacity_slider.setValue(12)
-    window.reference_opacity_slider.setValue(75)
+    window.open_settings()
+    window.settings_page.opacity_slider.setValue(12)
+    window.settings_page.reference_opacity_slider.setValue(75)
+    assert window.settings_page._persist_settings()
+    window.settings_page.close()
     assert window.capture_panel._pixmap.toImage() == before
     assert window.capture_panel.image.zoom == 1.25
     assert window.capture_panel.caption.text() == 'current capture'

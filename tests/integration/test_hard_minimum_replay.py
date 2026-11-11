@@ -21,7 +21,6 @@ def test_real_minimum_capture_recognition_and_both_projections(monkeypatch, case
         assert all(tuple(t['scales']) == (1.5,) for t in retriever._targets)
     finally:
         retriever.close()
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     monkeypatch.setattr(matcher, 'find_best_scale', lambda *a: pytest.fail('Live scale search'))
     expected = np.float64([[1.5,0,case['expected_source_origin'][0]], [0,1.5,case['expected_source_origin'][1]], [0,0,1]])
     registrations=[]

@@ -29,7 +29,6 @@ def test_minimum_captures_agree_without_transferring_recognition_pose(minimum_re
         assert not result.decision['accepted'] and result.decision['layout'] is None
         assert result.registration is None and result.layer is None
     assert results[0].decision['best_label']==results[1].decision['best_label']
-    monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
     monkeypatch.setattr(matcher,'find_best_scale',lambda *a:pytest.fail('Live scale search'))
     layout=results[0].decision['best_label']
     projected=process_screenshot(replay_image(inputs[1]),catalog=catalog,profile=profile,

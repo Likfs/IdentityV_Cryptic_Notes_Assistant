@@ -30,12 +30,12 @@ def test_numpad_actions_use_same_raw_queue_and_never_toggle_map(window, source, 
     install(window, source)
     calls = []
     monkeypatch.setattr(window, 'request_work', lambda mode, **kw: calls.append(mode))
-    window.apply_settings({**window.settings, 'recognize_hotkey': 'Num1', 'project_hotkey': 'Ctrl+NumEnter',
+    window.apply_settings({**window.settings, 'recognize_hotkey': 'Num3', 'project_hotkey': 'Ctrl+NumEnter',
                            'chest_gold_add_hotkey': 'NumAdd'})
     window.map_state.is_open = False
-    record(source, True, 0x61)
-    record(source, True, 0x61)
-    record(source, False, 0x61)
+    record(source, True, 0x63)
+    record(source, True, 0x63)
+    record(source, False, 0x63)
     record(source, True, 0x6B)
     record(source, False, 0x6B)
     record(source, True, 0xA2)
@@ -51,8 +51,8 @@ def test_numpad_actions_use_same_raw_queue_and_never_toggle_map(window, source, 
 def test_main_keyboard_and_numpad_can_be_bound_independently(window):
     window.open_settings()
     page = window.settings_page
-    assert page._capture_key('recognize_hotkey', 'Num1')
-    assert page._capture_key('project_hotkey', '1')
+    assert page._capture_key('recognize_hotkey', 'Num3')
+    assert page._capture_key('project_hotkey', '3')
     assert page._capture_key('reference_hotkey', 'NumEnter')
     assert page._capture_key('reference_floor_hotkey', 'Enter')
     assert page._persist_settings()
@@ -82,11 +82,11 @@ def test_numpad_map_key_opens_on_release_and_escape_still_only_closes(window, so
 @pytest.mark.parametrize('condition', ['other_window', 'settings'])
 def test_numpad_recognition_and_projection_respect_frontmost_game_and_settings(window, source, monkeypatch, condition):
     install(window, source)
-    window.apply_settings({**window.settings, 'recognize_hotkey': 'Num1', 'project_hotkey': 'Num2'})
+    window.apply_settings({**window.settings, 'recognize_hotkey': 'Num3', 'project_hotkey': 'Num6'})
     calls = []
     monkeypatch.setattr(window, 'request_work', lambda mode, **kw: calls.append(mode))
     if condition == 'settings': window.open_settings()
-    for vk in (0x61, 0x62):
+    for vk in (0x63, 0x66):
         record(source, True, vk, title='Other' if condition == 'other_window' else 'IdentityV')
         record(source, False, vk)
     window._handle_map_key()

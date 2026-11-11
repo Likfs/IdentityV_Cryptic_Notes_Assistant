@@ -11,6 +11,21 @@ from src import route_projection_qt_ui as ui
 from src.version import APP_TITLE, APP_VERSION
 
 
+def test_automatic_capture_settings_render_and_preserve_historical_values(window, tmp_path):
+    window.show()
+    window.open_settings()
+    page = window.settings_page
+    page.tabs.setCurrentIndex(2)
+    QApplication.processEvents()
+    labels = [label.text() for label in page.findChildren(QLabel)]
+    assert '随游戏窗口自动适配' in labels
+    assert '截图区域 左, 上, 宽, 高' not in labels
+    settings = page._collect_settings()
+    assert settings['capture_roi'] == window.settings['capture_roi']
+    assert settings['capture_reference_size'] == window.settings['capture_reference_size']
+    assert page.grab().save(str(tmp_path/'automatic_capture_settings.png'))
+
+
 def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch):
     monkeypatch.setenv("QT_QPA_PLATFORM", "offscreen")
     monkeypatch.setattr(app_module, "exclude_window_from_capture", lambda _widget: False)
@@ -43,9 +58,13 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         # The new neutral workspace paints a solid background behind its panels.
         assert window.grab().toImage().pixelColor(1, 1).name() == ui.BG
         assert window.settings['layout_recognition_backend'] == 'pure_structure'
-        window.opacity_slider.setValue(81)
-        window.reset_button.click()
-        assert window.opacity_slider.value() == 34
+        window.open_settings()
+        assert window.settings_page.auto_select_layout_check.isChecked()
+        window.settings_page.opacity_slider.setValue(81)
+        window.settings_page.reset_button.click()
+        assert window.settings_page.opacity_slider.value() == 34
+        assert window.settings_page._persist_settings()
+        window.settings_page.close()
         assert load_settings(window.catalog, path)['opacity'] == .34
         window.layout_var.set("layout_01")
         window._update_assets()
@@ -100,11 +119,11 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         QTest.keyClick(project, Qt.Key.Key_Escape)
         assert dialog.vars["project_hotkey"].get() == "F10"
         project.click()
-        QTest.keyClick(project, Qt.Key.Key_F9)
-        assert dialog.vars["project_hotkey"].get() == "F10"  # F9 now belongs to purple-box decrement.
+        QTest.keyClick(project, Qt.Key.Key_1, Qt.KeyboardModifier.KeypadModifier)
+        assert dialog.vars["project_hotkey"].get() == "F10"  # Num1 belongs to purple-box increment.
         QTest.keyClick(project, Qt.Key.Key_F11)
         assert dialog.vars["project_hotkey"].get() == "F11"
-        assert dialog.map_capture_delay_spin.value() == 150
+        assert dialog.map_capture_delay_spin.value() == 30
         dialog.map_capture_delay_spin.setValue(65)
         dialog.vars["opacity"].set(81)
         assert dialog._persist_settings()
@@ -129,7 +148,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         assert persisted["template_route_versions"][window.profile.key] == "clean"
 
         window.last_result = SimpleNamespace(timings_ms={
-            "capture": 18.2, "layout_retrieval": 43.3,
+            "capture": 18.2, "floor_ui": 17.3, "layout_retrieval": 43.3,
             "registration": 72.4, "projection": 5.1,
         })
         window._refresh_status()
@@ -138,6 +157,7 @@ def test_qt_window_shows_catalog_assets_and_saves_settings(tmp_path, monkeypatch
         window._refresh_status()
         assert window.status_rows["projection_wait_ms"].text() == "245 ms"
         assert window.status_rows["capture_ms"].text() == "18 ms"
+        assert window.status_rows["floor_ui_ms"].text() == "17 ms"
         assert window.status_rows["recognition_ms"].text() == "43 ms"
         assert "floor_ms" not in window.status_rows
         assert window.status_rows["registration_ms"].text() == "72 ms"

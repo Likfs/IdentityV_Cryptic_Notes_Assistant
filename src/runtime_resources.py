@@ -3,7 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from src.paths import PROJECT_ROOT
+from src.paths import PROJECT_ROOT, published_resource_path
 from src.scale_config import SCALE_PATH, load_scales, profile_settings, profile_keys, validate_scales
 
 BUNDLE_PATH = 'configs/runtime_resources.json'
@@ -118,8 +118,7 @@ def runtime_files(root=None):
         raise ValueError('缺少运行资源配置，请先执行离线导出')
     files = []
     for name, record in bundle['files'].items():
-        path = (root/name).resolve(strict=True)
-        path.relative_to(root)
+        path = published_resource_path(root, name)
         if (not path.is_file() or path.stat().st_size != record['bytes']
                 or hashlib.sha256(path.read_bytes()).hexdigest() != record['sha256']):
             raise ValueError(f'运行资源指纹不一致：{name}')

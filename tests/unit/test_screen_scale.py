@@ -40,11 +40,11 @@ def test_monitor_binding_initializes_once_for_concurrent_first_queries(monkeypat
     assert results[0].GetMonitorInfoW.argtypes[1] is ctypes.POINTER(monitors.MonitorInfo)
 
 
-@pytest.mark.parametrize('interruption', ['coordinate_query', 'registration_query'])
+@pytest.mark.parametrize('interruption', ['coordinate_query', 'monitor_query'])
 def test_monitor_queries_keep_types_when_calls_interleave(monkeypatch, interruption):
     """Use native ctypes checks: Python function fakes cannot detect pointer conflicts."""
     from src import route_projection_qt_ui as ui
-    from src.registration.template_matching import screen
+    from src.capture.monitors import monitor_api, MonitorInfo, MonitorEnumProc
     from src.capture import region
 
     user = ctypes.WinDLL('user32')
@@ -65,10 +65,23 @@ def test_monitor_queries_keep_types_when_calls_interleave(monkeypatch, interrupt
     monkeypatch.setattr(ui, 'QGuiApplication', SimpleNamespace(
         screens=lambda: [], primaryScreen=lambda: qt_screen))
     interrupted = []
+    def query_monitors():
+        sizes = []
+        api = monitor_api()
+        @MonitorEnumProc
+        def visit(handle, _dc, _rect, _parameter):
+            info = MonitorInfo()
+            info.cbSize = ctypes.sizeof(info)
+            assert api.GetMonitorInfoW(handle, ctypes.byref(info))
+            sizes.append((info.rcMonitor.right-info.rcMonitor.left,
+                          info.rcMonitor.bottom-info.rcMonitor.top))
+            return True
+        assert api.EnumDisplayMonitors(None, None, visit, 0)
+        assert sizes and all(width > 0 and height > 0 for width, height in sizes)
     if interruption == 'coordinate_query':
         def interleaved_point(value, flags):
             handle = point(value, flags)
-            assert screen.screen_info()['ok']
+            query_monitors()
             interrupted.append(True)
             return handle
         monkeypatch.setattr(user, 'MonitorFromPoint', interleaved_point)
@@ -82,42 +95,24 @@ def test_monitor_queries_keep_types_when_calls_interleave(monkeypatch, interrupt
         if interruption == 'coordinate_query':
             assert ui.physical_to_qt_geometry(0, 0, 100, 100)[2:] == (100, 100, 1.)
         else:
-            result = screen.screen_info()
-            assert result['ok'] and result['width'] > 0 and result['height'] > 0
+            query_monitors()
     assert len(interrupted) == 10
 
 
-def test_screen_queries_reuse_ctypes_types_and_preserve_monitor_selection(monkeypatch):
+def test_capture_scale_uses_supplied_client_without_querying_desktop(monkeypatch):
     from src.registration.template_matching import screen
-    from src.capture import region
-
-    def monitor_info(handle, pointer):
-        info = pointer._obj
-        width, height = (2560, 1440) if handle == 11 else (1920, 1080)
-        info.rcMonitor.right, info.rcMonitor.bottom = width, height
-        info.dwFlags = int(handle == 11)
-        info.szDevice = f'DISPLAY{handle}'
-        return True
-
-    def enumerate_monitors(_dc, _clip, callback, parameter):
-        assert callback(11, 0, None, parameter)
-        assert callback(22, 0, None, parameter)
-        return True
-
-    user = SimpleNamespace(GetMonitorInfoW=monitor_info, EnumDisplayMonitors=enumerate_monitors,
-                           MonitorFromPoint=lambda *_: 11)
-    monkeypatch.setattr(ctypes, 'WinDLL', lambda _name: user)
-    monkeypatch.setattr(region, 'enable_physical_pixel_coordinates', lambda: None)
-    assert screen.screen_info() == dict(ok=True, screen_name='DISPLAY11', width=2560,
-                                       height=1440, primary=True, factor=1.)
+    monkeypatch.setattr(ctypes, 'WinDLL', lambda *_: pytest.fail('Scale queried desktop dimensions'))
+    assert screen.capture_info((2560, 1440))['factor'] == 1.
     count = len(ctypes._pointer_type_cache)
     for _ in range(200):
-        selected = screen.screen_info('DISPLAY22')
-        assert selected == dict(ok=True, screen_name='DISPLAY22', width=1920,
-                                height=1080, primary=False, factor=pytest.approx(4/3))
+        expected = dict(
+            source='capture_game_client', width=1920, height=1080,
+            reference_size=[2560, 1440], factor=pytest.approx(4/3))
+        actual = screen.capture_info((1920, 1080))
+        assert {key:actual[key] for key in expected} == expected
+        assert actual['geometry_model'] == 'fixed_width'
+        assert actual['visible_design_size'] == [1334, 751]
     assert len(ctypes._pointer_type_cache) == count
-    assert screen.screen_info('missing') == dict(ok=False, screen_name='missing',
-                                                 width=0, height=0, factor=1.)
 
 
 def test_coordinate_queries_reuse_ctypes_types_and_preserve_dpi_mapping(monkeypatch):
@@ -147,9 +142,19 @@ def test_coordinate_queries_reuse_ctypes_types_and_preserve_dpi_mapping(monkeypa
     assert ui.physical_to_qt_geometry(1920, 0, 0, 0) == (1280, 40, 1, 1, 1.5)
 
 
-def test_screen_factor_matches_original_convention():
+def test_capture_factor_matches_reference_convention():
     from src.registration.template_matching.screen import factor_for_size
     assert factor_for_size(2560,1440)==1
     assert factor_for_size(1920,1080)==pytest.approx(4/3)
     assert factor_for_size(3840,2160)==pytest.approx(2/3)
-    assert factor_for_size(0,0)==1
+    assert factor_for_size(3072,1920)==pytest.approx(5/6)
+    assert factor_for_size(3440,1440)==pytest.approx(1000/1000.5)
+    assert factor_for_size(2560,1334)==pytest.approx(1920000/1779556)
+
+
+@pytest.mark.parametrize('size', [None, (), (1920,), (1920,1080,1), (0,1080),
+    (1920,-1), (True,1080), (1920.,1080), ('1920',1080), (float('inf'),1080)])
+def test_invalid_capture_size_cannot_fall_back_to_desktop(size):
+    from src.registration.template_matching.screen import capture_info
+    with pytest.raises(ValueError):
+        capture_info(size)

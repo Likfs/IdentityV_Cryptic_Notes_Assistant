@@ -1,0 +1,50 @@
+{
+  "profile": "phosphorescence_disease/nightmare",
+  "layout": "layout_02",
+  "scale": 1.5,
+  "source_image": "assets/maps/phosphorescence_disease/nightmare/clean/layout_02/layout_02_b3.png",
+  "size": [
+    1999,
+    2423
+  ],
+  "files": {
+    "text_prompt.png": "b305fc856198b95277d91e60309af5081ba88153d06409dc5be99d20028fda32",
+    "clean_b3.png": "040b510c2f8b3f7854ebd0d3bc4280f1d1bce1da667d71b6dde816c83cbc638b",
+    "no_text_control.png": "28c4861b9289430098db6eef8100b400c528b7ada19f783eb6d876bb563d71d5"
+  },
+  "cases": [
+    {
+      "id": "text_prompt",
+      "run": "20261107_171506_920856_layout_02_b3",
+      "floor": "b3",
+      "old_binary": [
+        252,
+        1792
+      ],
+      "wall_origin": [
+        828,
+        544
+      ],
+      "lower_structure_reference": [
+        828,
+        542.0
+      ],
+      "provenance": "Recorded runtime capture, selected layout/floor from logs. Wall origin reproduced from independent full-plane workspace experiment; lower-crop reference plus visible boundary review, not independent ground truth."
+    },
+    {
+      "id": "no_text_control",
+      "run": "20261107_171436_675431_layout_02_b3",
+      "floor": "b3",
+      "old_binary": [
+        908,
+        240
+      ],
+      "wall_origin": [
+        908,
+        240
+      ],
+      "lower_structure_reference": null,
+      "provenance": "Recorded runtime capture, selected layout/floor from logs. Wall origin reproduced from independent full-plane workspace experiment; lower-crop reference plus visible boundary review, not independent ground truth."
+    }
+  ]
+}

@@ -18,7 +18,6 @@ def test_full_extra_room_screenshot_recovers_partial_width_consensus(monkeypatch
     path = root/case['screenshot']
     assert hashlib.sha256(path.read_bytes()).hexdigest() == case['sha256']
     game = matcher.read_image(path)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1.))
     monkeypatch.setattr(matcher, 'find_best_scale', lambda *_: pytest.fail('continuous scale search'))
     catalog = MapCatalog()
     profile = catalog.profile(*case['profile'].split('/'))

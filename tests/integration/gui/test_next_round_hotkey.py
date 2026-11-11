@@ -21,11 +21,11 @@ def test_raw_next_round_key_uses_reset_cancels_work_and_discards_queued_actions(
     window._active_work = dict(id='old', mode='recognize', cancel=token)
     window.busy = True
     monkeypatch.setattr(window, 'request_work', lambda *a, **kw: pytest.fail('Pre-reset action replayed'))
-    record(source, True, 0x7B)
-    record(source, True, 0x7B)  # OS repeat is de-duplicated before delivery.
-    record(source, False, 0x7B)
-    record(source, True, 0x74)  # Old queued counter action must also be discarded.
-    record(source, False, 0x74)
+    record(source, True, 0x60)
+    record(source, True, 0x60)  # OS repeat is de-duplicated before delivery.
+    record(source, False, 0x60)
+    record(source, True, 0x64)  # Old queued counter action must also be discarded.
+    record(source, False, 0x64)
     window._handle_map_key()
     assert token.is_set() and not window.busy
     assert window.locked_layout is None and window.capture_panel._pixmap is None
@@ -54,7 +54,7 @@ def test_next_round_hotkey_respects_game_foreground_and_settings(window, source,
     if blocked == 'changed_foreground':
         monkeypatch.setattr(app, 'game_window_is_foreground', lambda _: False)
     for down in (True, False):
-        record(source, down, 0x7B, title='Other' if blocked == 'other_window' else 'IdentityV')
+        record(source, down, 0x60, title='Other' if blocked == 'other_window' else 'IdentityV')
     window._handle_map_key()
     assert window.session_id == session and window.map_generation == generation
     assert window.chest_counter.gold == 1
@@ -69,7 +69,7 @@ def test_next_round_recording_conflicts_persistence_and_custom_raw_key(window, s
     page.tabs.setCurrentIndex(1)
     assert not page._capture_key('next_round_hotkey', 'F8')
     assert not page._capture_key('next_round_hotkey', 'G')
-    assert not page._capture_key('recognize_hotkey', 'F12')
+    assert not page._capture_key('recognize_hotkey', 'Num0')
     button = page.hotkey_buttons['next_round_hotkey']
     button.click()
     QApplication.sendEvent(button, QKeyEvent(QEvent.Type.KeyPress, Qt.Key.Key_Enter,
@@ -80,10 +80,10 @@ def test_next_round_recording_conflicts_persistence_and_custom_raw_key(window, s
     assert load_settings(window.catalog, window.settings_path)['next_round_hotkey'] == 'Ctrl+NumEnter'
     window._change_chest_count('chest_purple_add')
     session = window.session_id
-    for vk, down in ((0x7B, True), (0x7B, False), (0x0D, True), (0x0D, False)):
+    for vk, down in ((0x60, True), (0x60, False), (0x0D, True), (0x0D, False)):
         record(source, down, vk)
     window._handle_map_key()
-    assert window.session_id == session  # Old F12 and main Enter no longer reset.
+    assert window.session_id == session  # Old Num0 and main Enter no longer reset.
     for vk, down in ((0xA2, True), (0x10D, True), (0x10D, False), (0xA2, False)):
         record(source, down, vk)
     window._handle_map_key()
@@ -91,7 +91,7 @@ def test_next_round_recording_conflicts_persistence_and_custom_raw_key(window, s
 
 
 @pytest.mark.parametrize('size', [(1280, 800), (1080, 680)])
-def test_hotkey_settings_are_two_columns_with_all_ten_fields_visible(window, tmp_path, size):
+def test_hotkey_settings_are_two_columns_with_all_fields_visible(window, tmp_path, size):
     window.resize(*size)
     window.open_settings()
     page = window.settings_page
@@ -101,7 +101,7 @@ def test_hotkey_settings_are_two_columns_with_all_ten_fields_visible(window, tmp
     right = page.hotkey_buttons['next_round_hotkey']
     assert right.mapTo(page, right.rect().topLeft()).x() > left.mapTo(page, left.rect().topLeft()).x() + left.width()
     assert abs(right.mapTo(page, right.rect().topLeft()).y() - left.mapTo(page, left.rect().topLeft()).y()) <= 2
-    assert len(page.hotkey_buttons) == 10
+    assert len(page.hotkey_buttons) == 12
     for button in page.hotkey_buttons.values():
         point = button.mapTo(page, button.rect().topLeft())
         assert button.isVisible() and page.rect().contains(point + button.rect().bottomRight())

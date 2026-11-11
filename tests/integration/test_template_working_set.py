@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from src.app_catalog import MapCatalog
-from src.registration.template_matching import direct, floors
+from src.registration.template_matching import direct, floors, matcher
 
 
 @pytest.fixture
@@ -19,7 +19,6 @@ def scene(aligned_runtime, monkeypatch):
         opened.append(True)
         return original(*args, **kwargs)
     monkeypatch.setattr(floors.Image, 'open', counted)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     return profile, shot, opened
 
 
@@ -70,3 +69,20 @@ def test_version_switch_reuses_clean_floors_and_layout_switch_releases_old_set(s
     assert len(floors._images) <= floors.DECODED_IMAGE_LIMIT
     assert len(floors._retained_keys) == 4
     assert all('/layout_13/' in key[0].replace('\\','/') for key in floors._retained_keys)
+
+
+def test_ui_floor_protects_only_selected_clean_and_route(scene):
+    profile, shot, opened = scene
+    result, _, layer, _, _ = direct.project_original(shot, profile.key, 'layout_12', .5,
+        variant_id='route_zhanshi_fast', selected_floor='1st')
+    assert result.accepted and result.validation['template']['candidate_floor'] == '1st'
+    assert layer is not None and len(opened) == 2
+    assert len(floors._retained_keys) == 2
+    assert all(key[0].endswith('layout_12_1st.png') for key in floors._retained_keys)
+    fields = {key: value for key, value in matcher._map_cache.items() if key[0] == 'walls'}
+    assert len(fields) == 1
+    again, _, _, _, _ = direct.project_original(shot, profile.key, 'layout_12', .5,
+        variant_id='route_zhanshi_fast', selected_floor='1st')
+    assert again.accepted and len(opened) == 2
+    np.testing.assert_array_equal(result.screenshot_to_original, again.screenshot_to_original)
+    assert all(matcher._map_cache[key] is value for key, value in fields.items())

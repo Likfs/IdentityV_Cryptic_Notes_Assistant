@@ -11,6 +11,10 @@ def contains(rect, point):
     return x <= point[0] < x + w and y <= point[1] < y + h
 
 
+def wheel_delta(mouse_data):
+    return ctypes.c_short((mouse_data >> 16) & 0xffff).value
+
+
 class PanInput:
     """Bounded mailbox preserving button edges while coalescing mouse moves."""
 
@@ -20,11 +24,11 @@ class PanInput:
         self.target = None
         self.dragging = False
 
-    def arm(self, epoch, hwnd, roi, excluded):
+    def arm(self, epoch, hwnd, roi, excluded, *, wheel_roi=None):
         with self.lock:
             self.events.clear()
             self.dragging = False
-            self.target = (epoch, hwnd, tuple(roi), tuple(excluded))
+            self.target = (epoch, hwnd, tuple(roi), tuple(excluded), tuple(wheel_roi or roi))
 
     def clear(self):
         with self.lock:
@@ -32,15 +36,15 @@ class PanInput:
             self.dragging = False
             self.events.clear()
 
-    def feed(self, kind, point, hwnd):
+    def feed(self, kind, point, hwnd, delta=0):
         with self.lock:
             if self.target is None:
                 return
-            epoch, target_hwnd, roi, excluded = self.target
+            epoch, target_hwnd, roi, excluded, wheel_roi = self.target
             if hwnd != target_hwnd:
                 self.dragging = False
                 self.events.clear()
-                self.events.append((epoch, 'cancel', point))
+                self.events.append((epoch, 'cancel', point, 0))
                 self.target = None
                 return
             inside = contains(roi, point)
@@ -54,22 +58,20 @@ class PanInput:
                 if kind == 'up':
                     self.dragging = False
             elif kind == 'wheel':
-                if not inside:
+                if not contains(wheel_roi, point) or not delta:
                     return
-                self.dragging = False
-                self.target = None
             else:
                 return
             if len(self.events) >= 256:
                 self.events.clear()
-                self.events.append((epoch, 'cancel', point))
+                self.events.append((epoch, 'cancel', point, 0))
                 self.dragging = False
                 self.target = None
                 return
             if kind == 'move' and self.events and self.events[-1][1] == 'move':
-                self.events[-1] = (epoch, kind, point)
+                self.events[-1] = (epoch, kind, point, delta)
             else:
-                self.events.append((epoch, kind, point))
+                self.events.append((epoch, kind, point, delta))
 
     def drain(self):
         with self.lock:
@@ -130,14 +132,15 @@ class MousePanHook(PanInput):
         user32.GetForegroundWindow.restype = wintypes.HWND
         kernel32.GetModuleHandleW.argtypes = (wintypes.LPCWSTR,)
         kernel32.GetModuleHandleW.restype = wintypes.HMODULE
-        kinds = {0x0201: 'down', 0x0200: 'move', 0x0202: 'up', 0x020A: 'wheel', 0x020E: 'wheel'}
+        kinds = {0x0201: 'down', 0x0200: 'move', 0x0202: 'up', 0x020A: 'wheel'}
 
         @callback_type
         def callback(code, message, address):
             try:
                 if code >= 0 and message in kinds:
                     data = ctypes.cast(address, ctypes.POINTER(MouseData)).contents
-                    self.feed(kinds[message], (data.pt.x, data.pt.y), int(user32.GetForegroundWindow() or 0))
+                    self.feed(kinds[message], (data.pt.x, data.pt.y), int(user32.GetForegroundWindow() or 0),
+                              wheel_delta(data.mouseData) if message == 0x020A else 0)
             except Exception as exc:
                 self.error = str(exc)
             return user32.CallNextHookEx(None, code, message, address)

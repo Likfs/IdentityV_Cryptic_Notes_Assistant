@@ -67,7 +67,8 @@ def test_switch_discards_candidates_retires_index_and_saves_choice(window,monkey
     assert window.last_result is None
 
 
-def test_capture_worker_routes_selected_recognizer(window,monkeypatch,tmp_path):
+@pytest.mark.parametrize('client_size', [(80, 80), (1004, 755), (3440, 1440)])
+def test_capture_worker_routes_selected_recognizer(window,monkeypatch,tmp_path,client_size):
     from tests.support.app_fakes import InlineThread
     from src.capture.region import CaptureRegion
     window.settings['layout_recognition_backend']='pure_structure'
@@ -79,11 +80,12 @@ def test_capture_worker_routes_selected_recognizer(window,monkeypatch,tmp_path):
     retriever=SimpleNamespace(recognize=recognize)
     monkeypatch.setattr(window,'_layout_retriever',lambda:retriever)
     monkeypatch.setattr(app.threading,'Thread',InlineThread)
-    monkeypatch.setattr(app,'foreground_game_client',lambda *a:None)
-    monkeypatch.setattr(app,'game_capture_region',lambda *a:CaptureRegion(0,0,80,80))
+    client = CaptureRegion(0,0,*client_size)
+    monkeypatch.setattr(app,'foreground_game_client',lambda *a:client)
+    monkeypatch.setattr(app.ctypes.windll.user32, 'GetForegroundWindow', lambda:1)
     monkeypatch.setattr(app,'ensure_region_on_screen',lambda *a:None)
-    monkeypatch.setattr(app,'capture_bgr',lambda *a:np.zeros((80,80,3),np.uint8))
-    monkeypatch.setattr(app,'recognition_window_identity',lambda *a:(1,0,0,80,80))
+    monkeypatch.setattr(app,'capture_bgr',lambda roi:np.zeros((roi[3],roi[2],3),np.uint8))
+    monkeypatch.setattr(app,'recognition_window_identity',lambda *a:(1,0,0,*client_size))
     calls=[]
     original=app.process_screenshot
     def process(image,**kwargs):
@@ -92,6 +94,9 @@ def test_capture_worker_routes_selected_recognizer(window,monkeypatch,tmp_path):
     monkeypatch.setattr(app,'process_screenshot',process)
     window.request_work('recognize',auto=False)
     assert len(calls)==1 and calls[0]['layout_recognition_backend']=='pure_structure'
+    assert calls[0]['capture_client_size'] == client_size
+    from src.game_geometry import recognition_size
+    assert calls[0]['recognition_reference_size'] == recognition_size(client, app.map_match_region(client, app.map_viewport(client)))
     event=window.results.get_nowait()
     assert event[0]=='recognition_work' and event[1]==window._active_work['id']
     assert len(recognition_calls)==1

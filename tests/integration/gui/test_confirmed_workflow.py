@@ -58,7 +58,7 @@ def test_real_candidates_only_project_after_explicit_confirmation(window, retrie
     np.testing.assert_allclose(projected.registration.original_to_screen @
                                projected.registration.screenshot_to_original, np.eye(3), atol=1e-9)
     window.settings['template_route_versions'][window.profile.key] = 'route_lhp_solo'
-    window.show_overlay_check.setChecked(True)
+    window.settings['show_projection'] = True
     window._apply_result('project', False, window.map_generation, roi, projected, None)
     assert window.live_projection[0] is projected and window.overlay.visible
 

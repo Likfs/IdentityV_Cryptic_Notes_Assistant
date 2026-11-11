@@ -58,8 +58,9 @@ def run_probe(python, mode, output, *, pending_profiles=(), ready_floors=None):
 
 def check_projection(directory):
     import numpy as np
+    from src.floor_definitions import FLOORS
     report = json.loads((directory/'result.json').read_text(encoding='utf-8'))
-    assert report['accepted'] and report['floor'] in ('2nd', '1st', 'b1')
+    assert report['accepted'] and report['floor'] in FLOORS
     registration = report['registration']
     assert registration['coordinate_space'] == 'single_floor_source_image'
     assert registration['clean_to_screen'] is None

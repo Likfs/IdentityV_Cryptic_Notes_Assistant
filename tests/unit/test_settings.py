@@ -31,7 +31,7 @@ def test_combination_preferences_normalize_and_roundtrip_without_changing_single
     assert path.read_bytes() == before
     assert [settings[field] for field in ('recognize_hotkey', 'project_hotkey', 'reference_hotkey',
         'reference_floor_hotkey', 'chest_gold_add_hotkey', 'chest_gold_subtract_hotkey')] == [
-        'Ctrl+1', 'Ctrl+Shift+1', '1', 'Alt+J', 'Ctrl+Shift+F5', 'F6']
+        'Ctrl+1', 'Ctrl+Shift+1', '1', 'Alt+J', 'Ctrl+Shift+F5', 'Num5']
     save_settings(settings, path)
     assert load_settings(MapCatalog(), path) == settings
 
@@ -53,13 +53,13 @@ def test_counter_hotkeys_migrate_without_overriding_existing_keys(tmp_path):
 
 
 @pytest.mark.parametrize('old,expected', [
-    ({}, 'F12'),
+    ({}, 'Num0'),
     ({'next_round_hotkey': 'ctrl+numEnter'}, 'Ctrl+NumEnter'),
-    ({'next_round_hotkey': []}, 'F12'),
-    ({'recognize_hotkey': 'F12'}, 'Ctrl+F12'),
-    ({'reference_floor_hotkey': 'F12'}, 'Ctrl+F12'),
-    ({'map_key': 'F12'}, 'Ctrl+N'),
-    ({'next_round_hotkey': 'G'}, 'F12'),
+    ({'next_round_hotkey': []}, 'Num0'),
+    ({'recognize_hotkey': 'Num0'}, 'Ctrl+Num0'),
+    ({'reference_floor_hotkey': 'Num0'}, 'Ctrl+Num0'),
+    ({'map_key': 'Num0'}, 'Ctrl+N'),
+    ({'next_round_hotkey': 'G'}, 'Num0'),
 ])
 def test_next_round_hotkey_migrates_after_existing_bindings_without_writing(tmp_path, old, expected):
     path = tmp_path / 'settings.json'
@@ -84,7 +84,11 @@ def test_new_settings_defaults_and_invalid_booleans_do_not_write_on_read(tmp_pat
     settings = load_settings(MapCatalog(), path)
     assert settings['capture_exclusion_enabled'] is True
     assert settings['chest_counter_visible'] is True
-    assert [settings[field] for field in CHEST_HOTKEY_FIELDS] == ['F5', 'F6', 'F7', 'F9']
+    assert [settings[field] for field in CHEST_HOTKEY_FIELDS] == ['Num4', 'Num5', 'Num1', 'Num2', 'Num7', 'Num8']
+    assert settings['map_capture_delay_ms'] == 30
+    assert settings['auto_select_layout'] is True
+    assert settings['reference_enabled'] is True and settings['show_projection'] is True
+    assert settings['next_round_hotkey'] == 'Num0'
 
 
 @pytest.mark.parametrize('value,expected', [(True, True), (False, False), ('true', False), (1, False), (None, False), ([], False)])
@@ -92,7 +96,7 @@ def test_auto_select_layout_requires_explicit_boolean_and_roundtrips(tmp_path, v
     path = tmp_path / 'settings.json'
     path.write_text(json.dumps({'skip_layout_confirmation': True}), encoding='utf-8')
     before = path.read_bytes()
-    assert load_settings(MapCatalog(), path)['auto_select_layout'] is False
+    assert load_settings(MapCatalog(), path)['auto_select_layout'] is True
     assert path.read_bytes() == before
     path.write_text(json.dumps({'auto_select_layout': value}), encoding='utf-8')
     settings = load_settings(MapCatalog(), path)
@@ -201,11 +205,11 @@ def test_old_version_settings_migrate_without_losing_user_preferences(tmp_path):
     assert old['route_versions'][profile.key]['layout_01'] == 'route_01'
 
 
-@pytest.mark.parametrize('value,expected', [(None,150),('invalid',150),(True,150),(-4,0),(900,500),(0,0),(35,35),(65,65)])
+@pytest.mark.parametrize('value,expected', [(None,30),('invalid',30),(True,30),(-4,0),(900,500),(0,0),(35,35),(65,65)])
 def test_capture_delay_settings_normalize_and_roundtrip(tmp_path,value,expected):
     path=tmp_path/'settings.json';catalog=MapCatalog()
     path.write_text('{}',encoding='utf-8')
-    assert load_settings(catalog,path)['map_capture_delay_ms']==150
+    assert load_settings(catalog,path)['map_capture_delay_ms']==30
     path.write_text(json.dumps({'map_capture_delay_ms':value}),encoding='utf-8')
     settings=load_settings(catalog,path)
     assert settings['map_capture_delay_ms']==expected

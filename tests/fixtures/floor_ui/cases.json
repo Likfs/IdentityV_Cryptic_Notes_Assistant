@@ -1,0 +1,325 @@
+{
+  "underground": {
+    "source": "codex-clipboard-a3de75e6-d41b-4bc9-b062-c8a418057699.png",
+    "source_sha256": "e680dd3560db506e6244a42a99d6e317f5f56adab16aeedd947d602fa1e1d553",
+    "source_size": [
+      2560,
+      1440
+    ],
+    "crop": [
+      2170,
+      180,
+      140,
+      510
+    ],
+    "sha256": "c814da07329a0e65c35e34a8226c5481e62736a63d2340813f170cf40cec18db",
+    "selected_floor": "b1",
+    "label_basis": "User supplied full game screenshot; selected dark numeral on bright button. UI label only, not a map alignment ground truth."
+  },
+  "mixed": {
+    "source": "codex-clipboard-589b3bd3-fd70-4fba-87cc-810a11cb7c6b.png",
+    "source_sha256": "91bb6ddd6eb8ce45f579902264cd7c11ca6e4388266bcb71fd9e2741ec66a4d6",
+    "source_size": [
+      2560,
+      1440
+    ],
+    "crop": [
+      2170,
+      180,
+      140,
+      510
+    ],
+    "sha256": "d8a728df00634ee6f23ea53048b33f9482d36aedc0e06c792628294d6055a9fa",
+    "selected_floor": "1st",
+    "label_basis": "User supplied full game screenshot; selected dark numeral on bright button. UI label only, not a map alignment ground truth."
+  },
+  "runtime_templates": {
+    "asset": "assets/app_ui/floor_controls.png",
+    "sha256": "7c6ca431957e86ab8ecd8cbee0d6bee9954dcbbd8b66ba27a68d35959ff5180f",
+    "transform": "Each supplied control strip resized with OpenCV INTER_AREA to 88 x 460 (four floors) or 88 x 345 (three floors). Seven columns; three-floor strips bottom-aligned in a 460-pixel atlas.",
+    "sources": [
+      {
+        "source": "codex-clipboard-4124bb81-d81f-4103-a3cb-54f79e6975b0.png",
+        "sha256": "49195093b9a8d474ee400654268fc34e8dbf19b1a55673d987cbd1a3a8bc9ef4",
+        "selected_floor": "b1"
+      },
+      {
+        "source": "codex-clipboard-8710eba4-71fa-488d-b17d-2032c90d1812.png",
+        "sha256": "347c1798d6b27902f4704c247dca1fb06511fdb70008d8cad5d00003125f7a94",
+        "selected_floor": "b2"
+      },
+      {
+        "source": "codex-clipboard-2d6e88a2-eba4-4d5c-924b-4c7532131e4d.png",
+        "sha256": "ddbe73e3c1e9154ff4498428e4e6f3075563171e76932a26e0865424d9913aa6",
+        "selected_floor": "b3"
+      },
+      {
+        "source": "codex-clipboard-c26f86ce-1624-4ce5-a038-d4dc667dac1c.png",
+        "sha256": "075e3a974278dffec475a0be8672d9450e2b49262f1be95c323ff3461916113c",
+        "selected_floor": "b4"
+      },
+      {
+        "source": "codex-clipboard-e83e1638-059e-44da-8d3b-d0d3a300d300.png",
+        "sha256": "ab5713f9dc77ead0b702bbd0aaba5cbafc76d114391cca8e3edc6ad8515d950d",
+        "selected_floor": "2nd"
+      },
+      {
+        "source": "codex-clipboard-0bc839cd-4e23-4372-a38a-8ad8442a7b9f.png",
+        "sha256": "d6bc6376a1947eef5437ee9c0fa19b7114095f543b8d10a61a0e2f8671633418",
+        "selected_floor": "1st"
+      },
+      {
+        "source": "codex-clipboard-9dbd52e6-15da-42ac-b416-64c8ce141e60.png",
+        "sha256": "a3bd3c99fd7396bb2ffd8971f41fdbb26f41e62ffe50e6dc28b958760279c729",
+        "selected_floor": "b1"
+      }
+    ]
+  },
+  "regressions": [
+    {
+      "id": "phosphorescence_1698x980_b1",
+      "image": "phosphorescence_1698x980_b1.png",
+      "sha256": "db5a1bc537641913fc6f9889aab2221f061bc64a9feaf166db06d0f34f2d85ef",
+      "source_run": "20261111_031515_616053_layout_09_unknown",
+      "source_result_sha256": "620faaa46cd69d319ab9c4fa9c89a7cfc4712d3bb2f3ffc84f0ce6a5d7eef16f",
+      "capture_context": {
+        "game_client_size": [
+          1698,
+          980
+        ],
+        "map_zoom_units": 7,
+        "coordinate_space": "screen_physical_pixels",
+        "game_client_screen": [
+          310,
+          204,
+          1698,
+          980
+        ],
+        "map_roi_screen": [
+          908,
+          330,
+          782,
+          714
+        ],
+        "combined_capture_screen": [
+          908,
+          326,
+          934,
+          718
+        ],
+        "floor_ui_roi_screen": [
+          1749,
+          326,
+          93,
+          348
+        ],
+        "capture_reference_size": [
+          2560,
+          1440
+        ]
+      },
+      "selected_floor": "b1",
+      "label_basis": "Manual inspection of complete floor labels and selected bright button; floor UI ground truth only, not layout or map alignment.",
+      "button_centers_in_crop": [
+        [
+          47,
+          65
+        ],
+        [
+          47,
+          140
+        ],
+        [
+          47,
+          216
+        ],
+        [
+          47,
+          291
+        ]
+      ]
+    },
+    {
+      "id": "phosphorescence_1004x755_b2",
+      "image": "phosphorescence_1004x755_b2.png",
+      "sha256": "32c78a59938a85e9a1db9dc031514b9f6443a3522c52efde6506f70fdc822e5a",
+      "source_run": "20261111_032247_064399_layout_13_unknown",
+      "source_result_sha256": "bf921391bec2dd211570466a09a5ec2ff60420cfbe399edbb9a62569be948f35",
+      "capture_context": {
+        "game_client_size": [
+          1004,
+          755
+        ],
+        "map_zoom_units": 7,
+        "coordinate_space": "screen_physical_pixels",
+        "game_client_screen": [
+          595,
+          281,
+          1004,
+          755
+        ],
+        "map_roi_screen": [
+          948,
+          378,
+          463,
+          551
+        ],
+        "combined_capture_screen": [
+          948,
+          375,
+          553,
+          554
+        ],
+        "floor_ui_roi_screen": [
+          1446,
+          375,
+          55,
+          268
+        ],
+        "capture_reference_size": [
+          2560,
+          1440
+        ]
+      },
+      "selected_floor": "b2",
+      "label_basis": "Manual inspection of complete floor labels and selected bright button; floor UI ground truth only, not layout or map alignment.",
+      "button_centers_in_crop": [
+        [
+          27,
+          103
+        ],
+        [
+          27,
+          148
+        ],
+        [
+          27,
+          193
+        ],
+        [
+          27,
+          237
+        ]
+      ]
+    },
+    {
+      "id": "doom_2560x1440_1st",
+      "image": "doom_2560x1440_1st.png",
+      "sha256": "7ed60cecd658fa8d50e1d450a7bb1f88181ac985bde7ea6a845dff3796ecb496",
+      "source_run": "20261111_190419_193595_layout_03_unknown",
+      "source_result_sha256": "4baeab67e748133fcf2cce93e0d1b2740e8bdfe7e7be0dd6fad6a2cbd91dcd57",
+      "capture_context": {
+        "game_client_size": [
+          2560,
+          1440
+        ],
+        "map_zoom_units": 7,
+        "coordinate_space": "screen_physical_pixels",
+        "game_client_screen": [
+          0,
+          0,
+          2560,
+          1440
+        ],
+        "map_roi_screen": [
+          901,
+          185,
+          1180,
+          1050
+        ],
+        "combined_capture_screen": [
+          901,
+          180,
+          1409,
+          1055
+        ],
+        "floor_ui_roi_screen": [
+          2170,
+          180,
+          140,
+          510
+        ],
+        "capture_reference_size": [
+          2560,
+          1440
+        ]
+      },
+      "selected_floor": "1st",
+      "label_basis": "Manual inspection of complete floor labels and selected bright button; floor UI ground truth only, not layout or map alignment.",
+      "button_centers_in_crop": [
+        [
+          72,
+          77
+        ],
+        [
+          72,
+          192
+        ],
+        [
+          72,
+          307
+        ]
+      ]
+    }
+  ],
+  "resolution_policy_evidence": {
+    "source": "User-provided client disassembly and GLView measurements, 2026-11-12; original reports are on another device.",
+    "designed_resolution": [
+      1334,
+      750
+    ],
+    "float_tolerance": 0.00011,
+    "selector": "aspect < 1334/750 - 0.00011: FIXED_WIDTH; otherwise FIXED_HEIGHT",
+    "phone_adaptation": false,
+    "observations": [
+      {
+        "frame": [
+          1004,
+          755
+        ],
+        "visible_size": [
+          1334,
+          1004
+        ],
+        "scale": 0.752623677,
+        "policy": 4,
+        "report": "out/_viewport_res2/_probe_viewport_res.json"
+      },
+      {
+        "frame": [
+          2560,
+          1334
+        ],
+        "visible_size": [
+          1440,
+          750
+        ],
+        "scale": 1.778666615,
+        "policy": 3,
+        "report": "out/_viewport_res_open/_probe_viewport_res.json"
+      }
+    ],
+    "cur_scale": {
+      "initial": 0.75,
+      "default_range": [
+        0.35,
+        1.3
+      ],
+      "observed_values": [
+        0.85,
+        1.3
+      ],
+      "assignment_sources": [
+        "initial state",
+        "slider",
+        "plus/minus",
+        "pinch",
+        "wheel",
+        "all-map button",
+        "range clamp"
+      ],
+      "finding": "No resolution-policy multiplier in the supplied assignment chain; keep existing tracked wheel zoom."
+    },
+    "engine_rounding_source": "https://github.com/cocos2d/cocos2d-x/blob/cocos2d-x-3.17.2/cocos/platform/CCGLView.cpp"
+  }
+}

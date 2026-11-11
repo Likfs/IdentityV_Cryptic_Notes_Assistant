@@ -18,7 +18,6 @@ def test_original_projection_matches_any_floor_without_clean_coordinates(monkeyp
     rgba=np.dstack((original,np.uint8(np.any(original>0,axis=2))*255))
     entry={'saved_scale':scale,'source_sha256':'verified','source_image':'original.png'}
     install_floor_inputs(monkeypatch, entry, original, rgba, variants=('route_zhanshi_fast', 'clean'))
-    monkeypatch.setattr(direct,'screen_info',lambda _:dict(factor=1))
     monkeypatch.setattr(direct.matcher,'_match_template',lambda *a, **kw:dict(score=3.,location=origin))
     monkeypatch.setattr(direct.matcher,'find_best_scale',lambda *a:pytest.fail('scale search was called'))
     profile = SimpleNamespace(key='map/difficulty', template_versions=('route_zhanshi_fast',),
@@ -43,12 +42,39 @@ def test_blank_capture_does_not_create_random_overlay(monkeypatch):
     assert not result.accepted and layer is None
 
 
+@pytest.mark.parametrize('units', [7, 11, 24, 26])
+@pytest.mark.parametrize('client_size,factor', [((1920, 1080), 4/3),
+                                            ((2560, 1334), 1920000/1779556)])
+def test_tracked_zoom_adjusts_the_single_matching_scale_without_changing_saved_scale(monkeypatch, units, client_size, factor):
+    original = np.full((80, 80, 3), 120, np.uint8)
+    rgba = np.dstack((original, np.full((80, 80), 255, np.uint8)))
+    entry = dict(saved_scale=1.5, source_sha256='verified', source_image='original.png')
+    install_floor_inputs(monkeypatch, entry, original, rgba, variants=('route_zhanshi_fast', 'clean'))
+    scales = []
+    def match(_screen, _path, scale, **kwargs):
+        scales.append((scale, kwargs['ds']))
+        return dict(score=3., location=(4, 8))
+    monkeypatch.setattr(direct.matcher, '_match_template', match)
+    monkeypatch.setattr(direct.matcher, 'find_best_scale', lambda *a:pytest.fail('No scale search is permitted'))
+    profile = SimpleNamespace(key='map/difficulty', template_versions=('route_zhanshi_fast',),
+                              version_names={'route_zhanshi_fast':'测试路线'})
+    result = workflow.process_screenshot(original[:20, :20], catalog=object(), profile=profile,
+        layout_override='layout_16', opacity=.5, template_variant_id='route_zhanshi_fast',
+        capture_client_size=client_size, map_zoom_units=units)
+    assert result.accepted, result.reasons
+    assert scales and all(scale == pytest.approx(1.5 * factor / (units / 7)) for scale, _ds in scales)
+    # Equal floor scores still trigger the existing 25% -> 50% review at minimum zoom.
+    assert {ds for _scale, ds in scales} == ({.25, .5} if units == 7 else {.5})
+    assert result.registration.validation['template']['saved_scale'] == 1.5
+    assert result.registration.validation['map_zoom_units'] == units
+    assert result.registration.screenshot_to_original[0, 0] == pytest.approx(1.5 * factor / (units / 7))
+
+
 def test_negative_score_still_projects_candidate_with_explicit_warning(monkeypatch):
     original = np.full((40, 40, 3), 120, np.uint8)
     rgba = np.dstack((original, np.full((40, 40), 255, np.uint8)))
     install_floor_inputs(monkeypatch, dict(saved_scale=1., source_sha256='verified',
         source_image='original.png'), original, rgba, variants=('route_zhanshi_fast', 'clean'))
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1.))
     monkeypatch.setattr(direct.matcher, '_match_template', lambda *a, **kw:
         dict(score=-3., location=(4, 8), search={'boundary_edges': []}))
     result, _, layer, _, _ = direct.project_original(original[:10, :10], 'map/difficulty', 'layout_16', .5,

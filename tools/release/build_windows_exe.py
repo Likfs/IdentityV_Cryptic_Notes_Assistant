@@ -101,15 +101,14 @@ def main() -> None:
     version_file = work / "windows_version.txt"
     version_file.write_text(windows_version_resource(), encoding="utf-8")
     command = [sys.executable, "-m", "PyInstaller", "--onedir", "--console",
-               "--hide-console", "hide-early", "--contents-directory", ".", "--noupx",
+               "--hide-console", "hide-early", "--contents-directory", "_internal", "--noupx",
                "--name", NAME, "--distpath", str(output), "--workpath", str(work / "analysis"),
                "--specpath", str(work), "--paths", str(ROOT), "--collect-submodules", "src",
                "--version-file", str(version_file)]
     for package in ("tkinter", "pytest", "tools", "tests", "IPython", "matplotlib",
                     "pandas", "scipy", "torch", "retired_features", "torchvision", "torchaudio", "tensorboard"):
         command.extend(["--exclude-module", package])
-    for directory in ("assets", "configs", "src"):
-        command.extend(["--add-data", f"{stage / directory}:{directory}"])
+    command.extend(["--add-data", f"{stage / 'src'}:src"])
     command.append(str(launcher))
     # PyInstaller also searches PATH for DLLs. Host tools (e.g. Poppler) can
     # provide an incompatible icuuc.dll with the same name as Windows ICU.
@@ -127,13 +126,15 @@ def main() -> None:
         subprocess.run(command, cwd=ROOT, env=build_env, stdout=log,
                        stderr=subprocess.STDOUT, check=True)
     app = output / NAME
+    for directory in ("assets", "configs"):
+        shutil.copytree(stage / directory, app / directory)
     for document in ("README.md", "项目目录与文件说明.md", "新增布局教程.md"):
         shutil.copy2(ROOT / document, app / document)
     (output / "build_info.json").write_text(json.dumps({
         "built_at": datetime.now(timezone(timedelta(hours=8))).isoformat(),
         "application_version": APP_VERSION, "windows_version": WINDOWS_VERSION,
         "python": sys.version, "pyinstaller": build_version, "recognition": "pure_structure", "recognition_options": ["pure_structure", "icon_structure"], "registration": "template",
-        "format": "onedir", "resource_files": len(manifest),
+        "format": "onedir", "contents_directory": "_internal", "resource_files": len(manifest),
         "executable": f"{NAME}/{NAME}.exe", "command": command,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"构建完成：{app / (NAME + '.exe')}", flush=True)

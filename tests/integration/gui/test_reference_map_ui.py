@@ -19,6 +19,49 @@ def ready(window, floor="b1"):
     wait_for(lambda: window.reference_overlay.visible)
 
 
+def test_disabled_reference_ignores_keys_automatic_reveal_and_late_images(window, monkeypatch):
+    ready(window)
+    key, image = window._floor_reference_image
+    window.apply_settings({**window.settings, 'reference_enabled':False})
+    assert not window.reference_visible and not window.reference_overlay.visible
+    assert window._reference_image_key() is None
+    floor = window.settings['reference_floor']
+    with monkeypatch.context() as guard:
+        guard.setattr(window.reference_overlay, 'show_map', lambda *a:pytest.fail('Disabled reference displayed'))
+        window._receive_work_event(('floor_reference', key, image, None))
+        window._toggle_reference_map()
+        window._next_reference_floor()
+        assert window.settings['reference_floor'] == floor
+        window._set_reference_floor('1st', source='最近配准', reveal=True)
+        window._refresh_reference_map()
+        assert not window.reference_visible and not window.reference_overlay.visible
+    window.apply_settings({**window.settings, 'reference_enabled':True})
+    assert not window.reference_visible
+    window._toggle_reference_map()
+    wait_for(lambda:window.reference_overlay.visible)
+
+
+def test_disabling_during_reference_load_allows_loading_again(window, monkeypatch):
+    jobs = []
+    thread = app.threading.Thread
+    def deferred(*args, target, **kwargs):
+        if kwargs.get('name') == 'floor-reference':
+            return SimpleNamespace(start=lambda:jobs.append(target))
+        return thread(*args, target=target, **kwargs)
+    monkeypatch.setattr(app.threading, 'Thread', deferred)
+    window._toggle_reference_map()
+    old_key = window._floor_reference_pending
+    assert old_key is not None and len(jobs) == 1
+    window.apply_settings({**window.settings, 'reference_enabled':False})
+    window._receive_work_event(('floor_reference', old_key, np.zeros((4,4,4), np.uint8), None))
+    assert window._floor_reference_pending is None and not window.reference_overlay.visible
+    window.apply_settings({**window.settings, 'reference_enabled':True})
+    window._toggle_reference_map()
+    assert len(jobs) == 2
+    jobs[-1]()
+    wait_for(lambda:window.reference_overlay.visible)
+
+
 def feedback(window, *, accepted=False, floor="b1"):
     result = SimpleNamespace(accepted=accepted, selected_layout=window.locked_layout,
                              profile_key=window.profile.key, floor=floor, registration=None,
@@ -150,7 +193,10 @@ def test_reference_versions_opacity_and_focus(window, monkeypatch):
         images.append(window.reference_overlay.label.pixmap().toImage())
     assert requests == [('project', {'auto': False})] * 3
     assert images[0] != images[1] and images[1] != images[2]
-    window.reference_opacity_slider.setValue(43)
+    window.open_settings()
+    window.settings_page.reference_opacity_slider.setValue(43)
+    assert window.settings_page._persist_settings()
+    window.settings_page.close()
     assert abs(window.reference_overlay.windowOpacity() - .43) < .01
     assert load_settings(window.catalog, window.settings_path)["reference_opacity"] == .43
     assert window.reference_overlay.visible

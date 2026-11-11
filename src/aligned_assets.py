@@ -11,6 +11,7 @@ from src.app_catalog import CLEAN_VERSION_ID, MapCatalog
 from src.runtime_resources import digest, SCALE_PATH
 from src.scale_config import load_scales, profile_keys
 from src.floor_definitions import FLOORS
+from src.paths import TEMPLATE_PROVENANCE_PATH, published_resource_path
 
 
 class IncompleteAssets(ValueError):
@@ -126,10 +127,11 @@ def generate(root, *, catalog_bytes=None, scale_bytes=None, progress=None, audit
     # MapCatalog resolves project paths for normal runtime; custom export roots
     # resolve input paths here so validation cannot escape the publishing tree.
     inputs = {catalog_path.resolve(): catalog_bytes, scale_path.resolve(): scale_bytes}
+    input_names = {}
 
     def read(name):
-        path = (root/name).resolve(strict=True)
-        path.relative_to(root)
+        path = published_resource_path(root, name)
+        input_names[path] = name
         if path in inputs:
             return inputs[path]
         raw = path.read_bytes()
@@ -168,9 +170,10 @@ def generate(root, *, catalog_bytes=None, scale_bytes=None, progress=None, audit
 
     raw_catalog = json.loads(catalog_bytes.decode('utf-8-sig'))
     read('configs/app_defaults.json')
-    read('src/registration/template_matching/provenance.json')
+    read(TEMPLATE_PROVENANCE_PATH)
     # UI assets remain required even in a package containing only placeholders.
     for name in ('assets/app_ui/home_wallpaper.jpg', 'assets/app_ui/icons/check.svg',
+                 'assets/app_ui/floor_controls.png',
                  'assets/layout_retrieval/icons/query.png', 'assets/layout_retrieval/icons/clean_09.png',
                  'assets/layout_retrieval/icons/clean_15.png'):
         read(name)
@@ -228,7 +231,8 @@ def generate(root, *, catalog_bytes=None, scale_bytes=None, progress=None, audit
                     variant_id=v, source_name=v, floor_status={f:'PASS' for f in profile.floors_for_layout(layout.name)},
                     display_name=versions[v]['name'], asset_kind=versions[v].get('kind', 'route'))
                     for v in available]
-    files = {p.relative_to(root).as_posix(): dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
+    files = {(input_names[p] if p in input_names else p.relative_to(root).as_posix()):
+             dict(bytes=len(raw), sha256=hashlib.sha256(raw).hexdigest())
              for p, raw in inputs.items()}
     files.update(audited_files)
     files[SCALE_PATH] = dict(bytes=len(scale_bytes), sha256=hashlib.sha256(scale_bytes).hexdigest())

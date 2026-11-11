@@ -18,7 +18,6 @@ from tests.support.aligned_runtime import activate, build_multifloor_package
 def scene(tmp_path, monkeypatch):
     root = build_multifloor_package(tmp_path/'package')
     activate(root, monkeypatch)
-    monkeypatch.setattr(direct, 'screen_info', lambda _: dict(factor=1))
     yield root, MapCatalog().profile('phosphorescence_disease', 'hard')
     floors._close_fixed_session()
 

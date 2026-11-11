@@ -1,5 +1,12 @@
 """Responsive startup resource synchronization before the main window is built."""
 import sys
+from dataclasses import dataclass
+from pathlib import Path
+import cv2
+
+from src.app_catalog import MapCatalog, load_settings
+from src.recognition_control import RecognitionCancelled, check_cancelled
+from src.recognition_resources import RecognitionResources
 
 from PyQt6.QtCore import QThread, pyqtSignal
 from PyQt6.QtWidgets import QApplication, QDialog, QLabel, QProgressBar, QPushButton, QVBoxLayout, QWidget
@@ -13,6 +20,53 @@ _application = None
 
 class StartupCancelled(Exception):
     pass
+
+
+@dataclass
+class StartupState:
+    messages: list
+    catalog: MapCatalog
+    settings: dict
+    settings_path: Path
+    recognition: RecognitionResources
+    preparation_error: str | None = None
+
+    def close(self):
+        self.recognition.close()
+
+
+def prepare_startup_recognition(root, messages, *, progress, cancelled, map_id=None, difficulty_id=None):
+    check_cancelled(cancelled)
+    from src import paths
+    runtime_root = paths.RUNTIME_ROOT if root.resolve() == paths.PROJECT_ROOT else root/'runtime'
+    catalog = MapCatalog(root/'configs/map_catalog.json')
+    settings_path = runtime_root/'settings.json'
+    settings = load_settings(catalog, settings_path)
+    if map_id or difficulty_id:
+        profile = catalog.profile(map_id or settings['map_id'], difficulty_id or settings['difficulty_id'])
+        settings['map_id'], settings['difficulty_id'] = profile.map_id, profile.difficulty_id
+    resources = RecognitionResources(runtime_root/'cache')
+    state = StartupState(messages, catalog, settings, settings_path, resources)
+    try:
+        profile = catalog.profiles.get((settings['map_id'], settings['difficulty_id']))
+        if profile is not None and profile.asset_status != 'pending':
+            cv2.setNumThreads(4)
+            stage = f'准备识别资源 · {profile.map_name}／{profile.difficulty_name}'
+            progress(stage, 0, 0)
+            resources.prepare(profile, settings['layout_recognition_backend'], cancelled=cancelled,
+                              progress=lambda done, total: progress(stage, done, total))
+        check_cancelled(cancelled)
+        return state
+    except (StartupCancelled, RecognitionCancelled):
+        state.close()
+        raise
+    except Exception as exc:
+        # Valid materials still allow changing profile/settings and retrying in the UI.
+        state.preparation_error = str(exc)
+        return state
+    except BaseException:
+        state.close()
+        raise
 
 
 class EmptyAssetsWindow(QWidget):
@@ -49,13 +103,15 @@ class EmptyAssetsWindow(QWidget):
 class _Synchronizer(QThread):
     progress = pyqtSignal(str, int, int)
 
-    def __init__(self, root, synchronize, parent):
+    def __init__(self, root, synchronize, parent, *, map_id=None, difficulty_id=None):
         super().__init__(parent)
         self.root = root
         self.synchronize = synchronize
         self.messages = None
         self.error = None
         self.cancelled = False
+        self.state = None
+        self.selection = dict(map_id=map_id, difficulty_id=difficulty_id)
 
     def _progress(self, stage, done, total):
         if self.isInterruptionRequested():
@@ -65,15 +121,20 @@ class _Synchronizer(QThread):
     def run(self):
         try:
             self.messages = self.synchronize(self.root, progress=self._progress)
+            self.state = prepare_startup_recognition(self.root, self.messages, progress=self._progress,
+                cancelled=self.isInterruptionRequested, **self.selection)
             self.cancelled = self.isInterruptionRequested()
-        except StartupCancelled:
+            if self.cancelled:
+                self.state.close()
+                self.state = None
+        except (StartupCancelled, RecognitionCancelled):
             self.cancelled = True
         except BaseException:
             self.error = sys.exc_info()
 
 
 class StartupDialog(QDialog):
-    def __init__(self, root, synchronize):
+    def __init__(self, root, synchronize, *, map_id=None, difficulty_id=None):
         super().__init__()
         self.setWindowTitle(f'{APP_NAME} · 启动')
         self.setMinimumWidth(520)
@@ -90,15 +151,38 @@ class StartupDialog(QDialog):
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 0)
         self.progress_bar.setFormat('%v / %m')
-        self.note_label = QLabel('资源就绪后将自动打开主窗口')
+        self.note_label = QLabel('素材审核及当前难度识别资源准备完成后，自动打开主窗口')
         self.note_label.setWordWrap(True)
         self.button = QPushButton('取消启动')
         self.button.clicked.connect(self.close)
+        self.retry_button = QPushButton('重试')
+        self.retry_button.clicked.connect(self._retry)
+        self.retry_button.hide()
         for widget in (self.title_label, self.stage_label, self.progress_bar, self.note_label, self.button):
             layout.addWidget(widget)
-        self.worker = _Synchronizer(root, synchronize, self)
+        layout.addWidget(self.retry_button)
+        self._worker_args = (root, synchronize)
+        self._selection = dict(map_id=map_id, difficulty_id=difficulty_id)
+        self._create_worker()
+
+    def _create_worker(self):
+        self.worker = _Synchronizer(*self._worker_args, self, **self._selection)
         self.worker.progress.connect(self._update_progress)
         self.worker.finished.connect(self._finished)
+
+    def _retry(self):
+        if self.worker.isRunning():
+            return
+        self.worker.deleteLater()
+        self._create_worker()
+        self.retry_button.hide()
+        self.title_label.setText('正在准备地图资源')
+        self.progress_bar.show()
+        self.stage_label.setText('重新检查资源…')
+        self.note_label.setText('素材审核及当前难度识别资源准备完成后，自动打开主窗口')
+        self.button.setText('取消启动')
+        self.button.setEnabled(True)
+        self.worker.start()
 
     def _update_progress(self, stage, done, total):
         if self.worker.isInterruptionRequested():
@@ -112,8 +196,9 @@ class StartupDialog(QDialog):
             self.title_label.setText('启动失败')
             self.stage_label.setText(str(self.worker.error[1]))
             self.progress_bar.hide()
-            self.note_label.setText('请检查提示中的素材或配置后重新启动。')
+            self.note_label.setText('请检查提示中的素材或配置，可重试或关闭程序。')
             self.button.setText('关闭')
+            self.retry_button.show()
         elif self.worker.cancelled:
             self.reject()
         else:
@@ -135,7 +220,7 @@ class StartupDialog(QDialog):
             super().reject()
 
 
-def synchronize_with_progress(root):
+def synchronize_with_progress(root, *, map_id=None, difficulty_id=None):
     from src.asset_sync import synchronize
     from src.paths import LOG_ROOT
     from src.qt_exception_logging import log_unhandled_qt_exceptions
@@ -148,7 +233,7 @@ def synchronize_with_progress(root):
     app.setApplicationVersion(APP_VERSION)
     quit_on_close = app.quitOnLastWindowClosed()
     app.setQuitOnLastWindowClosed(False)
-    dialog = StartupDialog(root, synchronize)
+    dialog = StartupDialog(root, synchronize, map_id=map_id, difficulty_id=difficulty_id)
     try:
         with log_unhandled_qt_exceptions(LOG_ROOT/'qt_exception.log'):
             dialog.show()
@@ -160,7 +245,7 @@ def synchronize_with_progress(root):
             raise error.with_traceback(traceback)
         if dialog.worker.cancelled or result != QDialog.DialogCode.Accepted:
             return None
-        return dialog.worker.messages
+        return dialog.worker.state
     finally:
         if dialog.worker.isRunning():
             dialog.worker.requestInterruption()

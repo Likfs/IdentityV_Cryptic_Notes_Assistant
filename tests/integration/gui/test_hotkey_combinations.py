@@ -31,7 +31,7 @@ def test_settings_record_and_save_combinations_for_all_actions(window):
     saved = load_settings(window.catalog, window.settings_path)
     for field, _, _, label in assignments:
         assert saved[field] == label == window.settings[field]
-    assert saved['chest_gold_subtract_hotkey'] == 'F6'
+    assert saved['chest_gold_subtract_hotkey'] == 'Num5'
 
 
 def test_capture_waits_for_primary_and_cancellation_keeps_old_value(window):

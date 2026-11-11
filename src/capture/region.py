@@ -6,6 +6,18 @@ import sys
 from dataclasses import dataclass
 
 
+def crop_image(image, roi=None):
+    """Validate an image-local matching ROI; a view preserves original pixels."""
+    if roi is None:
+        return image
+    if not isinstance(roi, (list, tuple)) or len(roi) != 4 or any(type(v) is not int for v in roi):
+        raise ValueError('匹配区域必须是四个整数：左、上、宽、高')
+    x, y, width, height = roi
+    if x < 0 or y < 0 or width <= 0 or height <= 0 or x+width > image.shape[1] or y+height > image.shape[0]:
+        raise ValueError('匹配区域必须完全位于截图内且非空')
+    return image[y:y+height, x:x+width]
+
+
 def enable_physical_pixel_coordinates() -> None:
     """Use physical screen pixels for MSS and Windows screen APIs."""
     if sys.platform != "win32":

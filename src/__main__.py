@@ -10,11 +10,11 @@ from pathlib import Path
 
 import cv2
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+from src.paths import PROJECT_ROOT, LOG_ROOT
+
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from src.paths import LOG_ROOT
 from src.version import APP_NAME, APP_VERSION
 from src.app_catalog import FLOOR_NAMES, MapCatalog, load_settings
 from src.layout_retrieval import RESOURCE_ROOT
@@ -50,9 +50,9 @@ def _acquire_app_mutex():
     return handle, False
 
 
-def _synchronize_for_gui(root):
+def _synchronize_for_gui(root, **selection):
     from src.startup import synchronize_with_progress
-    return synchronize_with_progress(root)
+    return synchronize_with_progress(root, **selection)
 
 
 def main() -> None:
@@ -63,6 +63,8 @@ def main() -> None:
                         help="显示程序版本并退出")
     parser.add_argument("--check", action="store_true", help="检查地图、难度与模板资源")
     parser.add_argument("--project-once", type=Path, help="使用本地截图运行一次配准投影")
+    parser.add_argument('--capture-client-size', type=int, nargs=2, default=(2560, 1440),
+                        metavar=('WIDTH', 'HEIGHT'), help='离线截图时游戏客户区的物理像素尺寸，默认 2560 1440')
     parser.add_argument("--layout", help="指定布局，例如 layout_05；必须指定已人工确认的布局")
     parser.add_argument('--map', dest='map_id', help='地图 ID，例如 a_bringer_of_doom')
     parser.add_argument('--difficulty', help='难度 ID，例如 nightmare / hard')
@@ -72,27 +74,32 @@ def main() -> None:
                         help="配准方式：template 定尺度模板匹配")
     parser.add_argument("--smoke", action="store_true", help="启动窗口并在 2 秒后关闭，用于界面烟雾检查")
     args = parser.parse_args()
+    if any(value <= 0 for value in args.capture_client_size):
+        parser.error('--capture-client-size 必须为两个正整数')
     if args.check or args.project_once:
         return _run(args, parser)
     mutex, already_running = (None, False) if args.smoke else _acquire_app_mutex()
     if already_running:
         return
+    startup_state = None
     try:
-        messages = _synchronize_for_gui(PROJECT_ROOT)
-        if messages is None:
+        startup_state = _synchronize_for_gui(PROJECT_ROOT, map_id=args.map_id, difficulty_id=args.difficulty)
+        if startup_state is None:
             return
-        return _run(args, parser, messages)
+        return _run(args, parser, startup_state)
     finally:
+        if startup_state is not None:
+            startup_state.close()
         if mutex is not None:
             ctypes.windll.kernel32.CloseHandle(ctypes.c_void_p(mutex))
 
 
-def _run(args, parser, sync_messages=()):
+def _run(args, parser, startup_state=None):
     from src.runtime_resources import read_bundle, runtime_files
     if read_bundle() is None:
         parser.error('缺少运行资源清单，请重新导出或安装完整运行包')
-    catalog = MapCatalog()
-    settings = load_settings(catalog)
+    catalog = startup_state.catalog if startup_state is not None else MapCatalog()
+    settings = startup_state.settings if startup_state is not None else load_settings(catalog)
     if args.map_id or args.difficulty:
         selected = catalog.profile(args.map_id or settings['map_id'], args.difficulty or settings['difficulty_id'])
         settings['map_id'], settings['difficulty_id'] = selected.map_id, selected.difficulty_id
@@ -175,6 +182,7 @@ def _run(args, parser, sync_messages=()):
         screenshot = _read_image(args.project_once)
         result = process_screenshot(
             screenshot, catalog=catalog, profile=profile,
+            capture_client_size=tuple(args.capture_client_size),
             layout_override=args.layout,
             opacity=settings["opacity"],
             registration_backend=backend, template_variant_id=template_variant,
@@ -199,7 +207,8 @@ def _run(args, parser, sync_messages=()):
         qt_app.setApplicationName(APP_NAME)
         qt_app.setApplicationVersion(APP_VERSION)
         if catalog.profiles:
-            app = RouteProjectionApp()
+            app = RouteProjectionApp(startup_state=startup_state)
+            sync_messages = startup_state.messages if startup_state is not None else ()
             for message in sync_messages:
                 app._log(f"启动资源同步：{message}")
             if any('暂未接入' in message or '未替换' in message or '已转为待配置' in message for message in sync_messages):

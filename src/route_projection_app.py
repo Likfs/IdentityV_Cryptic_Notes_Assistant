@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import ctypes
-import hashlib
 from ctypes import wintypes
 import queue
 import sys
@@ -17,16 +16,18 @@ from src.route_projection_core import (
     AUTO, MapToggleState, capture_bgr, ensure_region_on_screen, escape_key_down,
     floor_control_mouse_down, foreground_game_client, format_projection_metrics,
     game_capture_region, game_window_is_foreground, map_key_down,
-    opacity_to_percent, own_window_is_foreground, percent_to_opacity,
+    projection_capture_regions, split_projection_frame,
+    opacity_to_percent, own_window_is_foreground,
 )
 from src.capture.region import enable_physical_pixel_coordinates
+from src.game_geometry import map_viewport, map_center, map_match_region, recognition_size, resolve_geometry, REFERENCE_SIZE
 from src.capture.runtime import GlobalActionHotkeys
 from PyQt6.QtCore import QPoint, Qt, QTimer, QObject, pyqtSignal, pyqtSlot
 from PyQt6.QtGui import QColor, QGuiApplication, QPainter, QTextCursor
 from PyQt6.QtWidgets import (QApplication, QFileDialog, QFrame, QHBoxLayout, QLabel, QMessageBox,
-                             QPushButton, QScrollArea, QSlider, QTextEdit, QVBoxLayout,
-                             QWidget, QComboBox, QCheckBox, QStackedWidget, QSizeGrip,
-                             QSizePolicy)
+                             QPushButton, QScrollArea, QTextEdit, QVBoxLayout,
+                             QWidget, QComboBox, QStackedWidget, QSizeGrip,
+                             QSizePolicy, QProgressBar)
 from src.route_projection_qt_ui import (STYLE, BG, INK, MUTED, ACCENT, GREEN, AMBER, BAD,
                                         Value, StatusLabel, ScreenshotPanel, SettingsPage, LayoutConfirmationDialog,
                                         CollapsibleSection, SegmentedSelector,
@@ -41,11 +42,13 @@ import math
 from src.paths import CACHE_ROOT, LOG_ROOT
 from src.app_catalog import (
     DEFAULT_SETTINGS_PATH, FLOOR_NAMES, MapCatalog, load_settings, save_settings,
-    map_capture_delay_ms, selected_template_variant, effective_template_variant, load_default_settings,
+    map_capture_delay_ms, selected_template_variant, effective_template_variant,
 )
 from src.capture.map_keys import GlobalMapKeys
-from src.layout_retrieval import create_layout_retriever, BACKEND_LABELS, normalize_recognition_backend
+from src.layout_retrieval import BACKEND_LABELS, normalize_recognition_backend
+from src.recognition_resources import RecognitionResources
 from src.route_projection_pan import MousePanSession
+from src.map_motion import ZOOM_MIN
 from src.recognition_control import RecognitionCancelled, RecognitionRequest, check_cancelled
 from src.chest_counter import ChestCounter, CHEST_ACTIONS
 from src.capture.visibility import CaptureVisibilityPolicy, flush_desktop
@@ -171,12 +174,18 @@ class UiEventBridge(QObject):
 
 
 class RouteProjectionApp(QWidget):
-    def __init__(self, *, settings_path: Path = DEFAULT_SETTINGS_PATH) -> None:
+    def __init__(self, *, settings_path: Path = DEFAULT_SETTINGS_PATH, startup_state=None) -> None:
         enable_physical_pixel_coordinates()
         super().__init__()
-        self.catalog = MapCatalog()
-        self.settings_path = Path(settings_path)
-        self.settings = load_settings(self.catalog, self.settings_path)
+        self.catalog = startup_state.catalog if startup_state is not None else MapCatalog()
+        self.settings_path = startup_state.settings_path if startup_state is not None else Path(settings_path)
+        self.settings = startup_state.settings if startup_state is not None else load_settings(self.catalog, self.settings_path)
+        self.recognition_resources = startup_state.recognition if startup_state is not None else RecognitionResources(CACHE_ROOT)
+        self.layout_retrievers = self.recognition_resources.retrievers
+        self._retrieval_prepare_cancel = threading.Event()
+        self._retrieval_prepare_token = None
+        self._retrieval_prepare_key = None
+        self._feature_preparation_error = None
         self.chest_counter = ChestCounter()
         self.capture_policy = CaptureVisibilityPolicy(self)
         self.profile = self.catalog.profile(self.settings["map_id"], self.settings["difficulty_id"])
@@ -222,7 +231,6 @@ class RouteProjectionApp(QWidget):
         self.overlay_var = Value("投影已隐藏", self._refresh_status)
         self.hotkey_var = Value("", self._refresh_status)
         self.asset_var = Value("", self._refresh_status)
-        self.opacity_var = Value("", self._refresh_status)
         self.metric_var = Value("尚无配准结果", self._refresh_status)
         self.path_var = Value("诊断文件：尚无", self._refresh_status)
         cv2.setNumThreads(4)
@@ -256,7 +264,10 @@ class RouteProjectionApp(QWidget):
         self.show()
         self.main_capture_excluded = exclude_window_from_capture(self)
         self.after(25, self._tick)
-        self.after(400, self._start_layout_retrieval)
+        if startup_state is not None and startup_state.preparation_error:
+            self._feature_preparation_failed(startup_state.preparation_error)
+        else:
+            self._start_layout_retrieval()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -360,6 +371,15 @@ class RouteProjectionApp(QWidget):
         self.feature_status_label = QLabel()
         self.feature_status_label.setObjectName('muted')
         footer.addWidget(self.feature_status_label)
+        self.feature_progress_bar = QProgressBar()
+        self.feature_progress_bar.setFixedWidth(120)
+        self.feature_progress_bar.setFormat('%v/%m')
+        self.feature_progress_bar.hide()
+        footer.addWidget(self.feature_progress_bar)
+        self.feature_retry_button = QPushButton('重试识别准备')
+        self.feature_retry_button.clicked.connect(lambda: self._start_layout_retrieval())
+        self.feature_retry_button.hide()
+        footer.addWidget(self.feature_retry_button)
         self.capture_status_label = QLabel()
         self.capture_status_label.setObjectName('muted')
         footer.addWidget(self.capture_status_label)
@@ -445,37 +465,6 @@ class RouteProjectionApp(QWidget):
         self.floor_combo.currentIndexChanged.connect(self._reference_floor_changed)
         self.floor_combo.hide()
         self._separator(form)
-        self.display_section = CollapsibleSection('显示设置')
-        form.addWidget(self.display_section)
-        display = self.display_section.body
-        self.show_overlay_check = QCheckBox('显示路线投影')
-        self.show_overlay_check.setChecked(True)
-        self.show_overlay_check.toggled.connect(self._overlay_enabled_changed)
-        display.addWidget(self.show_overlay_check)
-        for prefix, title, setting, callback in (
-                ('opacity', '投影不透明度', 'opacity', self._opacity_changed),
-                ('reference_opacity', '参考图不透明度', 'reference_opacity', self._reference_opacity_changed)):
-            row = QHBoxLayout()
-            row.addWidget(self._heading(title), 1)
-            value = QLabel()
-            value.setObjectName('muted')
-            row.addWidget(value)
-            display.addLayout(row)
-            slider = QSlider(Qt.Orientation.Horizontal)
-            slider.setRange(0, 100)
-            slider.setValue(opacity_to_percent(self.settings[setting]))
-            slider.setAccessibleName(title)
-            slider.valueChanged.connect(callback)
-            display.addWidget(slider)
-            setattr(self, prefix + '_slider', slider)
-            setattr(self, prefix + '_value', value)
-        self.reset_button = QPushButton('恢复默认投影透明度')
-        self.reset_button.clicked.connect(lambda: self.opacity_slider.setValue(
-            opacity_to_percent(load_default_settings()['opacity'])))
-        display.addWidget(self.reset_button)
-        self.hide_overlay_button = QPushButton('隐藏投影')
-        self.hide_overlay_button.clicked.connect(self.hide_overlay)
-        display.addWidget(self.hide_overlay_button)
         self.reset_map_button = QPushButton('复位地图状态')
         self.reset_map_button.setObjectName('quiet')
         self.reset_map_button.clicked.connect(self.reset_map_state)
@@ -485,18 +474,33 @@ class RouteProjectionApp(QWidget):
     def _build_chest_controls(self, layout):
         panel = QFrame()
         panel.setObjectName('card')
-        row = QHBoxLayout(panel)
-        row.setContentsMargins(12, 10, 12, 10)
-        row.setSpacing(8)
+        box = QVBoxLayout(panel)
+        box.setContentsMargins(12, 10, 12, 10)
+        box.setSpacing(8)
+        header = QHBoxLayout()
         self.chest_count_label = QLabel('本局已开启')
         self.chest_count_label.setObjectName('muted')
-        row.addWidget(self.chest_count_label)
+        header.addWidget(self.chest_count_label)
+        header.addStretch(1)
+        self.chest_undo_button = QPushButton('撤销')
+        self.chest_undo_button.setObjectName('quiet')
+        self.chest_undo_button.setEnabled(False)
+        self.chest_undo_button.clicked.connect(lambda: self._change_chest_count('undo'))
+        self.chest_reset_button = QPushButton('下一局')
+        self.chest_reset_button.clicked.connect(self.start_next_round)
+        header.addWidget(self.chest_undo_button)
+        header.addWidget(self.chest_reset_button)
+        box.addLayout(header)
+        row = QHBoxLayout()
+        row.setSpacing(12)
         self.chest_action_buttons = {}
-        for kind, title in (('gold', '金箱'), ('purple', '紫箱')):
-            row.addSpacing(5)
+        for kind, title, color in (('gold', '金箱', '#e4c48a'), ('purple', '紫箱', '#c3acdb'),
+                                    ('red', '红箱', '#ed9b94')):
+            group = QHBoxLayout()
+            group.setSpacing(5)
             kind_label = QLabel(title)
-            kind_label.setStyleSheet('font-size: 13px; color: ' + ('#e4c48a;' if kind == 'gold' else '#c3acdb;'))
-            row.addWidget(kind_label)
+            kind_label.setStyleSheet(f'font-size: 13px; color: {color};')
+            group.addWidget(kind_label)
             for suffix, symbol in (('subtract', '−'), ('add', '+')):
                 action = f'chest_{kind}_{suffix}'
                 button = QPushButton(symbol)
@@ -505,24 +509,16 @@ class RouteProjectionApp(QWidget):
                 button.setAccessibleName(CHEST_ACTIONS[action][0])
                 button.clicked.connect(lambda _checked=False, value=action: self._change_chest_count(value))
                 self.chest_action_buttons[action] = button
-                row.addWidget(button)
+                group.addWidget(button)
                 if suffix == 'subtract':
                     count = QLabel('0')
-                    count.setObjectName('counterGold' if kind == 'gold' else 'counterPurple')
+                    count.setObjectName('counter' + kind.title())
                     count.setAlignment(Qt.AlignmentFlag.AlignCenter)
                     count.setMinimumWidth(20)
-                    row.addWidget(count)
+                    group.addWidget(count)
                     setattr(self, kind + '_count_label', count)
-        row.addStretch(1)
-        self.chest_undo_button = QPushButton('撤销')
-        self.chest_undo_button.setObjectName('quiet')
-        self.chest_undo_button.setEnabled(False)
-        self.chest_undo_button.clicked.connect(lambda: self._change_chest_count('undo'))
-        self.chest_reset_button = QPushButton('下一局')
-        self.chest_reset_button.setToolTip('计数清零并重置布局、参考图和投影；撤销仅恢复计数。请先关闭游戏地图。')
-        self.chest_reset_button.clicked.connect(self.start_next_round)
-        row.addWidget(self.chest_undo_button)
-        row.addWidget(self.chest_reset_button)
+            row.addLayout(group, 1)
+        box.addLayout(row)
         layout.addWidget(panel)
 
     def _build_center(self, layout):
@@ -628,6 +624,7 @@ class RouteProjectionApp(QWidget):
         for key, title in (('capture', '截图状态'), ('projection_status', '投影调度'),
                            ('recognition', '识别状态'), ('route', '当前路线'),
                            ('projection_wait_ms', '截图等待'), ('capture_ms', '截图耗时'),
+                           ('floor_ui_ms', '楼层识别耗时'),
                            ('recognition_ms', '识别耗时'), ('registration_ms', '配准耗时'),
                            ('projection_ms', '投影耗时'), ('runtime', '运行时间')):
             status_row(details, key, title)
@@ -684,9 +681,10 @@ class RouteProjectionApp(QWidget):
         counter = self.chest_counter
         self.gold_count_label.setText(str(counter.gold))
         self.purple_count_label.setText(str(counter.purple))
+        self.red_count_label.setText(str(counter.red))
         self.chest_undo_button.setEnabled(counter.can_undo)
         if changed:
-            self._log(f'手动宝箱计数：{action} · 金箱 {counter.gold} · 紫箱 {counter.purple}')
+            self._log(f'手动宝箱计数：{action} · 金箱 {counter.gold} · 紫箱 {counter.purple} · 红箱 {counter.red}')
         self._refresh_chest_overlay()
 
     def _refresh_chest_overlay(self):
@@ -701,7 +699,7 @@ class RouteProjectionApp(QWidget):
         except (OSError, ValueError, RuntimeError):
             self.chest_overlay.hide()
             return
-        self.chest_overlay.show_counts(self.chest_counter.gold, self.chest_counter.purple, client)
+        self.chest_overlay.show_counts(self.chest_counter.gold, self.chest_counter.purple, self.chest_counter.red, client)
 
     def _clear_logs(self):
         self.log_lines.clear()
@@ -817,26 +815,10 @@ class RouteProjectionApp(QWidget):
             self._set_status('原图版本已切换，下次投影将使用新版本', ACCENT)
         return
 
-    def _opacity_changed(self, value):
-        self.opacity_value.setText(f"{value}%")
-        self.settings["opacity"] = percent_to_opacity(value)
-        save_settings(self.settings, self.settings_path)
-        self.opacity_var.set(f"投影不透明度：{value}%")
-        self.hide_overlay()
-
-    def _reference_opacity_changed(self, value):
-        self.reference_opacity_value.setText(f"{value}%")
-        self.settings["reference_opacity"] = percent_to_opacity(value)
-        save_settings(self.settings, self.settings_path)
-        self.reference_overlay.setWindowOpacity(self.settings["reference_opacity"])
-
-    def _overlay_enabled_changed(self, checked):
-        if not checked:
-            self.hide_overlay()
-        elif self.last_result is not None and self.last_result.accepted and self.last_result.layer is not None:
-            self._set_status("显示投影已启用；下次配准后显示路线", ACCENT)
-
     def _schedule_button_action(self, mode):
+        if mode == 'recognize' and not self._recognition_ready():
+            self._set_status('识别资源尚未就绪，请等待准备完成或点击重试', AMBER)
+            return
         session = self.session_id
         self._set_status("请在 3 秒内切回游戏并打开地图…", AMBER)
         def run():
@@ -855,26 +837,22 @@ class RouteProjectionApp(QWidget):
         self.current_map_label.setText(f"当前地图       {self.profile.map_name}")
         self.current_difficulty_label.setText(f"当前难度       {self.profile.difficulty_name}")
         self.current_layout_label.setText(self.locked_layout.removeprefix('layout_') if self.locked_layout else '—')
-        self.layout_description.setText(f'{self.locked_layout} · 本局已选定' if self.locked_layout else '识别后确认本局布局')
+        self.layout_description.setText(f'{self.locked_layout} · 本局已选定' if self.locked_layout else
+            '识别后自动选定布局' if self.settings.get('auto_select_layout', True) else '识别后确认本局布局')
         self.brand_subtitle.setText(self.profile.map_name)
         self.difficulty_selector.refresh()
         self.status_rows['reference'].setText(
+            '已关闭' if not self.settings.get('reference_enabled', True) else
             FLOOR_NAMES[self.settings['reference_floor']] + ' · 开启' if self.reference_visible else '未显示')
         self.status_rows['selection'].setText('自动选择' if self.settings.get('auto_select_layout') else '人工确认')
         self.run_badge.setText('●  处理中' if self.busy else '●  就绪')
-        feature_context = getattr(self, '_feature_preparation_context', None)
-        if feature_context is not None and feature_context != (
-                self.profile.key, self.settings['layout_recognition_backend'], self.session_id,
-                getattr(self, '_retrieval_prepare_token', None)):
-            self.feature_status_label.clear()
-            self._feature_preparation_context = None
         active_mode = (self._active_work or {}).get('mode')
         self.session_label.setText(
             ('正在配准' if active_mode == 'project' else '正在识别') if self.busy else
             '本局布局已选定' if self.locked_layout else
             '等待确认布局' if self._pending_confirmation else '等待识别')
         self.session_label.setToolTip(self.status_var.get())
-        self.start_button.setEnabled(active_mode != 'project')
+        self.start_button.setEnabled(active_mode != 'project' and self._recognition_ready())
         self.project_button.setEnabled(bool(self.locked_layout) and not self.busy)
         pending = self._pending_confirmation is not None
         self.confirm_layout_button.setVisible(pending)
@@ -891,6 +869,11 @@ class RouteProjectionApp(QWidget):
         if pending:
             self.action_title.setText('布局候选已就绪，等待确认')
             self.action_hint.setText('再次打开地图，或点击右侧“确认布局”')
+        if not self._recognition_ready() and not self.busy:
+            self.run_badge.setText('●  识别未就绪')
+            self.session_label.setText('识别准备失败' if self._feature_preparation_error else '准备识别资源')
+            self.action_title.setText('识别资源准备失败' if self._feature_preparation_error else '正在准备当前难度识别资源')
+            self.action_hint.setText(self._feature_preparation_error or '准备完成后可使用识别按钮和快捷键')
         if self.profile.asset_status == 'pending':
             self.run_badge.setText('●  待配置')
             self.session_label.setText('资产待配置')
@@ -912,6 +895,7 @@ class RouteProjectionApp(QWidget):
         self.status_rows["recognition"].setText("已锁定" if self.locked_layout else "待识别")
         timing = self.last_result.timings_ms if self.last_result is not None else {}
         for key, source in (("capture_ms", "capture"),
+                            ("floor_ui_ms", "floor_ui"),
                             ("recognition_ms", "layout_retrieval"), ("registration_ms", "registration"),
                             ("projection_ms", "projection")):
             value = timing.get(source)
@@ -1092,52 +1076,65 @@ class RouteProjectionApp(QWidget):
         prewarmer.request(key)
 
     def _layout_retriever(self):
-        cache = getattr(self, 'layout_retrievers', None)
-        if cache is None:
-            cache = self.layout_retrievers = {}
-        backend = self.settings.get('layout_recognition_backend', 'pure_structure')
-        key = (self.profile.key, backend)
-        if key not in cache:
-            cache_root = (CACHE_ROOT / 'structure_features' / hashlib.sha256(self.profile.key.encode()).hexdigest()[:16]
-                          if backend == 'pure_structure' else
-                          CACHE_ROOT / 'layout_retrieval' / self.profile.map_id / self.profile.difficulty_id / backend)
-            cache[key] = create_layout_retriever(backend, self.profile.clean_root,
-                floors=self.profile.floors,
-                cache_root=cache_root)
-        return cache[key]
+        return self.recognition_resources.get(self.profile, self.settings['layout_recognition_backend'])
+
+    def _recognition_ready(self):
+        return self.recognition_resources.is_ready(self.profile.key, self.settings['layout_recognition_backend'])
+
+    def _feature_preparation_failed(self, error):
+        self._feature_preparation_error = error
+        self.feature_status_label.setText('识别资源准备失败')
+        self.feature_status_label.setToolTip(error)
+        self.feature_progress_bar.hide()
+        self.feature_retry_button.show()
+        self._set_status(f'识别资源准备失败：{error}', BAD)
 
     def _start_layout_retrieval(self):
-        self.feature_status_label.clear()
-        self._feature_preparation_context = None
+        backend = self.settings['layout_recognition_backend']
+        key = (self.profile.key, backend)
+        if (key == self._retrieval_prepare_key and not self._retrieval_prepare_cancel.is_set()
+                and not self._feature_preparation_error and not self._recognition_ready()):
+            return
+        self._retrieval_prepare_cancel.set()
+        self._retrieval_prepare_cancel = cancel = threading.Event()
+        token = object()
+        self._retrieval_prepare_token = token
+        self._retrieval_prepare_key = key
+        self._feature_preparation_error = None
+        self.feature_retry_button.hide()
+        self.feature_status_label.setToolTip(f'{self.profile.map_name}／{self.profile.difficulty_name}')
         if self.profile.asset_status == 'pending':
+            self.feature_status_label.clear()
+            self.feature_progress_bar.hide()
             self._set_status('资产待配置：请检查底图、最小缩放值及已提供路线', AMBER)
             return
+        if self._recognition_ready():
+            self.feature_status_label.setText('识别资源就绪')
+            self.feature_progress_bar.hide()
+            self._refresh_status()
+            return
+        self.feature_status_label.setText('识别资源准备中…')
+        self.feature_progress_bar.setRange(0, 0)
+        self.feature_progress_bar.show()
+        self._refresh_status()
         profile_key, retriever = self.profile.key, self._layout_retriever()
-        backend = self.settings['layout_recognition_backend']
-        token, session = object(), self.session_id
-        self._retrieval_prepare_token = token
+        profile, resources = self.profile, self.recognition_resources
         def still_current():
             return (not self.closed and self.profile.key == profile_key and
-                    self.session_id == session and self._retrieval_prepare_token is token and
+                    not cancel.is_set() and self._retrieval_prepare_token is token and
                     self.settings.get('layout_recognition_backend') == backend and
                     getattr(self, 'layout_retrievers', {}).get((profile_key, backend)) is retriever)
         def worker():
             try:
                 if not still_current(): return
-                kwargs = dict(cancelled=lambda: not still_current())
-                if backend == 'pure_structure':
-                    kwargs['progress'] = lambda done, total: self.results.put(
-                        ('retrieval_progress', profile_key, backend, retriever, token, session, done, total))
-                fingerprint = retriever.prepare(**kwargs)
-                self.results.put(('retrieval_index', profile_key, fingerprint, None, backend, retriever, token, session))
+                fingerprint = resources.prepare(profile, backend, cancelled=lambda: not still_current(),
+                    progress=lambda done, total: self.results.put(
+                        ('retrieval_progress', profile_key, backend, retriever, token, done, total)))
+                self.results.put(('retrieval_index', profile_key, fingerprint, None, backend, retriever, token))
             except RecognitionCancelled:
                 return
             except Exception as exc:
-                self.results.put(('retrieval_index', profile_key, None, str(exc), backend, retriever, token, session))
-            finally:
-                if ((self.closed or getattr(self, 'layout_retrievers', {}).get((profile_key, backend)) is not retriever)
-                        and hasattr(retriever, 'close')):
-                    retriever.close()
+                self.results.put(('retrieval_index', profile_key, None, str(exc), backend, retriever, token))
         threading.Thread(target=worker, name='prepare-layout-retrieval', daemon=True).start()
 
 
@@ -1158,16 +1155,24 @@ class RouteProjectionApp(QWidget):
             self.projection_delay_pending = False
         settings = {**settings, "registration_backend": "template", "layout_recognition_backend": recognition_backend,
                     "auto_floor": False, "skip_layout_confirmation": False,
-                    "auto_select_layout": settings.get('auto_select_layout') is True}
+                    "auto_select_layout": settings.get('auto_select_layout', True) is True}
+        for field in ('reference_enabled', 'show_projection'):
+            settings[field] = settings.get(field) if isinstance(settings.get(field), bool) else True
         self.settings = settings
+        if not settings['reference_enabled']:
+            self.reference_visible = False
+            self._floor_reference_pending = None
+            self._reference_load_error = None
+            self.reference_overlay.hide()
         self.capture_policy.set_excluded(settings.get('capture_exclusion_enabled', True))
         self._capture_status_changed(self.capture_policy.status)
         if recognition_changed:
-            retired = list(getattr(self, 'layout_retrievers', {}).values())
-            self.layout_retrievers = {}
-            for retriever in retired:
-                if hasattr(retriever, 'close'):
-                    threading.Thread(target=retriever.close, name='retire-layout-index', daemon=True).start()
+            self._retrieval_prepare_cancel.set()
+            retired = self.recognition_resources
+            self.recognition_resources = RecognitionResources(CACHE_ROOT)
+            self.layout_retrievers = self.recognition_resources.retrievers
+            threading.Thread(target=retired.close, name='retire-layout-index', daemon=True).start()
+            self._retrieval_prepare_key = None
             self._pending_confirmation = None
             self._pending_auto_projection = None
             self.clear_layout_lock()
@@ -1197,9 +1202,11 @@ class RouteProjectionApp(QWidget):
         self.floor_combo.setCurrentIndex(self.floor_combo.findData(settings['reference_floor']))
         self.floor_combo.blockSignals(False)
         self._refresh_status()
-        self.roi_label.configure(text=f"游戏地图区域  {', '.join(map(str, settings['capture_roi']))}")
+        self.roi_label.configure(text="地图截图区域 · 随游戏窗口自动适配")
         self.hotkey_var.set(f"地图键 {settings['map_key']} · 识别 {settings['recognize_hotkey']} · 投影 {settings['project_hotkey']}")
-        self.key_info.setText(f'{settings["map_key"]} 地图开关    {settings["reference_hotkey"]} 参考图    {settings["reference_floor_hotkey"]} 下一层    {settings["next_round_hotkey"]} 下一局    Esc 隐藏投影')
+        reference_keys = (f'{settings["reference_hotkey"]} 参考图    {settings["reference_floor_hotkey"]} 下一层'
+                          if settings['reference_enabled'] else '参考图已关闭')
+        self.key_info.setText(f'{settings["map_key"]} 地图开关    {reference_keys}    {settings["next_round_hotkey"]} 下一局    Esc 隐藏投影')
         self.key_info.setToolTip(self.hotkey_var.get() + '\n' + ' · '.join(
             f'{settings[f"{action}_hotkey"]} {label}' for action, (label, _, _, _) in CHEST_ACTIONS.items()))
         for action, (label, _, _, _) in CHEST_ACTIONS.items():
@@ -1209,17 +1216,6 @@ class RouteProjectionApp(QWidget):
             f'下一局 · {settings["next_round_hotkey"]}（游戏前台时生效）\n'
             '计数清零并重置布局、参考图和投影；撤销仅恢复计数。请先关闭游戏地图。')
         self.project_button.setText(f"重新投影  {settings['project_hotkey']}")
-        percent = opacity_to_percent(float(settings["opacity"]))
-        self.opacity_var.set(f"投影不透明度：{percent}%")
-        self.opacity_slider.blockSignals(True)
-        self.opacity_slider.setValue(percent)
-        self.opacity_slider.blockSignals(False)
-        self.opacity_value.setText(f"{percent}%")
-        reference_percent = opacity_to_percent(settings["reference_opacity"])
-        self.reference_opacity_slider.blockSignals(True)
-        self.reference_opacity_slider.setValue(reference_percent)
-        self.reference_opacity_slider.blockSignals(False)
-        self.reference_opacity_value.setText(f"{reference_percent}%")
         self.reference_overlay.setWindowOpacity(settings["reference_opacity"])
         self._refresh_chest_overlay()
         self._update_assets()
@@ -1316,12 +1312,15 @@ class RouteProjectionApp(QWidget):
             score.configure(text='—', fg=MUTED)
         self.metric_var.set('尚无配准结果')
         self.path_var.set('诊断文件：尚无')
-        self.roi_label.configure(text=f"游戏地图区域  {', '.join(map(str, self.settings['capture_roi']))}")
+        self.roi_label.configure(text="地图截图区域 · 随游戏窗口自动适配")
         self._set_status("地图状态已复位为关闭", MUTED)
         self._log("地图状态复位为关闭；请确认游戏地图也已关闭")
 
     def clear_layout_lock(self):
         self._invalidate_recognition()
+        self._floor_buttons = None
+        if hasattr(self, '_motion'):
+            self._motion.forget_zoom()
         if hasattr(self, 'reference_overlay'):
             self._reset_reference_map()
         self.locked_layout = None
@@ -1424,6 +1423,9 @@ class RouteProjectionApp(QWidget):
         if self.profile.asset_status == 'pending':
             self._set_status('资产待配置，暂不可识别或配准', AMBER)
             return
+        if mode == 'recognize' and not RouteProjectionApp._recognition_ready(self):
+            self._set_status('识别资源尚未就绪，请等待准备完成或点击重试', AMBER)
+            return
         work_requested_at = time.perf_counter()
         gui_at_request = self._gui_diagnostic_snapshot()
         if getattr(self, 'map_keys', None) is not None:
@@ -1468,12 +1470,14 @@ class RouteProjectionApp(QWidget):
         if mode == "project":
             self.hide_overlay()
             RouteProjectionApp._map_toast(self, "正在配准路线", f"已锁定 {fixed_layout}，" +
-                ("正在分别匹配各层图片…"), success=True)
+                ("正在读取楼层标签并匹配对应底图…"), success=True)
+        zoom_units, zoom_window = (self._motion.registration_zoom()
+                                  if mode == 'project' and hasattr(self, '_motion') else (ZOOM_MIN, None))
         generation = self.map_generation
         session_id = self.session_id
         profile = self.profile
         roi = list(self.settings["capture_roi"])
-        reference_size = list(self.settings["capture_reference_size"])
+        reference_size = list(REFERENCE_SIZE)
         window_titles = list(self.settings["game_window_titles"])
         capture_delay_configured = map_capture_delay_ms(self.settings)
         clean_capture = not self.settings.get('capture_exclusion_enabled', True)
@@ -1507,13 +1511,34 @@ class RouteProjectionApp(QWidget):
                 recognition_window = recognition_window_identity(window_titles) if retriever is not None else None
                 if recognition is not None:
                     recognition.window = recognition_window
-                screen_region = game_capture_region(client, roi, reference_size)
-                ensure_region_on_screen(screen_region)
+                screen_region = map_viewport(client)
+                match_region = map_match_region(client, screen_region)
+                matching_roi = (match_region.left-screen_region.left, match_region.top-screen_region.top,
+                                match_region.width, match_region.height)
+                capture_area, control_region = (projection_capture_regions(client, screen_region)
+                                                if mode == 'project' else (screen_region, None))
+                ensure_region_on_screen(capture_area)
                 screen_roi = screen_region.as_list()
+                floor_detection = None
+                capture_timings = {'floor_ui': 0., 'frame_split': 0.}
                 try:
                     if clean_capture:
                         flush_desktop()
-                    screenshot = capture_bgr(screen_roi)
+                    capture_started = time.perf_counter()
+                    capture_timings['capture_setup'] = (capture_started-started)*1000
+                    frame = capture_bgr(capture_area.as_list())
+                    capture_ms = (time.perf_counter()-capture_started)*1000
+                    split_started = time.perf_counter()
+                    if control_region is not None:
+                        layout_floors = (profile.floors_for_layout(fixed_layout)
+                                         if hasattr(profile, 'floors_for_layout') else ())
+                        screenshot, floor_detection = split_projection_frame(
+                            frame, capture_area, screen_region, control_region, client=client,
+                            single_floor=layout_floors[0] if len(layout_floors) == 1 else None,
+                            available_floors=layout_floors, timings=capture_timings)
+                    else:
+                        screenshot = frame
+                    capture_timings['frame_split'] = max(0., (time.perf_counter()-split_started)*1000-capture_timings['floor_ui'])
                     if recognition is not None and not recognition.captured(time.perf_counter()):
                         raise RecognitionCancelled()
                 finally:
@@ -1524,24 +1549,43 @@ class RouteProjectionApp(QWidget):
                     raise RuntimeError('截图期间游戏窗口发生变化，请重新配准')
                 if recognition_window is not None and recognition_window_identity(window_titles) != recognition_window:
                     raise RuntimeError('截图期间游戏窗口发生变化，请重新识别')
-                capture_ms = (time.perf_counter() - started) * 1000.0
+                capture_timings['capture_pipeline'] = (time.perf_counter()-started)*1000
                 bridge = getattr(self, '_work_bridge', None)
                 if bridge is not None:
                     bridge.ready.emit(('work_progress', work_id, session_id, generation,
-                        '截图已完成，可关闭地图；正在识别布局…' if mode == 'recognize' else '正在配准路线，自动比较各层图片…'))
+                        '截图已完成，可关闭地图；正在识别布局…' if mode == 'recognize' else '正在按选中的楼层配准路线…'))
                 result = process_screenshot(
                     screenshot, catalog=self.catalog, profile=profile,
                     layout_override=fixed_layout, opacity=opacity,
                     recognize_only=mode == "recognize",
                     layout_recognition_backend=recognition_backend,
                     template_variant_id=template_variant_id,
+                    capture_client_size=(client.width, client.height),
+                    matching_roi=matching_roi,
+                    **({'map_zoom_units': zoom_units if capture_window_id == zoom_window else ZOOM_MIN}
+                       if mode == 'project' else {}),
+                    **({'floor_detection': floor_detection} if mode == 'project' else {}),
                     **({'layout_retriever': retriever,
-                        'recognition_reference_size': tuple(roi[2:])} if retriever is not None else {}),
+                        'recognition_reference_size': recognition_size(client, match_region)} if retriever is not None else {}),
                     **({'recognition_cancelled': cancel.is_set} if mode == 'recognize' else {}),
                     defer_projection_preview=fast_display)
                 check_cancelled(cancel.is_set)
                 result.timings_ms["capture"] = capture_ms
+                result.timings_ms.update(capture_timings)
                 result.capture_window_id = capture_window_id
+                result.capture_context = {
+                    **getattr(result, 'capture_context', {}),
+                    'coordinate_space': 'screen_physical_pixels',
+                    'game_client_size': [client.width, client.height],
+                    'game_client_screen': client.as_list(),
+                    'map_roi_screen': screen_roi,
+                    'matching_roi_screen': match_region.as_list(),
+                    'combined_capture_screen': capture_area.as_list(),
+                    'floor_ui_roi_screen': control_region.as_list() if control_region is not None else None,
+                    'capture_reference_size': reference_size,
+                    **resolve_geometry(client).diagnostics(),
+                    'map_zoom_center_screen': list(map_center(client)),
+                }
                 result.timings_ms['request_setup'] = (thread_dispatched_at-work_requested_at)*1000
                 result.timings_ms['worker_start_delay'] = (started-thread_dispatched_at)*1000
                 if key_started_at is not None:
@@ -1706,9 +1750,10 @@ class RouteProjectionApp(QWidget):
                         'result_queue':(entered_at-meta['posted_at'])*1000,
                         'result_input_handling':(received_at-entered_at)*1000}
             if (result is not None and result.accepted and result.layer is not None
-                    and self.show_overlay_check.isChecked()
+                    and self.settings.get('show_projection', True)
                     and game_window_is_foreground(self.settings['game_window_titles'])):
                 submit_started = time.perf_counter()
+                self._floor_buttons = (getattr(result, 'floor_detection', None) or {}).get('buttons')
                 self.overlay.show(result.layer, roi[0], roi[1])
                 submitted = time.perf_counter()
                 presented = True
@@ -1827,7 +1872,9 @@ class RouteProjectionApp(QWidget):
         elif result:
             self.last_result = result
             self.roi_label.configure(text=f"本次游戏截图  {roi[0]}, {roi[1]} · {roi[2]}×{roi[3]}")
-            self._set_preview(result.screenshot, f"本次截图 · {datetime.now():%H:%M:%S} · {result.screenshot.shape[1]}×{result.screenshot.shape[0]}")
+            preview = getattr(result, 'matching_input', None)
+            preview = result.screenshot if preview is None else preview
+            self._set_preview(preview, f"匹配截图 · {datetime.now():%H:%M:%S} · {preview.shape[1]}×{preview.shape[0]}")
             self._update_ranking(result)
             self.path_var.set(f"诊断文件：{result.run_directory or '后台保存中…'}")
             if mode == "recognize":
@@ -1874,14 +1921,15 @@ class RouteProjectionApp(QWidget):
                     self._handle_map_key()
                 stale = generation != self.map_generation or not self.map_state.is_open
                 if result.accepted and result.layer is not None and not stale:
-                    if self.show_overlay_check.isChecked():
+                    self._floor_buttons = (getattr(result, 'floor_detection', None) or {}).get('buttons')
+                    if self.settings.get('show_projection', True):
                         if not overlay_presented:
                             self.overlay.show(result.layer, roi[0], roi[1])
                         self.live_projection = (result, list(roi), generation)
                         if hasattr(self, '_motion') and not overlay_presented:
                             self._motion.start(result, roi)
                     percent = opacity_to_percent(float(self.settings["opacity"]))
-                    self.overlay_var.set(("投影显示中" if self.show_overlay_check.isChecked() else "投影预览完成，显示已关闭") +
+                    self.overlay_var.set(("投影显示中" if self.settings.get('show_projection', True) else "投影预览完成，显示已关闭") +
                                          f" · {result.selected_layout} / {FLOOR_NAMES.get(result.floor, '未取得楼层候选')} / "
                                          f"{result.variant_id} · 不透明度 {percent}%")
                     self._set_status("模板匹配候选已投影，请核对位置", AMBER)
@@ -2050,10 +2098,13 @@ class RouteProjectionApp(QWidget):
         self.reference_context = ((self.reference_revision, list(self.settings['capture_roi']), floor,
                                    self.profile.key, self.locked_layout) if self.locked_layout else None)
         self.status_rows['reference'].setText(
+            '已关闭' if not self.settings.get('reference_enabled', True) else
             FLOOR_NAMES.get(floor, '待配置') + ' · 开启' if self.reference_visible and self.locked_layout else '未显示')
 
 
     def _reference_image_key(self):
+        if not self.settings.get('reference_enabled', True):
+            return None
         self._sync_reference_context()
         context = self.reference_context
         if context is None:
@@ -2061,6 +2112,9 @@ class RouteProjectionApp(QWidget):
         return (context[0], context[3], context[4], self._effective_template_variant(), context[2])
 
     def _toggle_reference_map(self, _checked=False):
+        if not self.settings.get('reference_enabled', True):
+            self._set_status('参考图已关闭，可在设置中启用', AMBER)
+            return
         self._sync_reference_context()
         if not self.locked_layout:
             self._set_status('请先识别并选定布局，再显示参考图', AMBER)
@@ -2090,11 +2144,13 @@ class RouteProjectionApp(QWidget):
             save_settings(self.settings, self.settings_path)
         self._sync_reference_context()
         self.reference_floor_source = source
-        if reveal and self.locked_layout:
+        if reveal and self.locked_layout and self.settings.get('reference_enabled', True):
             self.reference_visible = True
         self._refresh_reference_map()
 
     def _next_reference_floor(self):
+        if not self.settings.get('reference_enabled', True):
+            return
         floors = self.profile.floors_for_layout(self.locked_layout)
         if not floors:
             return
@@ -2107,7 +2163,7 @@ class RouteProjectionApp(QWidget):
             self._handle_map_key()
         self._sync_reference_context()
         context = self.reference_context
-        if (not self.reference_visible or context is None or self.closed
+        if (not self.settings.get('reference_enabled', True) or not self.reference_visible or context is None or self.closed
                 or self.settings_page is not None or own_window_is_foreground()
                 or QApplication.activeModalWidget() is not None
                 or not game_window_is_foreground(self.settings["game_window_titles"])):
@@ -2162,7 +2218,7 @@ class RouteProjectionApp(QWidget):
             self._set_reference_floor(result.floor, source='最近配准', reveal=False)
         label = f"{result.selected_layout or '布局待确认'} · {FLOOR_NAMES.get(result.floor, '未取得楼层候选')}"
         if result.accepted:
-            detail = label + ("，路线已投影。" if self.show_overlay_check.isChecked() else "，投影显示已关闭。")
+            detail = label + ("，路线已投影。" if self.settings.get('show_projection', True) else "，投影显示已关闭。")
             warnings = getattr(getattr(result, 'registration', None), 'validation', {}).get('warnings', [])
             if warnings:
                 detail += '\n' + '；'.join(warnings)
@@ -2310,7 +2366,11 @@ class RouteProjectionApp(QWidget):
         self._log(f"地图键 {self.settings['map_key']} 松开：等待 {capture_delay} ms 后{action}")
 
     def _handle_template_floor_click(self):
-        """Invalidate on a floor-control click; rematch after release without naming the floor."""
+        """Invalidate a floor-control click; reread the selected UI after release."""
+        if (hasattr(self.profile, 'floors_for_layout') and self.locked_layout
+                and len(self.profile.floors_for_layout(self.locked_layout)) == 1):
+            self._template_floor_click_active = False
+            return
         # Crossing a button while dragging the map is not a new button press.
         if getattr(getattr(self, '_motion', None), 'map_drag_active', False):
             return
@@ -2319,7 +2379,7 @@ class RouteProjectionApp(QWidget):
                 or not game_window_is_foreground(self.settings['game_window_titles'])):
             self._template_floor_click_active = False
             return
-        down = floor_control_mouse_down(self.settings['game_window_titles'], self.settings['capture_reference_size'])
+        down = floor_control_mouse_down(self.settings['game_window_titles'], getattr(self, '_floor_buttons', None))
         previous = getattr(self, '_template_floor_click_active', False)
         self._template_floor_click_active = down
         if down and not previous:
@@ -2335,7 +2395,7 @@ class RouteProjectionApp(QWidget):
             generation, session = self.map_generation, self.session_id
             self.projection_triggered_at = time.perf_counter()
             self.projection_delay_pending = True
-            self._log('定尺度模板匹配：检测到楼层按钮操作，重新匹配完整原图')
+            self._log('检测到楼层按钮操作，读取选中楼层并按当前倍率重新配准')
             self.after(map_capture_delay_ms(self.settings),
                        lambda: RouteProjectionApp._project_after_delay(self, generation, session))
 
@@ -2422,26 +2482,30 @@ class RouteProjectionApp(QWidget):
                     self.path_var.set(f"诊断文件：{directory}" if directory else f"诊断保存失败：{error}")
                     self._log(self.path_var.get())
             elif event[0] == 'retrieval_progress':
-                _, profile, backend, retriever, token, session, done, total = event
-                if (not self.closed and profile == self.profile.key and session == self.session_id
+                _, profile, backend, retriever, token, done, total = event
+                if (not self.closed and profile == self.profile.key
                         and token is getattr(self, '_retrieval_prepare_token', None)
                         and self.settings['layout_recognition_backend'] == backend
                         and getattr(self, 'layout_retrievers', {}).get((profile, backend)) is retriever):
                     self.recognition_method_label.setText(f'识别方法：{BACKEND_LABELS[backend]} · 资源准备 {done}/{total}')
-                    self._feature_preparation_context = (profile, backend, session, token)
                     self.feature_status_label.setText(f'识别资源准备 {done}/{total}')
+                    self.feature_progress_bar.setRange(0, total)
+                    self.feature_progress_bar.setValue(done)
             elif event[0] == 'retrieval_index':
                 if (event[1] == self.profile.key and
                         self.settings.get('layout_recognition_backend', 'icon_structure') == (event[4] if len(event) > 4 else 'icon_structure') and
-                        (len(event) < 8 or (event[6] is getattr(self, '_retrieval_prepare_token', None)
-                                           and event[7] == self.session_id)) and
+                        event[6] is getattr(self, '_retrieval_prepare_token', None) and
                         (len(event) < 6 or getattr(self, 'layout_retrievers', {}).get((event[1], event[4])) is event[5])):
                     self._log(f'识别资源准备失败：{event[3]}' if event[3] else f'布局识别资源就绪：{event[2][:12]}')
                     self.recognition_method_label.setText('识别方法：' + BACKEND_LABELS[self.settings['layout_recognition_backend']]
                                                           + (' · 资源准备失败' if event[3] else ' · 资源就绪'))
-                    self._feature_preparation_context = (self.profile.key, self.settings['layout_recognition_backend'],
-                                                         self.session_id, getattr(self, '_retrieval_prepare_token', None))
-                    self.feature_status_label.setText('识别资源准备失败' if event[3] else '识别资源就绪')
+                    if event[3]:
+                        self._feature_preparation_failed(event[3])
+                    else:
+                        self.feature_status_label.setText('识别资源就绪')
+                        self.feature_progress_bar.hide()
+                        self._feature_preparation_error = None
+                    self._refresh_status()
             elif event[0] in ('recognition_work', 'work_result'):
                 _, work_id, work = event
                 active = getattr(self, '_active_work', None) or {}
@@ -2464,10 +2528,8 @@ class RouteProjectionApp(QWidget):
         if active.get('cancel') is not None:
             active['cancel'].set()
         self._template_prewarmer.close()
-        for retriever in getattr(self, 'layout_retrievers', {}).values():
-            if hasattr(retriever, 'close'):
-                threading.Thread(target=retriever.close, name='close-layout-index', daemon=True).start()
-        self.layout_retrievers = {}
+        self._retrieval_prepare_cancel.set()
+        threading.Thread(target=self.recognition_resources.close, name='close-layout-index', daemon=True).start()
         self.hide_overlay()
         if hasattr(self._motion, 'shutdown'):
             self._motion.shutdown()
